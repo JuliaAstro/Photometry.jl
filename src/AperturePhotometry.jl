@@ -1,19 +1,9 @@
 module AperturePhotometry
 
 export area,
-       mask,
-       Exact,
-       Center,
-       Subpixel
+       mask
 
 abstract type Aperture end
-
-abstract type OverlapMethod end
-struct Exact <: OverlapMethod end
-struct Center <: OverlapMethod end
-struct Subpixel <: OverlapMethod 
-    n::Integer
-end
 
 """
     area(::Aperture)
@@ -36,6 +26,7 @@ Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture
 """
 bbox(::Aperture)
 
+include("overlap.jl")
 include("circular.jl")
 
 end
