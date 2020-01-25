@@ -8,7 +8,7 @@ struct Exact <: OverlapMethod end
 struct Center <: OverlapMethod end
 struct Subpixel{} <: OverlapMethod end
 
-function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
+function circular_overlap(xmin, ymin, xmax, ymax, nx, ny, r; method = :exact)
     out = fill(0.0, nx, ny)
 
     dx = (xmax - xmin) / nx
@@ -45,6 +45,8 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
                     elseif d < r + pixel_radius
                         if method === :exact
                             @inbounds out[j, i] = circular_overlap_single_exact(pxmin, pymin, pxmax, pymax, r) / (dx * dy)
+                        elseif method === :center
+                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
                         elseif method isa Integer
                             @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method)
                         end

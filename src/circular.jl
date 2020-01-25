@@ -3,51 +3,61 @@ export CircularAperture,
        CircularAnnulus
 
 struct CircularAperture{T <: Number} <: Aperture
-    center::Tuple{T,T}
+    x::T
+    y::T
     r::T
 end
 
+CircularAperture(center::Tuple, r) = CircularAperture(center..., r)
+
 function Base.show(io::IO, c::CircularAperture)
-    x, y = c.center
-    print(io, "CircularAperture($x, $y, r=$(c.r))")
+    print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
 area(c::CircularAperture) = π * c.r^2
 
-bbox(c::CircularAperture) = (-c.r, c.r, -c.r, c.r)
+bbox(c::CircularAperture) = (c.x - c.r, c.y - c.r, c.x + c.r, c.y + c.r)
 
-function mask(c::CircularAperture)
+function mask(c::CircularAperture; method::Union{Symbol,Integer} = :exact)
+    bounds = edges(c)
     box = bbox(c)
-    nx = ny = Int(2c.r)
-    out = BitArray(false, nx, ny)
-    xs = box[1]:box[2]
-    ys = hcat(box[3]:box[4])
-    out[sqrt.(xs.^2 .+ ys.^2) .< c.r] .= true
-    return out
+    nx = Int(box[4] - box[2])
+    ny = Int(box[3] - box[1])
+    return circular_overlap(bounds..., nx, ny, c.r, method = method)
 end
 
 #######################################################
 
 struct CircularAnnulus{T <: Number} <: Aperture
-    center::Tuple{T,T}
+    x::T
+    y::T
     r_in::T
     r_out::T
 end
 
+CircularAnnulus(center::Tuple, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
+
 function Base.show(io::IO, c::CircularAnnulus)
-    x, y = c.center
-    print(io, "CircularAnnulus($x, $y, r_in=$(c.r_in), r_out=$(c.r_out))")
+    print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
 area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
-bbox(c::CircularAnnulus) = (-c.r, c.r, -c.r, c.r)
+bbox(c::CircularAnnulus) = (c.x - c.r_out, c.y - c.r_out, c.x + c.r_out, c.y + c.r_out)
 
-function mask(c::CircularAnnulus)
+function mask(c::CircularAnnulus; method::Union{Symbol,Integer} = :exact)
+    bounds = edges(c)
     box = bbox(c)
-    nx = ny = Int(2c.r)
-    out = BitArray(false, nx, ny)
-    xs = box[1]:box[2]
-    ys = hcat(box[3]:box[4])
-    out[c.r_in .< sqrt.(xs.^2 .+ ys.^2) .< c.r_out] .= true
-    return out
+    nx = box[3] - box[1]
+    ny = box[4] - box[2]
+    out = circular_overlap(bounds..., nx, ny, c.r_out, method = method)
+    out .-= circular_overlap(bounds..., nx, ny, c.r_in, method = method)
+end
+
+function edges(c::Union{CircularAperture,CircularAnnulus})
+    ibox = bbox(c) .- 0.5
+    xmin = ibox[1] - c.x
+    ymin = ibox[2] - c.y
+    xmax = ibox[3] - c.x
+    ymax = ibox[4] - c.y
+    return (xmin, ymin, xmax, ymax)
 end
