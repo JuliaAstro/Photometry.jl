@@ -1,7 +1,7 @@
-using AperturePhotometry
+using Photometry
 using Test
 
-@testset "AperturePhotometry.jl" begin
+@testset "Photometry.jl" begin
     include("overlap.jl")
     include("circular.jl")
 end

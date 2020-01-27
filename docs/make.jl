@@ -1,14 +1,14 @@
-using AperturePhotometry
+using Photometry
 using Documenter
 
 makedocs(;
-    modules=[AperturePhotometry],
+    modules=[Photometry],
     authors="Miles Lucas <mdlucas@hawaii.edu>",
-    repo="https://github.com/mileslucas/AperturePhotometry.jl/blob/{commit}{path}#L{line}",
-    sitename="AperturePhotometry.jl",
+    repo="https://github.com/mileslucas/Photometry.jl/blob/{commit}{path}#L{line}",
+    sitename="Photometry.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://mileslucas.github.io/AperturePhotometry.jl",
+        canonical="https://mileslucas.github.io/Photometry.jl",
         assets=String[],
     ),
     pages=[
@@ -17,5 +17,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/mileslucas/AperturePhotometry.jl",
+    repo="github.com/mileslucas/Photometry.jl",
 )

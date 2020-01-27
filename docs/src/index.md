@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = AperturePhotometry
+CurrentModule = Photometry
 ```
 
-# AperturePhotometry
+# Photometry
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [AperturePhotometry]
+Modules = [Photometry]
 ```

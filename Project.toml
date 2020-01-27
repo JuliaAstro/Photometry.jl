@@ -1,7 +1,10 @@
-name = "AperturePhotometry"
-uuid = "70fd2374-c47e-431e-9fb8-732e36fb30a8"
+name = "Photometry"
+uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 authors = ["Miles Lucas <mdlucas@hawaii.edu>"]
 version = "0.1.0"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 
 [compat]
 julia = "1"

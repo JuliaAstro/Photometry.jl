@@ -1,4 +1,6 @@
-module AperturePhotometry
+module Photometry
+
+using DataFrames: DataFrame
 
 export area,
        mask,
@@ -71,11 +73,20 @@ end
 
 Base.:*(data::AbstractMatrix, c::Aperture) = c * data
 
+"""
+    aperture_photometry(::Aperture, data::AbstractMatrix)
+    aperture_photometry(::AbstractVector{<:Aperture}, data::AbstractMatrix)
+
+Perform aperture photometry on `data` given aperture(s). If a list of apertures is provided the output will be a `DataFrame`, otherwise a `NamedTuple`.
+
+"""
 function aperture_photometry(a::Aperture, data::AbstractMatrix)
     data_weighted = data * a
     aperture_sum = sum(data_weighted)
     return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum)
 end
+
+aperture_photometry(a::AbstractVector{<:Aperture}, data::AbstractMatrix) = DataFrame(aperture_photometry.(a, Ref(data)))
 
 include("overlap.jl")
 include("circular.jl")
