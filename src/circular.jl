@@ -8,17 +8,15 @@ struct CircularAperture{T <: Number} <: Aperture
     r::T
 end
 
-CircularAperture(center::Tuple, r) = CircularAperture(center..., r)
+CircularAperture(center::AbstractVector, r) = CircularAperture(center..., r)
 
 function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
-area(c::CircularAperture) = π * c.r^2
-
 bbox(c::CircularAperture) = (c.x - c.r, c.y - c.r, c.x + c.r, c.y + c.r)
 
-function mask(c::CircularAperture; method::Union{Symbol,Integer} = :exact)
+function mask(c::CircularAperture; method = :exact)
     bounds = edges(c)
     box = bbox(c)
     nx = Int(box[4] - box[2])
@@ -35,16 +33,15 @@ struct CircularAnnulus{T <: Number} <: Aperture
     r_out::T
 end
 
-CircularAnnulus(center::Tuple, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
+CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
 
 function Base.show(io::IO, c::CircularAnnulus)
     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
-area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
 bbox(c::CircularAnnulus) = (c.x - c.r_out, c.y - c.r_out, c.x + c.r_out, c.y + c.r_out)
 
-function mask(c::CircularAnnulus; method::Union{Symbol,Integer} = :exact)
+function mask(c::CircularAnnulus; method = :exact)
     bounds = edges(c)
     box = bbox(c)
     nx = box[3] - box[1]
