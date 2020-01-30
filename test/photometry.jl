@@ -1,12 +1,15 @@
+using Photometry.Aperture: edges,
+                           bbox
+
 @testset "Apertures" begin  
     ap_circ = CircularAperture(50, 40, 10)
-    @test Photometry.edges(ap_circ) == (-10.5, 10.5, -10.5, 10.5)
-    @test Photometry.bbox(ap_circ) == (40, 60, 30, 50)
+    @test edges(ap_circ) == (-10.5, 10.5, -10.5, 10.5)
+    @test bbox(ap_circ) == (40, 60, 30, 50)
     @test size(ap_circ) == (21, 21)
 
     ap_ann = CircularAnnulus(50, 40, 5, 10)
-    @test Photometry.edges(ap_ann) == (-10.5, 10.5, -10.5, 10.5)
-    @test Photometry.bbox(ap_ann) == (40, 60, 30, 50)
+    @test edges(ap_ann) == (-10.5, 10.5, -10.5, 10.5)
+    @test bbox(ap_ann) == (40, 60, 30, 50)
     @test size(ap_ann) == (21, 21)
 
 

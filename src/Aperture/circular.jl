@@ -16,7 +16,7 @@ CircularAperture(0, 0, r=10)
 
 ```
 """
-struct CircularAperture{T <: Number} <: Aperture
+struct CircularAperture{T <: Number} <: AbstractAperture
     x::T
     y::T
     r::T
@@ -60,7 +60,7 @@ CircularAnnulus(0, 0, r_in=5, r_out=10)
 
 ```
 """
-struct CircularAnnulus{T <: Number} <: Aperture
+struct CircularAnnulus{T <: Number} <: AbstractAperture
     x::T
     y::T
     r_in::T
