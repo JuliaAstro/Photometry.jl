@@ -2,6 +2,20 @@
 export CircularAperture,
        CircularAnnulus
 
+
+"""
+    CircularAperture(x, y, r)
+    CircularAperture([x, y], r)
+
+A circular aperture.
+
+# Examples
+```jldoctest
+julia> ap = CircularAperture(0, 0, 10)
+CircularAperture(0, 0, r=10)
+
+```
+"""
 struct CircularAperture{T <: Number} <: Aperture
     x::T
     y::T
@@ -33,6 +47,19 @@ end
 
 #######################################################
 
+"""
+    CircularAnnulus(x, y, r_in, r_out)
+    CircularAnnulus([x, y], r_in, r_out)
+
+A circular aperture.
+
+# Examples
+```jldoctest
+julia> ap = CircularAnnulus(0, 0, 5, 10)
+CircularAnnulus(0, 0, r_in=5, r_out=10)
+
+```
+"""
 struct CircularAnnulus{T <: Number} <: Aperture
     x::T
     y::T

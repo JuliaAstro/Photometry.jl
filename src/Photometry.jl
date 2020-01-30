@@ -2,34 +2,31 @@ module Photometry
 
 using DataFrames: DataFrame
 
-export area,
-       mask,
+export mask,
        cutout,
        aperture_photometry
 
 abstract type Aperture end
 
 """
-    area(::Aperture)
-
-Returns the geometric area of the aperture
-"""
-area(::Aperture)
-
-"""
     mask(::Aperture)
 
-Return a `BitArray` of the masked aperture values in the minimum bounding box
+Return an array of the weighting of the aperture in the minimum bounding box.
 """
 mask(::Aperture)
 
 """
     bbox(::Aperture)
 
-Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture
+Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture.
 """
 bbox(::Aperture)
 
+"""
+    size(::Aperture)
+
+Return (`ny`, `nx`) of the aperture.
+"""
 function Base.size(a::Aperture)
     box = bbox(a)
     return (box[4] - box[3] + 1, box[2] - box[1] + 1)
@@ -65,19 +62,24 @@ function cutout(c::Aperture, data::AbstractMatrix{T}) where {T}
     
     if partial_overlap || size(cutout) != size(c)
         slices_large, slices_small = overlap_slices(c, size(data))
+
         # no overlap
-        slices_small === nothing && return T[]
+        slices_small === nothing && return nothing
         
         cutout = zeros(T, ny, nx)
         cutout[slices_small...] .= data[slices_large...]
-
     end
     return cutout
 end
 
+"""
+    *(::Aperture, data::AbstractMatrix)
+
+Return the data weighted by the aperture. If there is no overlap, will return an empty Array
+"""
 function Base.:*(c::Aperture, data::AbstractMatrix{T}) where {T}
     cut = cutout(c, data)
-    cut === nothing && return T[]
+    cut === nothing && return typeof(data)(undef, 0, 0)
     return cut .* mask(c)
 end
 
