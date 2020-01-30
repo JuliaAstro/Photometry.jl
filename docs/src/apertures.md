@@ -10,6 +10,10 @@ aperture = Aperture(x0, y0, shape_params...)
 ```
 The position can be pixels or sky coordinates. The sky coordinate positions utilize [SkyCoords.jl](https://juliaastro.github.io/SkyCoords.jl/stable) and [WCS.jl](https://juliaastro.github.io/WCS.jl/stable) for conversion. 
 
+```@docs
+aperture_photometry
+```
+
 ## Circular Apertures
 
 These apertures are parametrized by radius.
@@ -22,3 +26,8 @@ CircularAnnulus
 ## Elliptical Apertures
 
 These apertures are parametrized by the semi-major axis `a` and semi-minor axis `b`.
+
+
+## Rectangular Apertures
+
+These apertures are parametrized by side-length `a` and side-length `b`.

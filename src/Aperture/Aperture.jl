@@ -41,35 +41,39 @@ function overlap_slices(c::AbstractAperture, shape::Tuple)
         return nothing, nothing
     end
 
-    slices_large = (vcat(max(ymin, 1), 2:min(ymax, shape[1])), 
-                    vcat(max(xmin, 1), 2:min(xmax, shape[2])))
-    slices_small = (vcat(max(-ymin, 1), 2:min(ymax - ymin, shape[1] - ymin)), 
-                    vcat(max(-xmin, 1), 2:min(xmax - xmin, shape[2] - xmin)))
+    # TODO something is wrong here, indexing is screwy
+    slices_large = (max(ymin, 1):min(ymax, shape[1]), 
+                    max(xmin, 1):min(xmax, shape[2]))
+    slices_small = (max(-ymin, 1):min(ymax - ymin, shape[1] - ymin), 
+                    max(-xmin, 1):min(xmax - xmin, shape[2] - xmin))
 
     return slices_large, slices_small
 end
 
 function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where {T}
     box = bbox(c)
+    maxy, maxx = size(data)
+    ny, nx = size(c)
 
     # Check if x or y are less than our minimum index
-    partial_overlap = box[1] < 1 || box[3] < 1
-
-    if !partial_overlap
-        cutout = data[box[3]:box[4], box[1]:box[2]]
-    end
-    ny, nx = size(c)
+    partial_overlap = box[1] < 1 || box[3] < 1 || box[2] > maxx || box[4] > maxy
     
-    if partial_overlap || size(cutout) != size(c)
+    if !partial_overlap
+        cut = data[box[3]:box[4], box[1]:box[2]]
+    end
+    
+    if partial_overlap || size(cut) != size(c)
         slices_large, slices_small = overlap_slices(c, size(data))
-
         # no overlap
         slices_small === nothing && return nothing
         
-        cutout = zeros(T, ny, nx)
-        cutout[slices_small...] .= data[slices_large...]
+        cut = zeros(T, ny, nx)
+        @show slices_small
+        @show slices_large
+        cut[slices_small...] .= data[slices_large...]
+        return cut
     end
-    return cutout
+    return cut
 end
 
 """
