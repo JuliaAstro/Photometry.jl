@@ -23,6 +23,7 @@ struct CircularAperture{T <: Number} <: AbstractAperture
 end
 
 CircularAperture(center::AbstractVector, r) = CircularAperture(center..., r)
+CircularAperture(x, y, r) = CircularAperture(promote(x, y, r)...)
 
 function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
@@ -68,6 +69,7 @@ struct CircularAnnulus{T <: Number} <: AbstractAperture
 end
 
 CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
+CircularAnnulus(x, y, r_in, r_out) = CircularAnnulus(promote(x, y, r_in, r_out)...)
 
 function Base.show(io::IO, c::CircularAnnulus)
     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")

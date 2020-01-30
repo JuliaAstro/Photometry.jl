@@ -9,7 +9,7 @@ export mask,
 abstract type AbstractAperture end
 
 """
-    mask(::AbstractAperture)
+    mask(::AbstractAperture; method=:exact)
 
 Return an array of the weighting of the aperture in the minimum bounding box.
 """
@@ -59,51 +59,48 @@ function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where {T}
     partial_overlap = box[1] < 1 || box[3] < 1 || box[2] > maxx || box[4] > maxy
     
     if !partial_overlap
-        cut = data[box[3]:box[4], box[1]:box[2]]
+        cutout = data[box[3]:box[4], box[1]:box[2]]
     end
     
-    if partial_overlap || size(cut) != size(c)
+    if partial_overlap || size(cutout) != size(c)
         slices_large, slices_small = overlap_slices(c, size(data))
         # no overlap
         slices_small === nothing && return nothing
         
-        cut = zeros(T, ny, nx)
-        @show slices_small
-        @show slices_large
-        cut[slices_small...] .= data[slices_large...]
-        return cut
+        cutout = zeros(T, ny, nx)
+        cutout[slices_small...] .= data[slices_large...]
     end
-    return cut
+    return cutout
 end
 
-"""
-    *(::AbstractAperture, data::AbstractMatrix)
-    *(data::AbstractMatrix, ::AbstractAperture)
-
-Return the data weighted by the aperture. If there is no overlap, will return an empty Array
-"""
-function Base.:*(c::AbstractAperture, data::AbstractMatrix{T}) where {T}
-    cut = cutout(c, data)
+function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
+    cut = cutout(a, data)
     cut === nothing && return typeof(data)(undef, 0, 0)
-    return cut .* mask(c)
+    return cut .* mask(a, method = method)
 end
 
-Base.:*(data::AbstractMatrix, c::AbstractAperture) = c * data
+"""
+    aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
+    aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
+
+Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `DataFrame`, otherwise a `NamedTuple`. 
+
+*Available Methods*
+* `:exact` - Will calculate the exact geometric overlap
+* `:center` - Will only consider full-pixel overlap (equivalent to subpixel method with 1 subpixel)
+* `(:subpixel, n)` - Use `n^2` subpixels to calculate overlap
 
 """
-    aperture_photometry(::AbstractAperture, data::AbstractMatrix)
-    aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix)
-
-Perform aperture photometry on `data` given aperture(s). If a list of apertures is provided the output will be a `DataFrame`, otherwise a `NamedTuple`.
-
-"""
-function aperture_photometry(a::AbstractAperture, data::AbstractMatrix)
-    data_weighted = data * a
+function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
+    data_weighted = apply(a, data, method = method)
     aperture_sum = sum(data_weighted)
-    return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum)
+    variance_weighted = apply(a, error.^2, method = method)
+    aperture_sum_err = sqrt(sum(variance_weighted))
+    
+    return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
 end
 
-aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix) = DataFrame(aperture_photometry.(a, Ref(data)))
+aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error = zeros(size(data)); method = :exact) = DataFrame(aperture_photometry.(a, Ref(data), Ref(error); method = method))
 
 include("circular.jl")
 include("overlap.jl")
