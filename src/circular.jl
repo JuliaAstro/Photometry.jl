@@ -14,13 +14,20 @@ function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
-bbox(c::CircularAperture) = (c.x - c.r, c.y - c.r, c.x + c.r, c.y + c.r)
+bbox(c::CircularAperture{<:Integer}) = (c.x - c.r, c.x + c.r, c.y - c.r, c.y + c.r)
+
+function bbox(c::CircularAperture{<:AbstractFloat})
+    xmin = floor(Int, c.x - c.r + 0.5)
+    xmax = ceil(Int, c.x + c.r + 0.5)
+    ymin = floor(Int, c.y - c.r + 0.5)
+    ymax = ceil(Int, c.y + c.r + 0.5)
+    return (xmin, xmax, ymin, ymax)
+end
 
 function mask(c::CircularAperture; method = :exact)
     bounds = edges(c)
     box = bbox(c)
-    nx = Int(box[4] - box[2])
-    ny = Int(box[3] - box[1])
+    ny, nx = size(c)
     return circular_overlap(bounds..., nx, ny, c.r, method = method)
 end
 
@@ -39,22 +46,29 @@ function Base.show(io::IO, c::CircularAnnulus)
     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
-bbox(c::CircularAnnulus) = (c.x - c.r_out, c.y - c.r_out, c.x + c.r_out, c.y + c.r_out)
+bbox(c::CircularAnnulus{<:Integer}) = (c.x - c.r_out, c.x + c.r_out, c.y - c.r_out, c.y + c.r_out)
+
+function bbox(c::CircularAnnulus{<:AbstractFloat})
+    xmin = floor(Int, c.x - c.r_out + 0.5)
+    xmax = ceil(Int, c.x + c.r_out + 0.5)
+    ymin = floor(Int, c.y - c.r_out + 0.5)
+    ymax = ceil(Int, c.y + c.r_out + 0.5)
+    return (xmin, xmax, ymin, ymax)
+end
 
 function mask(c::CircularAnnulus; method = :exact)
     bounds = edges(c)
     box = bbox(c)
-    nx = box[3] - box[1]
-    ny = box[4] - box[2]
+    ny, nx = size(c)
     out = circular_overlap(bounds..., nx, ny, c.r_out, method = method)
     out .-= circular_overlap(bounds..., nx, ny, c.r_in, method = method)
 end
 
 function edges(c::Union{CircularAperture,CircularAnnulus})
-    ibox = bbox(c) .- 0.5
-    xmin = ibox[1] - c.x
-    ymin = ibox[2] - c.y
-    xmax = ibox[3] - c.x
-    ymax = ibox[4] - c.y
-    return (xmin, ymin, xmax, ymax)
+    ibox = bbox(c)
+    xmin = ibox[1] - c.x - 0.5
+    xmax = ibox[2] - c.x + 0.5
+    ymin = ibox[3] - c.y - 0.5
+    ymax = ibox[4] - c.y + 0.5
+    return (xmin, xmax, ymin, ymax)
 end

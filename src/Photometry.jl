@@ -30,35 +30,45 @@ Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture
 """
 bbox(::Aperture)
 
+function Base.size(a::Aperture)
+    box = bbox(a)
+    return (box[4] - box[3] + 1, box[2] - box[1] + 1)
+end
+
 
 function overlap_slices(c::Aperture, shape::Tuple)
-    xmin, ymin, xmax, ymax = round.(Int, bbox(c))
+    xmin, xmax, ymin, ymax = bbox(c)
 
     # No overlap
-    if xmin ≥ shape[2] || ymin ≥ shape[1] || xmax ≤ 0 || ymax ≤ 0
+    if xmin ≥ shape[2] || ymin ≥ shape[1] || xmax ≤ 1 || ymax ≤ 1
         return nothing, nothing
     end
 
-    slices_large = (max(ymin, 0) + 1:min(ymax, shape[1]) - 1, max(xmin, 0) + 1:min(xmax, shape[2]) - 1)
-    slices_small = (max(-ymin, 0) + 1:min(ymax - ymin, shape[1] - ymin) - 1, max(-xmin, 0) + 1:min(xmax - xmin, shape[2] - xmin) - 1)
+    slices_large = (vcat(max(ymin, 1), 2:min(ymax, shape[1])), 
+                    vcat(max(xmin, 1), 2:min(xmax, shape[2])))
+    slices_small = (vcat(max(-ymin, 1), 2:min(ymax - ymin, shape[1] - ymin)), 
+                    vcat(max(-xmin, 1), 2:min(xmax - xmin, shape[2] - xmin)))
 
     return slices_large, slices_small
 end
 
 function cutout(c::Aperture, data::AbstractMatrix{T}) where {T}
     box = bbox(c)
-    partial_overlap = box[1] < 0 || box[2] < 0
+
+    # Check if x or y are less than our minimum index
+    partial_overlap = box[1] < 1 || box[3] < 1
 
     if !partial_overlap
-        cutout = data[box[2]:box[4], box[1]:box[3]]
+        cutout = data[box[3]:box[4], box[1]:box[2]]
     end
-
-    if partial_overlap || size(cutout) != (box[4] - box[2], box[3] - box[1])
+    ny, nx = size(c)
+    
+    if partial_overlap || size(cutout) != size(c)
         slices_large, slices_small = overlap_slices(c, size(data))
         # no overlap
         slices_small === nothing && return T[]
         
-        cutout = zeros(T, Int(box[4] - box[2]), Int(box[3] - box[1]))
+        cutout = zeros(T, ny, nx)
         cutout[slices_small...] .= data[slices_large...]
 
     end

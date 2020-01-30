@@ -5,14 +5,17 @@ export Exact,
 
 abstract type OverlapMethod end
 
-function circular_overlap(xmin, ymin, xmax, ymax, nx, ny, r; method = :exact)
+function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     out = fill(0.0, nx, ny)
 
+    # width of each element
     dx = (xmax - xmin) / nx
     dy = (ymax - ymin) / ny
 
+    # radius of one pixel
     pixel_radius = 0.5sqrt(dx^2 + dy^2)
 
+    # bounding box
     bxmin = -r - 0.5dx
     bxmax = r + 0.5dx
     bymin = -r - 0.5dy
