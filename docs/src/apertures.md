@@ -1,3 +1,7 @@
+```@meta
+DocTestSetup = :(using Photometry)
+```
+
 # Apertures
 
 All apertures will rely on a position and the shape parameters.

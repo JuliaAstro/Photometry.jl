@@ -1,6 +1,8 @@
 using Photometry
 using Documenter
 
+DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = true)
+
 makedocs(;
     modules = [Photometry],
     authors = "Miles Lucas <mdlucas@hawaii.edu>",

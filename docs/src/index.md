@@ -1,5 +1,6 @@
 ```@meta
 CurrentModule = Photometry
+DocTestSetup = :(using Photometry)
 ```
 
 # Photometry
