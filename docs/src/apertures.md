@@ -10,8 +10,11 @@ aperture = Aperture(x0, y0, shape_params...)
 ```
 The position can be pixels or sky coordinates. The sky coordinate positions utilize [SkyCoords.jl](https://juliaastro.github.io/SkyCoords.jl/stable) and [WCS.jl](https://juliaastro.github.io/WCS.jl/stable) for conversion. 
 
+!!! note
+    The pixel positions for these apertures follow traditional image position with 1-based indexing. This means the origin is at top-left and has index `(0.5, 0.5)` at the top-left corner and `(1, 1)` at the center.
+
 ```@docs
-aperture_photometry
+photometry
 ```
 
 ## Circular Apertures

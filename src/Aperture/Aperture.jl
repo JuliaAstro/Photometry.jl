@@ -4,7 +4,7 @@ using DataFrames: DataFrame
 
 export mask,
        cutout,
-       aperture_photometry
+       photometry
 
 abstract type AbstractAperture end
 
@@ -81,8 +81,8 @@ function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
 end
 
 """
-    aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
-    aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
+    photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
+    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
 
 Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `DataFrame`, otherwise a `NamedTuple`. 
 
@@ -92,7 +92,7 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 * `(:subpixel, n)` - Use `n^2` subpixels to calculate overlap
 
 """
-function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
+function photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
     data_weighted = apply(a, data, method = method)
     aperture_sum = sum(data_weighted)
     variance_weighted = apply(a, error.^2, method = method)
@@ -101,7 +101,7 @@ function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = 
     return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
 end
 
-aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error = zeros(size(data)); method = :exact) = DataFrame(aperture_photometry.(a, Ref(data), Ref(error); method = method))
+photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error = zeros(size(data)); method = :exact) = DataFrame(photometry.(a, Ref(data), Ref(error); method = method))
 
 include("circular.jl")
 include("overlap.jl")

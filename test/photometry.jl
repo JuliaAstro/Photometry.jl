@@ -17,16 +17,16 @@ area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = ones(10, 10)
     aperture = AP(-60, 60, params...)
-    @test aperture_photometry(aperture, data).aperture_sum ≈ 0
+    @test photometry(aperture, data).aperture_sum ≈ 0
 end
 
 @testset "inside zeros - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = zeros(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
-    table_cent = aperture_photometry(aperture, data, method = :center)
-    table_sub = aperture_photometry(aperture, data, method = (:subpixel, 10))
-    table_ex = aperture_photometry(aperture, data, method = :exact)
+    table_cent = photometry(aperture, data, method = :center)
+    table_sub = photometry(aperture, data, method = (:subpixel, 10))
+    table_ex = photometry(aperture, data, method = :exact)
 
 
     @test table_ex.aperture_sum ≈ 0
@@ -39,9 +39,9 @@ end
     data = ones(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
-    table_cent = aperture_photometry(aperture, data, method = :center)
-    table_sub = aperture_photometry(aperture, data, method = (:subpixel, 10))
-    table_ex = aperture_photometry(aperture, data, method = :exact)
+    table_cent = photometry(aperture, data, method = :center)
+    table_sub = photometry(aperture, data, method = (:subpixel, 10))
+    table_ex = photometry(aperture, data, method = :exact)
 
     true_flux = area(aperture)
 
@@ -54,9 +54,9 @@ end
 function test_aperture(data, aperture)
     error = ones(size(data))
 
-    table_cent = aperture_photometry(aperture, data, error, method = :center)
-    table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 12))
-    table_ex = aperture_photometry(aperture, data, error, method = :exact)
+    table_cent = photometry(aperture, data, error, method = :center)
+    table_sub = photometry(aperture, data, error, method = (:subpixel, 12))
+    table_ex = photometry(aperture, data, error, method = :exact)
 
     true_flux = area(aperture)
     true_err = sqrt(true_flux)
@@ -94,7 +94,7 @@ end
     positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
     apertures = [CircularAperture(positions[i, :], 5) for i in axes(positions, 1)]
 
-    table = aperture_photometry(apertures, data, error)
+    table = photometry(apertures, data, error)
     @test table.aperture_sum[1] ≈ 25π
     @test all(table.aperture_sum[2:end] .< 25π)
 end
