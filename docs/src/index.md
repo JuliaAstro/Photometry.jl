@@ -5,15 +5,15 @@ DocTestSetup = :(using Photometry)
 
 # Photometry
 
-[![Build Status](https://github.com/mileslucas/AperturePhotometry.jl/workflows/CI/badge.svg)](https://github.com/mileslucas/AperturePhotometry.jl/actions)
-[![Coverage](https://codecov.io/gh/mileslucas/AperturePhotometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/mileslucas/AperturePhotometry.jl)
+[![Build Status](https://github.com/JuliaAstro/AperturePhotometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/AperturePhotometry.jl/actions)
+[![Coverage](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl)
 
 ## Installation
 
 To install from the REPL, enter Pkg-mode (`]`)
 
 ```julia-repl
-pkg> add https://github.com/mileslucas/Photometry.jl
+pkg> add Photometry
 ```
 
 ## Getting Started
@@ -45,4 +45,4 @@ results
 
 ## Contributing
 
-If you're interested in contributing, go ahead and check out the [issues](https://github.com/mileslucas/Photometry.jl/issues) or make a [pull request](https://github.com/mileslucas/Photometry.jl/pulls). If you add a new feature, please write appropriate unit tests for it and bump the package's minor version.
+If you're interested in contributing, go ahead and check out the [issues](https://github.com/juliaastro/Photometry.jl/issues) or make a [pull request](https://github.com/juliaastro/Photometry.jl/pulls). If you add a new feature, please write appropriate unit tests for it and bump the package's minor version.

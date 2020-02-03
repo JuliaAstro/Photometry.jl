@@ -6,11 +6,11 @@ DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = 
 makedocs(;
     modules = [Photometry],
     authors = "Miles Lucas <mdlucas@hawaii.edu>",
-    repo = "https://github.com/mileslucas/Photometry.jl/blob/{commit}{path}#L{line}",
+    repo = "https://github.com/JuliaAstro/Photometry.jl/blob/{commit}{path}#L{line}",
     sitename = "Photometry.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://mileslucas.github.io/Photometry.jl",
+        canonical = "https://juliaastro.github.io/Photometry.jl",
         assets = String[],),
     pages = [
         "Home" => "index.md",
@@ -20,4 +20,4 @@ makedocs(;
     ],)
 
 deploydocs(;
-    repo = "github.com/mileslucas/Photometry.jl",)
+    repo = "github.com/juliaastro/Photometry.jl",)
