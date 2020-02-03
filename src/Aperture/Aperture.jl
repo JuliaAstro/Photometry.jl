@@ -32,7 +32,6 @@ function Base.size(a::AbstractAperture)
     return (box[4] - box[3] + 1, box[2] - box[1] + 1)
 end
 
-
 function overlap_slices(c::AbstractAperture, shape::Tuple)
     xmin, xmax, ymin, ymax = bbox(c)
 
@@ -41,11 +40,13 @@ function overlap_slices(c::AbstractAperture, shape::Tuple)
         return nothing, nothing
     end
 
-    # TODO something is wrong here, indexing is screwy
+    # slices for indexing the larger array
     slices_large = (max(ymin, 1):min(ymax, shape[1]), 
                     max(xmin, 1):min(xmax, shape[2]))
-    slices_small = (max(-ymin, 1):min(ymax - ymin, shape[1] - ymin), 
-                    max(-xmin, 1):min(xmax - xmin, shape[2] - xmin))
+
+    # slices for indexing the smaller array
+    slices_small = (max(2 - ymin, 1):min(ymax - ymin, shape[1] - ymin) + 1,
+                    max(2 - xmin, 1):min(xmax - xmin, shape[2] - xmin) + 1)
 
     return slices_large, slices_small
 end
