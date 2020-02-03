@@ -5,8 +5,8 @@ DocTestSetup = :(using Photometry)
 
 # Photometry
 
-[![Build Status](https://github.com/JuliaAstro/AperturePhotometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/AperturePhotometry.jl/actions)
-[![Coverage](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 
 ## Installation
 

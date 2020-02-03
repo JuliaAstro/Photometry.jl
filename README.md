@@ -1,9 +1,9 @@
 # Photometry.jl
 
-[![Build Status](https://github.com/JuliaAstro/AperturePhotometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/AperturePhotometry.jl/actions)
-[![Coverage](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/AperturePhotometry.jl)
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/AperturePhotometry.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/AperturePhotometry.jl/dev)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/dev)
 
 This is a package for performing aperture photometry and PSF photometry.
 
