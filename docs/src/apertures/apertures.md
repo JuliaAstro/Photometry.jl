@@ -13,10 +13,6 @@ The position can be pixels or sky coordinates. The sky coordinate positions util
 !!! note
     The pixel positions for these apertures follow traditional image position with 1-based indexing. This means the origin is at top-left and has index `(0.5, 0.5)` at the top-left corner and `(1, 1)` at the center.
 
-```@docs
-photometry
-```
-
 ## Circular Apertures
 
 These apertures are parametrized by radius.
@@ -34,3 +30,12 @@ These apertures are parametrized by the semi-major axis `a` and semi-minor axis 
 ## Rectangular Apertures
 
 These apertures are parametrized by side-length `a` and side-length `b`.
+
+
+## API/Reference
+
+```@docs
+Aperture.AbstractAperture
+mask
+cutout
+```

@@ -15,9 +15,11 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Aperture Photometry" => [
-            "Apertures" => "apertures.md"
+            "Getting Started" => "apertures/index.md",
+            "Apertures" => "apertures/apertures.md",
+            "Examples" => "apertures/examples.md"
         ]
     ],)
 
 deploydocs(;
-    repo = "github.com/juliaastro/Photometry.jl",)
+    repo = "github.com/JuliaAstro/Photometry.jl",)
