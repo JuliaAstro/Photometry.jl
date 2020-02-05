@@ -5,4 +5,5 @@ using Test
     include("overlap.jl")
     include("circular.jl")
     include("photometry.jl")
+    include("rectangular.jl")
 end
