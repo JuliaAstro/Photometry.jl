@@ -27,7 +27,7 @@ struct EllipticalAperture{T <: Number} <: AbstractAperture
 end
 
 function EllipticalAperture(x, y, a, b, theta)
-    if (b < 0.0 || a < b || theta < -pi/2.0 || theta > pi/2.0)
+    if (b < 0.0 || a < b || theta < -pi/2 || theta > pi/2)
             error("illegal ellipse parameters. " * "Require a >= b > 0.0, -pi/2 <= theta <= pi/2")
     end
     cxx, cyy, cxy = oblique_coefficients(a, b, theta)
@@ -40,11 +40,12 @@ function Base.show(io::IO, e::EllipticalAperture)
 end
 
 function oblique_coefficients(a, b, theta)
-    costheta = cos(theta)
-    sintheta = sin(theta)
-    cxx = costheta*costheta/(a*a) + sintheta*sintheta/(b*b)
-    cyy = sintheta*sintheta/(a*a) + costheta*costheta/(b*b)
-    cxy = (2.0)*costheta*sintheta * ((1.0)/(a*a) - (1.0)/(b*b))
+    sintheta, costheta = sincos(theta)
+    asq = a*a
+    bsq = b*b
+    cxx = costheta*costheta*inv(asq) + sintheta*sintheta*inv(bsq)
+    cyy = sintheta*sintheta*inv(asq) + costheta*costheta*inv(bsq)
+    cxy = 2*costheta*sintheta * (inv(asq) - inv(bsq))
     return cxx, cyy, cxy
 end
 
@@ -56,30 +57,32 @@ function bbox(e::EllipticalAperture{<:AbstractFloat})
     b = e.b
     theta = e.theta
 
-    t = atan((1.0)*(-b*tan(theta))/a)
+    sintheta, costheta = sincos(theta)
 
-    xmin = x + a*cos(t)*cos(theta) - b*sin(t)*sin(theta)
+    t = atan((-b*tan(theta))/a)
+
+    xmin = x + a*cos(t)*costheta - b*sin(t)*sintheta
     xmax = xmin
 
     for n in -2:2
-        xmin = min(xmin, x + a*cos(t + n*pi)*cos(theta) - b*sin(t + n*pi)*sin(theta))
+        xmin = min(xmin, x + a*cos(t + n*pi)*costheta - b*sin(t + n*pi)*sintheta)
     end
 
     for n in -2:2
-        xmax = max(xmax, x + a*cos(t + n*pi)*cos(theta) - b*sin(t + n*pi)*sin(theta))
+        xmax = max(xmax, x + a*cos(t + n*pi)*costheta - b*sin(t + n*pi)*sintheta)
     end
 
-    t = atan((1.0)*(b*cot(theta))/a)
+    t = atan((b*cot(theta))/a)
 
-    ymin = y + b*sin(t)*cos(theta) + a*cos(t)*sin(theta)
+    ymin = y + b*sin(t)*costheta + a*cos(t)*sintheta
     ymax = ymin
 
     for n in -2:2
-        ymin = min(ymin, y + b*sin(t + n*pi)*cos(theta) + a*cos(t + n*pi)*sin(theta))
+        ymin = min(ymin, y + b*sin(t + n*pi)*costheta + a*cos(t + n*pi)*sintheta)
     end
 
     for n in -2:2
-        ymax = max(ymax, y + b*sin(t + n*pi)*cos(theta) + a*cos(t + n*pi)*sin(theta))
+        ymax = max(ymax, y + b*sin(t + n*pi)*costheta + a*cos(t + n*pi)*sintheta)
     end
 
     return xmin, xmax, ymin, ymax
