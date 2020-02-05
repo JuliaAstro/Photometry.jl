@@ -49,7 +49,7 @@ function oblique_coefficients(a, b, theta)
     return cxx, cyy, cxy
 end
 
-function bbox(e::EllipticalAperture{<:AbstractFloat})
+function bbox(e::EllipticalAperture{<:Number})
 
     x = e.x
     y = e.y
