@@ -95,7 +95,7 @@ end
 
 
 function Base.show(io::IO, rect::RectangularAnnulus)
-    print(io, "RectangularAnnulus($(rect.x), $(rect.y), w_in=$(rect.w_in), w_out=$(rect.w_out), h_out=$(rect.h_out))")
+    print(io, "RectangularAnnulus($(rect.x), $(rect.y), w_in=$(rect.w_in), w_out=$(rect.w_out), h_in=$(rect.h_in), h_out=$(rect.h_out), theta=$(rect.theta))")
 end
 
 
