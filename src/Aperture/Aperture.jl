@@ -113,5 +113,7 @@ aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix,
 
 include("circular.jl")
 include("overlap.jl")
+include("rectangular.jl")
+
 
 end

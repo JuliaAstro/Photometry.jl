@@ -1,7 +1,7 @@
-export RectangularAperture
-# RectangularAnnulus
+export RectangularAperture,
+       RectangularAnnulus
 
-
+ 
 """
     RectangularAperture(x, y, w, h)
     RectangularAperture([x, y], w, h)
@@ -15,6 +15,7 @@ RectanguRelarAperture(0, 0, w=10, h=5)
 
 ```
 """
+
 struct RectangularAperture{T <: Number} <: AbstractAperture
     x::T
     y::T
@@ -22,82 +23,110 @@ struct RectangularAperture{T <: Number} <: AbstractAperture
     h::T
 end
 
-RectangularAperture(center::AbstractVector, w, h) = RectangularAperture(center..., w, h)
-RectangularAperture(x, y, w, h) = RectangularAperture(promote(x, y, w, h)...)
+# RectangularAperture(center::AbstractVector, w, h) = RectangularAperture(center..., w, h)
+function RectangularAperture(x, y, w, h) 
+    if (w < 0 || h < 0)
+        error("Invalid parameters" * "Require w >= 0.0 , h >= 0.0")
+    end
+    
+    half_width = w / 2
+    half_height = h / 2
 
-function Base.show(io::IO, c::RectangularAperture)
-    print(io, "RectangularAperture($(c.x), $(c.y), w=$(c.w), h=$(c.h))")
+
+    return RectangularAperture(promote(x, y, w, h)...)
 end
 
-bbox(c::RectangularAperture{<:Integer}) = (c.x - c.(w/2), c.x + c.(w/2), c.y - c.(h/2), c.y + c.(h/2))
+function Base.show(io::IO, rect::RectangularAperture)
+    print(io, "RectangularAperture($(rect.x), $(rect.y), w=$(rect.w), h=$(rect.h))")
+end
 
-function bbox(c::RectangularAperture{<:AbstractFloat})
-    xmin = floor(Int, c.x - c.(w/2))
-    xmax = ceil(Int, c.x + c.(w/2))
-    ymin = floor(Int, c.y - c.(h/2))
-    ymax = ceil(Int, c.y + c.(h/2))
+# half_width = w / 2
+# half_width = h / 2
+
+bbox(rect::RectangularAperture{<:Integer}) = (rect.x - rect.half_width, rect.x + rect.half_width, rect.y - rect.half_height, rect.y + rect.half_height)
+
+function bbox(rect::RectangularAperture{<:AbstractFloat})
+    xmin = floor(Int, rect.x - rect.half_width)
+    xmax = ceil(Int, rect.x + rect.half_width)
+    ymin = floor(Int, rect.y - rect.half_height)
+    ymax = ceil(Int, rect.y + rect.half_height)
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(c::RectangularAperture; method = :exact)
-    bounds = edges(c)
-    box = bbox(c)
-    ny, nx = size(c)
-    return Rectangular_overlap(bounds..., nx, ny, c.r, method = method)
+function mask(rect::RectangularAperture, theta = 0, subpixels = 5; method = :exact)
+    bounds = edges(rect)
+    box = bbox(rect)
+    ny, nx = size(rect)
+    return rectangular_overlap(bounds..., nx, ny, rect.w, rect.h, theta, subpixels, method = method) 
 end
 
-# #######################################################
+######################################################
 
-# """
-#     CircularAnnulus(x, y, r_in, r_out)
-#     CircularAnnulus([x, y], r_in, r_out)
+"""
+    RectangularAnnulus(x, y, w_in, w_out, h_in, h_out)
+    RectangularAnnulus([x, y], w_in, w_out, h_in, h_out)
 
-# A circular aperture.
+A rectangular aperture.
 
-# # Examples
-# ```jldoctest
-# julia> ap = CircularAnnulus(0, 0, 5, 10)
-# CircularAnnulus(0, 0, r_in=5, r_out=10)
+# Examples
+```jldoctest
+julia> ap = RectangularAnnulus(0, 0, 5, 10, 6, 12)
+RectangularAnnulus(0, 0, w_in=5, w_out=10, h_in=6, h_out=12)
 
-# ```
-# """
-# struct CircularAnnulus{T <: Number} <: AbstractAperture
-#     x::T
-#     y::T
-#     r_in::T
-#     r_out::T
-# end
+```
+"""
+struct RectangularAnnulus{T <: Number} <: AbstractAperture
+    x::T
+    y::T
+    w_in::T
+    w_out::T
+    h_in::T
+    h_out::T
 
-# CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
-# CircularAnnulus(x, y, r_in, r_out) = CircularAnnulus(promote(x, y, r_in, r_out)...)
+end
 
-# function Base.show(io::IO, c::CircularAnnulus)
-#     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
-# end
+# RectangularAnnulus(center::AbstractVector, w_in, w_out, h_in, h_out) = RectangularAnnulus(center..., w_in, w_out, h_in, h_out)
+function RectangularAnnulus(x, y, w_in, w_out, h_in, h_out)
+    if(w_out <= w_in || h_out <= h_in)
+        error("Invalid parameters" * "Require w_out > w_in, h_out > h_in")
 
-# bbox(c::CircularAnnulus{<:Integer}) = (c.x - c.r_out, c.x + c.r_out, c.y - c.r_out, c.y + c.r_out)
+        half_width_out = w_out / 2
+        half_height_out = h_out / 2
+    
+    end
+    return RectangularAnnulus(promote(x, y, w_in, w_out, h_in, h_out)...)
+end
 
-# function bbox(c::CircularAnnulus{<:AbstractFloat})
-#     xmin = floor(Int, c.x - c.r_out + 0.5)
-#     xmax = ceil(Int, c.x + c.r_out + 0.5)
-#     ymin = floor(Int, c.y - c.r_out + 0.5)
-#     ymax = ceil(Int, c.y + c.r_out + 0.5)
-#     return (xmin, xmax, ymin, ymax)
-# end
 
-# function mask(c::CircularAnnulus; method = :exact)
-#     bounds = edges(c)
-#     box = bbox(c)
-#     ny, nx = size(c)
-#     out = circular_overlap(bounds..., nx, ny, c.r_out, method = method)
-#     out .-= circular_overlap(bounds..., nx, ny, c.r_in, method = method)
-# end
+function Base.show(io::IO, rect::RectangularAnnulus)
+    print(io, "RectangularAnnulus($(rect.x), $(rect.y), w_in=$(rect.w_in), w_out=$(rect.w_out), h_out=$(rect.h_out))")
+end
 
-# function edges(c::Union{CircularAperture,CircularAnnulus})
-#     ibox = bbox(c)
-#     xmin = ibox[1] - c.x - 0.5
-#     xmax = ibox[2] - c.x + 0.5
-#     ymin = ibox[3] - c.y - 0.5
-#     ymax = ibox[4] - c.y + 0.5
-#     return (xmin, xmax, ymin, ymax)
-# end
+
+bbox(rect::RectangularAnnulus{<:Integer}) = (rect.x - rect.half_width_out, rect.x + rect.half_width_out, rect.y - rect.half_height, rect.y + rect.half_height)
+
+
+function bbox(rect::RectangularAnnulus{<:AbstractFloat})
+    xmin = floor(Int, rect.x - rect.half_width_out)
+    xmax = ceil(Int, rect.x + rect.half_width_out)
+    ymin = floor(Int, rect.y - rect.half_height_out)
+    ymax = ceil(Int, rect.y + rect.half_height_out)
+    return (xmin, xmax, ymin, ymax)
+end
+
+function mask(rect::RectangularAnnulus, theta = 0, subpixels = 5; method = :exact)
+    bounds = edges(rect)
+    box = bbox(rect)
+    ny, nx = size(rect)
+    out = rectangular_overlap(bounds..., nx, ny, rect.w_out, rect.h_out, theta, subpixels, method = method)
+    out .-= rectangular_overlap(bounds..., nx, ny,  rect.w_out, rect.h_out, theta, subpixels, method = method)
+end
+
+function edges(rect::Union{RectangularAperture,RectangularAnnulus})
+    ibox = bbox(rect)
+    xmin = ibox[1] - rect.w - 0.5
+    xmax = ibox[2] - rect.w + 0.5
+    ymin = ibox[3] - rect.h - 0.5
+    ymax = ibox[4] - rect.h + 0.5
+    return (xmin, xmax, ymin, ymax)
+end
