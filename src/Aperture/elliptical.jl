@@ -52,19 +52,35 @@ function bbox(e::EllipticalAperture{<:AbstractFloat})
 
     x = e.x
     y = e.y
-    cxx = e.cxx
-    cyy = e.cyy
-    cxy = e.cxy
+    a = e.a
+    b = e.b
+    theta = e.theta
 
-    dx = cxx - cxy * cxy / (4.0 * cyy)
-    dx = dx > 0.0 ? 1.0/sqrt(dx) : 0.0
-    dy = cyy - cxy * cxy / (4.0 * cxx)
-    dy = dy > 0.0 ? 1.0/sqrt(dy) : 0.0
+    t = atan((1.0)*(-b*tan(theta))/a)
 
-    xmin = max(1, round(Int, x - dx))
-    xmax = min(size(data, 1), round(Int, x + dx))
-    ymin = max(1, round(Int, y - dy))
-    ymax = min(size(data, 2), round(Int, y + dy))
+    xmin = x + a*cos(t)*cos(theta) - b*sin(t)*sin(theta)
+    xmax = xmin
+
+    for n in -2:2
+        xmin = min(xmin, x + a*cos(t + n*pi)*cos(theta) - b*sin(t + n*pi)*sin(theta))
+    end
+
+    for n in -2:2
+        xmax = max(xmax, x + a*cos(t + n*pi)*cos(theta) - b*sin(t + n*pi)*sin(theta))
+    end
+
+    t = atan((1.0)*(b*cot(theta))/a)
+
+    ymin = y + b*sin(t)*cos(theta) + a*cos(t)*sin(theta)
+    ymax = ymin
+
+    for n in -2:2
+        ymin = min(ymin, y + b*sin(t + n*pi)*cos(theta) + a*cos(t + n*pi)*sin(theta))
+    end
+
+    for n in -2:2
+        ymax = max(ymax, y + b*sin(t + n*pi)*cos(theta) + a*cos(t + n*pi)*sin(theta))
+    end
 
     return xmin, xmax, ymin, ymax
 end
