@@ -47,3 +47,24 @@ function oblique_coefficients(a, b, theta)
     cxy = (2.0)*costheta*sintheta * ((1.0)/(a*a) - (1.0)/(b*b))
     return cxx, cyy, cxy
 end
+
+function bbox(e::EllipticalAperture{<:AbstractFloat})
+
+    x = e.x
+    y = e.y
+    cxx = e.cxx
+    cyy = e.cyy
+    cxy = e.cxy
+
+    dx = cxx - cxy * cxy / (4.0 * cyy)
+    dx = dx > 0.0 ? 1.0/sqrt(dx) : 0.0
+    dy = cyy - cxy * cxy / (4.0 * cxx)
+    dy = dy > 0.0 ? 1.0/sqrt(dy) : 0.0
+
+    xmin = max(1, round(Int, x - dx))
+    xmax = min(size(data, 1), round(Int, x + dx))
+    ymin = max(1, round(Int, y - dy))
+    ymax = min(size(data, 2), round(Int, y + dy))
+
+    return xmin, xmax, ymin, ymax
+end
