@@ -4,16 +4,16 @@ export EllipticalAperture,
 """
    EllipticalAperture(x, y, a, b, theta)
 
-   A elliptical aperture.
+A elliptical aperture.
 
-   Where a >= b > 0 and -pi/2 <= theta <= pi/2
+Where a >= b > 0 and -pi/2 <= theta <= pi/2
 
-   # Examples
-   ```jldoctest
-   julia> EllipticalAperture(2,2,2,2,1.2)
-   EllipticalAperture(2.0, 2.0, a=2.0, b=2.0, theta=1.2)
+# Examples
+```jldoctest
+julia> EllipticalAperture(2,2,2,2,1.2)
+EllipticalAperture(2.0, 2.0, a=2.0, b=2.0, theta=1.2)
 
-   ```
+```
 """
 struct EllipticalAperture{T <: Number} <: AbstractAperture
     x::T
