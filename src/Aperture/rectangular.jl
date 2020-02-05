@@ -33,7 +33,7 @@ function RectangularAperture(x, y, w, h, theta = 0.0)
 end
 
 function Base.show(io::IO, rect::RectangularAperture)
-    print(io, "RectangularAperture($(rect.x), $(rect.y), w = $(rect.w), h = $(rect.h), theta = $(rect.theta))")
+    print(io, "RectangularAperture($(rect.x), $(rect.y), w=$(rect.w), h=$(rect.h), theta=$(rect.theta))")
 end
 
 
