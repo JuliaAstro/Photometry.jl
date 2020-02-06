@@ -3,7 +3,9 @@ using Photometry.Aperture: circular_overlap,
                            circular_overlap_single_exact, 
                            circular_overlap_single_subpixel, 
                            area_arc, 
-                           area_triangle
+                           area_triangle,
+                           rectangular_overlap,
+                           rectangular_overlap_single_subpixel
 
 @testset "circular overlap" for grid_size in [50, 500, 1000], circ_size in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
 
@@ -62,4 +64,15 @@ end
     0 0         0         0        0]
 
 
+end
+
+@testset "Rectangular Overlap" for grid_size in [50, 500, 1000], rect_width in [2, 4, 8], rect_height in [6, 8, 10], rect_theta in [0, 45, 60], method in [:center, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+    
+    g = rectangular_overlap(-1, -1, 1, 1, grid_size, grid_size, rect_width, rect_height, rect_theta, method = method)
+    any(g .< 1) &&  @test minimum(g) ≈ 0.0
+end
+
+@testset "Rectangular overlap single subpixel" for rect_width in [6, 2, 1], rect_height in [8, 4, 3], rect_theta in [10, 20, 30], subpixels in [1, 2, 5]
+    g = rectangular_overlap_single_subpixel(-1, 2, 3, 4, rect_width, rect_height, rect_theta, subpixels)
+    @test 0 < g < 1
 end
