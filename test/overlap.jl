@@ -66,8 +66,7 @@ end
 
 end
 
-@testset "Rectangular Overlap" for grid_size in [50, 500, 1000], rect_width in [2, 4, 8], rect_height in [6, 8, 10], rect_theta in [0, 45, 60], method in [:center, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
-    
+@testset "Rectangular Overlap" for grid_size in [10, 25, 50], rect_width in [1, 2, 3], rect_height in [2, 5, 6], rect_theta in [10, 20, 30], method in [:center, :center, (:subpixel, 2), (:subpixel, 3), (:subpixel, 4)]    
     g = rectangular_overlap(-1, -1, 1, 1, grid_size, grid_size, rect_width, rect_height, rect_theta, method = method)
     any(g .< 1) &&  @test minimum(g) ≈ 0.0
 end
