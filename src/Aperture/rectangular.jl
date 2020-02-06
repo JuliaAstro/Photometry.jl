@@ -62,11 +62,11 @@ function bbox(rect::RectangularAperture{<:Number})
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(rect::RectangularAperture, theta = 0, method = :exact)
+function mask(rect::RectangularAperture, method = :exact)
     bounds = edges(rect)
     box = bbox(rect)
     ny, nx = size(rect)
-    return rectangular_overlap(bounds..., nx, ny, rect.w, rect.h, theta, method = method) 
+    return rectangular_overlap(bounds..., nx, ny, rect.w, rect.h, rect.theta, method = method) 
 end
 
 ######################################################
@@ -146,11 +146,11 @@ function bbox(rect::RectangularAnnulus{<:Number})
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(rect::RectangularAnnulus, theta = 0; method = :exact)
+function mask(rect::RectangularAnnulus, method = :exact)
     bounds = edges(rect)
     box = bbox(rect)
     ny, nx = size(rect)
-    out = rectangular_overlap(bounds..., nx, ny, rect.w_out, rect.h_out, theta, method = method)
-    out .-= rectangular_overlap(bounds..., nx, ny, rect.w_in, rect.h_in, theta, method = method)
+    out = rectangular_overlap(bounds..., nx, ny, rect.w_out, rect.h_out, rect.theta, method = method)
+    out .-= rectangular_overlap(bounds..., nx, ny, rect.w_in, rect.h_in, rect.theta, method = method)
 end
 
