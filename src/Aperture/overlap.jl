@@ -58,24 +58,24 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     return out
 end
 
-function circular_overlap_single_subpixel(xmin, ymin, xmax, ymax, r, subpixels)
+function circular_overlap_single_subpixel(xmin, ymin, xmax, ymax, r, Nsub)
     frac = 0
-    dx = (xmax - xmin) / subpixels
-    dy = (ymax - ymin) / subpixels
+    dx = (xmax - xmin) / Nsub
+    dy = (ymax - ymin) / Nsub
     r2 = r^2
 
     x = xmin - 0.5dx
-    for i in 1:subpixels
+    for i in 1:Nsub
         x += dx
         y = ymin - 0.5dy
-        for j in 1:subpixels
+        for j in 1:Nsub
             y += dy
             if x^2 + y^2 < r2 
                 frac += 1
             end
         end
     end
-    return frac / subpixels^2
+    return frac / Nsub^2
 end
 
 """Area of overlap between a rectangle and a circle"""
@@ -153,92 +153,88 @@ function area_arc(x0, y0, x1, y1, r)
     return 0.5r^2 * (θ - sin(θ))
 end
 
+########################################
+"""
+Routine for rectangular overlap
+"""
+
+function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, theta; method = :exact)
+    out = fill(0.0, nx, ny)
+
+    
+    # width of each element
+    dx = (xmax - xmin) / nx
+    dy = (ymax - ymin) / ny
+
+
+    # # bounding box
+    # bxmin = -w - 0.5dx
+    # bxmax = w + 0.5dx
+    # bymin = -h - 0.5dy
+    # bymax = h + 0.5dy
+
+    for i in 1:nx
+        # lower end of pixel
+        pxmin = xmin + (i - 1) * dx
+        # upper end of pixel
+        pxmax = pxmin + dx
+
+        # if pxmax > bxmin && pxmin < bxmax
+            for j in 1:ny
+                pymin = ymin + (j - 1) * dy
+                pymax = pymin + dy
+                # if pymax > bymin && pymin < bymax
+                if method === :exact
+                    error("Exact mode has not been implemented for rectangular apertures")
+                elseif method === :center
+                    @inbounds out[j, i] =  rectangular_overlap_single_subpixel(
+                        pxmin, pymin, pxmax, pymax, w, h, theta, 1)
+                elseif method[1] === :subpixel
+                    @inbounds out[j, i] =  rectangular_overlap_single_subpixel(
+                        pxmin, pymin, pxmax, pymax, w, h, theta, method[2])
+                end     
+                # end
+            end
+        # end        
+    end
+    return out
+end
 
 
 
+"""
+Return the fraction of overlap between a rectangle and a single pixel with
+given extent, using a sub-pixel sampling method.
+"""
 
+function rectangular_overlap_single_subpixel(xmin, ymin, xmax, ymax, w, h, theta, Nsub)
 
+    frac = 0
+    dx = (xmax - xmin) / Nsub
+    dy = (ymax - ymin) / Nsub
 
-
-
-
-
-
-
-# function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, theta, subpixels; method = :exact)
-#     out = fill(0.0, nx, ny)
-
-#     # width of each element
-#     dx = (xmax - xmin) / nx
-#     dy = (ymax - ymin) / ny
-
-
-#     # bounding box
-#     bxmin = -w - 0.5dx
-#     bxmax = w + 0.5dx
-#     bymin = -h - 0.5dy
-#     bymax = h + 0.5dy
-
-#     for i in 1:nx
-#         # lower end of pixel
-#         pxmin = xmin + (i - 1) * dx
-#         # pxcen = pxmin + 0.5dx
-#         # upper end of pixel
-#         pxmax = pxmin + dx
-
-#         if pxmax > bxmin && pxmin < bxmax
-#             for j in 1:ny
-#                 pymin = ymin + (j - 1) * dy
-#                 # pycen = pymin + 0.5dy
-#                 pymax = pymin + dy
-#                 if pymax > bymin && pymin < bymax
-                    
-#                     @inbounds out[j, i] = rectangular_overlap_single_subpixel(
-#                         pxmin, pymin, pxmax, pymax, w, h, theta,subpixels)
-#                 end
-#             end
-#         end        
-#     end
-#     return out
-# end
-
-
-
-# function rectangular_overlap_single_subpixel(xmin, ymin,
-#                                          xmax, ymax, w, h,
-#                                          theta, subpixels)
-#     """
-#     Return the fraction of overlap between a rectangle and a single pixel with
-#     given extent, using a sub-pixel sampling method.
-#     """
-
-#     frac = 0
-#     dx = (xmax - xmin) / subpixels
-#     dy = (ymax - ymin) / subpixels
-#     # r2 = r^2
-
-#     x = xmin - 0.5dx
-#     for i in 1:subpixels
-#         x += dx
-#         y = ymin - 0.5dy
-#         for j in 1:subpixels
-#             y += dy
+    x = xmin - 0.5dx
+    for i in 1:Nsub
+        x += dx
+        y = ymin - 0.5dy
+        for j in 1:Nsub
+            y += dy
             
 
             # Transform into frame of rotated rectangle
-                # sint, cost = sincos(deg2rad(theta))
-                # x_tr = y * sint + x * cost
-                # y_tr = y * cost + x * sint
+                sint, cost = sincos(deg2rad(theta))
+                x_tr = y * sint + x * cost
+                y_tr = y * cost + x * sint
 
-#             if abs(x_tr) < w / 2 && abs(y_tr) < h / 2
-#                 frac += 1   
+            if abs(x_tr) < w / 2 && abs(y_tr) < h / 2
+                frac += 1   
 
         
-#             end
-#         end
-#     end
-#     return frac / subpixels^2
-# end
+            end
+        end
+    end
+    return frac / Nsub^2
+end
 
 
 

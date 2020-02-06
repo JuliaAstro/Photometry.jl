@@ -62,7 +62,7 @@ function bbox(rect::RectangularAperture{<:Number})
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(rect::RectangularAperture, method = :exact)
+function mask(rect::RectangularAperture; method = :exact)
     bounds = edges(rect)
     box = bbox(rect)
     ny, nx = size(rect)
@@ -146,11 +146,20 @@ function bbox(rect::RectangularAnnulus{<:Number})
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(rect::RectangularAnnulus, method = :exact)
+function mask(rect::RectangularAnnulus; method = :exact)
     bounds = edges(rect)
     box = bbox(rect)
     ny, nx = size(rect)
     out = rectangular_overlap(bounds..., nx, ny, rect.w_out, rect.h_out, rect.theta, method = method)
     out .-= rectangular_overlap(bounds..., nx, ny, rect.w_in, rect.h_in, rect.theta, method = method)
+end
+
+function edges(rect::Union{RectangularAperture,RectangularAnnulus})
+    ibox = bbox(rect)
+    xmin = ibox[1] - rect.x
+    xmax = ibox[2] - rect.x
+    ymin = ibox[3] - rect.y
+    ymax = ibox[4] - rect.y
+    return (xmin, xmax, ymin, ymax)
 end
 
