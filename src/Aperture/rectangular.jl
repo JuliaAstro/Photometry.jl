@@ -8,10 +8,23 @@ export RectangularAperture,
 
 A rectangular aperture.
 
+w : float
+    The full width of the rectangle in pixels. For theta=0 the width side is along the x axis.
+
+h : float
+    The full height of the rectangle in pixels. For theta=0 the height side is along the y axis.
+    
+theta : float (optional)
+    The rotation angle in degrees of the rectangle “width” side from the positive x axis. 
+    The rotation angle increases counterclockwise. The default is 0.
+
+Raises Error
+    If either width (w) or height (h) is negative.
+
 # Examples
 ```jldoctest
 julia> ap = RectangularAperture(0, 0, 10, 5, 50)
-RectanguRelarAperture(0, 0, w=10, h=5)
+RectanguRelarAperture(0, 0, w=10, h=5, theta=50)
 
 ```
 """
@@ -26,10 +39,10 @@ end
 
 function RectangularAperture(x, y, w, h, theta = 0.0) 
     if (w < 0 || h < 0)
-        error("Invalid parameters" * "Require w >= 0.0 , h >= 0.0")
+        error("Invalid parameters. Require w >= 0.0 , h >= 0.0")
     end
     
-    return RectangularAperture(promote(x, y, w, h, theta = 0.0)...)
+    return RectangularAperture(promote(x, y, w, h, theta)...)
 end
 
 function Base.show(io::IO, rect::RectangularAperture)
@@ -39,11 +52,8 @@ end
 
 function bbox(rect::RectangularAperture{<:Number})
     
-    w = rect.w
-    h = rect.h
-
-    half_width = w / 2
-    half_height = h / 2
+    half_width = rect.w / 2
+    half_height = rect.h / 2
 
     xmin = floor(Int, rect.x - half_width)
     xmax = ceil(Int, rect.x + half_width)
@@ -67,6 +77,30 @@ end
 
 A rectangular annulus.
 
+w_in : float
+    The inner full width of the rectangular annulus in pixels. For theta=0 the width side is along the x axis.
+
+w_out : float
+    The outer full width of the rectangular annulus in pixels. For theta=0 the width side is along the x axis.
+
+h_out : float
+    The outer full height of the rectangular annulus in pixels.
+    
+    The "inner full height" (h_in) is calculated as:
+
+        h_in = h_out * (w_in / w_out)
+
+    For theta=0 the height side is along the y axis.
+
+theta : float (optional)
+    The rotation angle in degrees of the rectangle “width” side from the positive x axis.
+    The rotation angle increases counterclockwise. The default is 0.
+
+Raises Error
+        If inner width (w_in) is greater than outer width (w_out).
+        If either the inner width (w_in) or the outer height (h_out) is negative.
+
+
 # Examples
 ```jldoctest
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 6, 12, 50)
@@ -85,12 +119,12 @@ struct RectangularAnnulus{T <: Number} <: AbstractAperture
 end
 
 function RectangularAnnulus(x, y, w_in, w_out, h_in, h_out, theta = 0.0)
-    if(w_out <= w_in || h_out <= h_in)
-        error("Invalid parameters" * "Require w_out > w_in, h_out > h_in")
+    if(w_out <= w_in || w_in < 0 || h_out < 0)
+        error("Invalid parameters. Require w_out > w_in, h_in > 0, h_out > 0")
 
         
     end
-    return RectangularAnnulus(promote(x, y, w_in, w_out, h_in, h_out)...)
+    return RectangularAnnulus(promote(x, y, w_in, w_out, h_in, h_out, theta)...)
 end
 
 
