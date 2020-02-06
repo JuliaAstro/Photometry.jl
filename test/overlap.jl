@@ -73,5 +73,5 @@ end
 
 @testset "Rectangular overlap single subpixel" for rect_width in [6, 2, 1], rect_height in [8, 4, 3], rect_theta in [10, 20, 30], subpixels in [1, 2, 5]
     g = rectangular_overlap_single_subpixel(-1, 2, 3, 4, rect_width, rect_height, rect_theta, subpixels)
-    @test 0.0 < g < 1.0
+    @test 0.0 <= g <= 1.0
 end
