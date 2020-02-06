@@ -62,12 +62,12 @@ function bbox(rect::RectangularAperture{<:Number})
     return (xmin, xmax, ymin, ymax)
 end
 
-# function mask(rect::RectangularAperture, theta = 0, subpixels = 5; method = :exact)
-#     bounds = edges(rect)
-#     box = bbox(rect)
-#     ny, nx = size(rect)
-#     return rectangular_overlap(bounds..., nx, ny, rect.w, rect.h, theta, subpixels, method = method) 
-# end
+function mask(rect::RectangularAperture, theta = 0, method = :exact)
+    bounds = edges(rect)
+    box = bbox(rect)
+    ny, nx = size(rect)
+    return rectangular_overlap(bounds..., nx, ny, rect.w, rect.h, theta, method = method) 
+end
 
 ######################################################
 
@@ -133,8 +133,6 @@ function Base.show(io::IO, rect::RectangularAnnulus)
 end
 
 
-
-
 function bbox(rect::RectangularAnnulus{<:Number})
 
     
@@ -146,5 +144,13 @@ function bbox(rect::RectangularAnnulus{<:Number})
     ymin = floor(Int, rect.y - half_height_out)
     ymax = ceil(Int, rect.y + half_height_out)
     return (xmin, xmax, ymin, ymax)
+end
+
+function mask(rect::RectangularAnnulus, theta = 0; method = :exact)
+    bounds = edges(rect)
+    box = bbox(rect)
+    ny, nx = size(rect)
+    out = rectangular_overlap(bounds..., nx, ny, rect.w_out, rect.h_out, theta, method = method)
+    out .-= rectangular_overlap(bounds..., nx, ny, rect.w_in, rect.h_in, theta, method = method)
 end
 

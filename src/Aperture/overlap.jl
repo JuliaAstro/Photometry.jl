@@ -225,9 +225,10 @@ end
 #             y += dy
             
 
-#             # Transform into frame of rotated rectangle
-#             x_tr = y * sin(theta) + x * cos(theta)
-#             y_tr = y * cos(theta) - x * sin(theta)
+            # Transform into frame of rotated rectangle
+                # sint, cost = sincos(deg2rad(theta))
+                # x_tr = y * sint + x * cost
+                # y_tr = y * cost + x * sint
 
 #             if abs(x_tr) < w / 2 && abs(y_tr) < h / 2
 #                 frac += 1   
