@@ -154,3 +154,105 @@ function area_arc(x0, y0, x1, y1, r)
     θ = 2asin(0.5a / r)
     return 0.5r^2 * (θ - sin(θ))
 end
+
+"""
+Utility function to find whether a point is inside ellipse or not.
+
+If point inside ellipse: Returns true else returns false
+
+point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
+
+x: x coordinate of the test point
+y: y coordinate of the test point
+h: x coordinate of the center of ellipse
+k: y coordinate of the center of ellipse
+cxx, cyy, cxy: coefficients of equation of ellipse
+
+General equation of ellipse:
+    cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
+"""
+function point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
+    if cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 > 0
+        return false
+    else
+        return true
+    end
+end
+
+
+function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
+    out = fill(0.0, nx, ny)
+
+    # width of each element
+    dx = (xmax - xmin) / nx
+    dy = (ymax - ymin) / ny
+
+    # radius of one pixel
+    pixel_radius = 0.5sqrt(dx^2 + dy^2)
+
+    # bounding box
+    bxmin, bxmax, bymin, bymax = bbox(EllipticalAperture(0, 0, a, b, theta))
+
+    cxx, cyy, cxy = oblique_coefficients(a, b, theta)
+
+    for i in 1:nx
+        # lower end of pixel
+        pxmin = xmin + (i - 1) * dx
+        pxcen = pxmin + 0.5dx
+        # upper end of pixel
+        pxmax = pxmin + dx
+
+        if pxmax > bxmin && pxmin < bxmax
+            for j in 1:ny
+                pymin = ymin + (j - 1) * dy
+                pycen = pymin + 0.5dy
+                pymax = pymin + dy
+                if pymax > bymin && pymin < bymax
+
+                    #4 flags for four different ends of the pixel
+                    #each flag tells wether the point is inside the ellipse or not
+
+                    flag1 = point_completely_inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy)
+                    flag2 = point_completely_inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy)
+                    flag3 = point_completely_inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy)
+                    flag4 = point_completely_inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
+
+                    # fully within radius
+                    if flag1 && flag2 && flag3 && flag4
+                        @inbounds out[j, i] = 1
+                    # partially within radius
+                    elseif flag1 || flag2 || flag3 || flag4
+                        if method === :exact
+                            print("yet to be implemeted!!")
+                        elseif method === :center
+                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
+                        elseif method[1] === :subpixel
+                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
+
+function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cxy, subpixels)
+    frac = 0
+    dx = (xmax - xmin) / subpixels
+    dy = (ymax - ymin) / subpixels
+
+    x = xmin - 0.5dx
+    for i in 1:subpixels
+        x += dx
+        y = ymin - 0.5dy
+        for j in 1:subpixels
+            y += dy
+            if point_completely_inside_ellipse(x, y, 0, 0, cxx, cyy, cxy)
+                frac += 1
+            end
+        end
+    end
+    return frac / subpixels^2
+end

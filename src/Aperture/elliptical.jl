@@ -92,3 +92,9 @@ function edges(e::EllipticalAperture)
     ymax = ibox[4] - e.y + 0.5
     return (xmin, xmax, ymin, ymax)
 end
+
+function mask(e::EllipticalAperture; method = :exact)
+    bounds = edges(c)
+    ny, nx = size(c)
+    return elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
+end
