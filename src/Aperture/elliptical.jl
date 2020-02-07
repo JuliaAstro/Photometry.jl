@@ -37,11 +37,11 @@ end
 
 function oblique_coefficients(a, b, theta)
     sintheta, costheta = sincos(deg2rad(theta))
-    asq = a*a
-    bsq = b*b
-    cxx = costheta*costheta*inv(asq) + sintheta*sintheta*inv(bsq)
-    cyy = sintheta*sintheta*inv(asq) + costheta*costheta*inv(bsq)
-    cxy = 2*costheta*sintheta * (inv(asq) - inv(bsq))
+    a2 = a^2
+    b2 = b^2
+    cxx = costheta^2 / a2 + sintheta^2 / b2
+    cyy = sintheta^2 / a2 + costheta^2 / b2
+    cxy = 2*costheta*sintheta * (1/a2 - 1/b2)
     return cxx, cyy, cxy
 end
 
