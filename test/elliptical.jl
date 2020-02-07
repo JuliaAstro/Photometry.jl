@@ -9,10 +9,10 @@ using Photometry.Aperture: edges,
     ap_elipse = EllipticalAperture(0,0,2,1,45)
     xmin, xmax, ymin, ymax = bbox(ap_elipse)
 
-    @test xmin ≈ -1.5811 atol=1e-4
-    @test xmax ≈ 1.5811 atol=1e-4
-    @test ymax ≈ 1.5811 atol=1e-4
-    @test ymin ≈ -1.5811 atol=1e-4
+    @test xmin == -2
+    @test xmax == 2
+    @test ymax == 2
+    @test ymin == -2
 
 end
 

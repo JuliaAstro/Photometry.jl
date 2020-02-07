@@ -75,5 +75,27 @@ function bbox(e::EllipticalAperture)
         ymax = max(ymax, e.y + e.b*sin(t + n*pi)*costheta + e.a*cos(t + n*pi)*sintheta)
     end
 
+    xmin = floor(Int, xmin)
+    xmax = ceil(Int, xmax)
+    ymin = floor(Int, ymin)
+    ymax = ceil(Int, ymax)
+
     return xmin, xmax, ymin, ymax
+end
+
+
+function edges(e::EllipticalAperture)
+    ibox = bbox(e)
+    xmin = ibox[1] - e.x - 0.5
+    xmax = ibox[2] - e.x + 0.5
+    ymin = ibox[3] - e.y - 0.5
+    ymax = ibox[4] - e.y + 0.5
+    return (xmin, xmax, ymin, ymax)
+end
+
+function mask(e::EllipticalAperture; method = :exact)
+    bounds = edges(e)
+    box = bbox(e)
+    ny, nx = size(e)
+#     return elliptical_overlap(bounds..., nx, ny, rect.w, rect.h, rect.theta, method = method)
 end
