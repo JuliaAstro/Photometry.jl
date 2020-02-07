@@ -225,9 +225,9 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                         if method === :exact
                             print("yet to be implemeted!!")
                         elseif method === :center
-                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
+                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
                         elseif method[1] === :subpixel
-                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
+                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
                         end
                     end
                 end
