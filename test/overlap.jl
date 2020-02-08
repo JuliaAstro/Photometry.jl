@@ -4,7 +4,7 @@ using Photometry.Aperture: circular_overlap,
                            circular_overlap_single_subpixel,
                            area_arc,
                            area_triangle,
-                           oblique_coefficients
+                           point_completely_inside_ellipse
 
 @testset "circular overlap" for grid_size in [50, 500, 1000], circ_size in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
 
@@ -66,7 +66,7 @@ end
 end
 
 @testset "position with respect to ellipse" begin
-    @test oblique_coefficients(2, 2, 0) == (0.25, 0.25, 0.0)
-    @test oblique_coefficients(2, 2, 90) == (0.25, 0.25, 0.0)
-    @test oblique_coefficients(2, 1, 30) == (0.4375, 0.8125000000000001, -6*sqrt(3)/16)
+    @test point_completely_inside_ellipse(5,3,0,0,1/16,1/32,0) == false
+    @test point_completely_inside_ellipse(0,0,0,0,5,6.2,0) == true
+    @test point_completely_inside_ellipse(1,2,0,0,1/37,1/36,-1/80) == true
 end
