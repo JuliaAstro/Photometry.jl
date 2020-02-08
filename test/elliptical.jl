@@ -26,7 +26,7 @@ end
 end
 
 @testset "oblique_coefficients" begin
-    @test all(oblique_coefficients(2, 2, 0)) .≈ (0.25, 0.25, 0.0)
-    @test all(oblique_coefficients(2, 2, 90)) .≈ (0.25, 0.25, 0.0)
-    @test all(oblique_coefficients(2, 1, 30)) .≈ (7/16, 13/16, -6*sqrt(3)/16)
+    @test all(oblique_coefficients(2, 2, 0) .≈ (0.25, 0.25, 0.0))
+    @test all(oblique_coefficients(2, 2, 90) .≈ (0.25, 0.25, 0.0))
+    @test all(oblique_coefficients(2, 1, 30) .≈ (7/16, 13/16, -6*sqrt(3)/16))
 end
