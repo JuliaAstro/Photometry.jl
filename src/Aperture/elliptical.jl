@@ -98,3 +98,43 @@ function mask(e::EllipticalAperture; method = :center)
     ny, nx = size(e)
     return elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
 end
+
+
+#######################################################
+
+"""
+    EllipticalAnnulus(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)
+    EllipticalAnnulus([x, y], a_in, b_in, theta_in, a_out, b_out, theta_out)
+
+An elliptical annulus.
+
+# Examples
+```jldoctest
+julia> ap = EllipticalAnnulus(0, 0, 10, 5, 25, 16, 10, 45)
+EllipticalAnnulus(0, 0, a_in=10, b_in=5, theta_in=25°, a_out=16, b_out=10, theta_out=45°)
+
+```
+"""
+struct EllipticalAnnulus{T <: Number} <: AbstractAperture
+    x::T
+    y::T
+    a_in::T
+    b_in::T
+    theta_in::T
+    a_out::T
+    b_out::T
+    theta_out::T
+end
+
+function EllipticalAnnulus(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)
+    if (b_in < 0.0 || a_in < b_in || b_out < 0.0 || a_out < b_out)
+            error("illegal ellipse parameters. Require a_in >= b_in > 0.0, a_out >= b_out > 0.0")
+    end
+    theta_in = mod(theta_in, 360)
+    theta_out = mod(theta_out,360);
+    return EllipticalAperture(promote(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)...)
+end
+
+function Base.show(io::IO, e::EllipticalAnnulus)
+    print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), b_in=$(e.b_in), theta_in=$(e.theta_in)°, a_out=$(e.a_out), b_out=$(e.b_out), theta_out=$(e.theta_out)°)")
+end

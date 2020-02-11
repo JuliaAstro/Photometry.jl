@@ -38,3 +38,11 @@ end
     @test all(oblique_coefficients(2, 2, 90) .≈ (0.25, 0.25, 0.0))
     @test all(oblique_coefficients(2, 1, 30) .≈ (7 / 16, 13 / 16, -6sqrt(3) / 16))
 end
+
+
+@testset "Elliptical Annulus" begin
+
+    e0 = EllipticalAnnulus(0, 0, 16, 4 , 25, 80, 40, 45)
+    @test sprint(show, e0) == "EllipticalAnnulus(0, 0, a_in=16, b_in=4, theta_in=25°, a_out=80, b_out=40, theta_out=45°)"
+
+end
