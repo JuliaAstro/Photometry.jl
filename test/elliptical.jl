@@ -46,3 +46,10 @@ end
     @test sprint(show, e0) == "EllipticalAnnulus(0, 0, a_in=16, b_in=4, theta_in=25°, a_out=80, b_out=40, theta_out=45°)"
 
 end
+
+@testset "Elliptical Annulus bounding box" begin
+
+    e = EllipticalAnnulus(0, 0, 16, 4 , 25, 80, 40, 45)
+    @test all(bbox(e) == (-64, 64, -64, 64))
+
+end

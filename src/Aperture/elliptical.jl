@@ -138,3 +138,15 @@ end
 function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), b_in=$(e.b_in), theta_in=$(e.theta_in)°, a_out=$(e.a_out), b_out=$(e.b_out), theta_out=$(e.theta_out)°)")
 end
+
+function bbox(e::EllipticalAnnulus)
+    xmin_in, xmax_in, ymin_in, ymax_in = bbox(EllipticalAperture(e.x, e.y, e.a_in, e.b_in, e.theta_in))
+    xmin_out, xmax_out, ymin_out, ymax_out = bbox(EllipticalAperture(e.x, e.y, e.a_out, e.b_out, e.theta_out))
+
+    xmin = min(xmin_in,xmin_out)
+    xmax = max(xmax_in,xmax_out)
+    ymin = min(ymin_in,ymin_out)
+    ymax = max(ymax_in,ymax_out)
+
+    return xmin, xmax, ymin, ymax
+end
