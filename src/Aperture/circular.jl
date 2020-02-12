@@ -41,7 +41,6 @@ end
 
 function mask(c::CircularAperture; method = :exact)
     bounds = edges(c)
-    box = bbox(c)
     ny, nx = size(c)
     return circular_overlap(bounds..., nx, ny, c.r, method = method)
 end
@@ -87,7 +86,6 @@ end
 
 function mask(c::CircularAnnulus; method = :exact)
     bounds = edges(c)
-    box = bbox(c)
     ny, nx = size(c)
     out = circular_overlap(bounds..., nx, ny, c.r_out, method = method)
     out .-= circular_overlap(bounds..., nx, ny, c.r_in, method = method)
