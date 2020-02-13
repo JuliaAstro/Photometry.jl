@@ -4,7 +4,9 @@ using Photometry.Aperture: circular_overlap,
                            circular_overlap_single_subpixel,
                            area_arc,
                            area_triangle,
-                           point_completely_inside_ellipse
+                           point_completely_inside_ellipse,
+                           elliptical_overlap,
+                           elliptical_overlap_single_subpixel
 
 @testset "circular overlap" for grid_size in [50, 500, 1000], circ_size in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
 
@@ -69,4 +71,20 @@ end
     @test point_completely_inside_ellipse(5,3,0,0,1/16,1/32,0) == false
     @test point_completely_inside_ellipse(0,0,0,0,5,6.2,0) == true
     @test point_completely_inside_ellipse(1,2,0,0,1/37,1/36,-1/80) == true
+end
+
+@testset "elliptical overlap" for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0] , [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+
+    g = elliptical_overlap(-1, -1, 1, 1, grid_size, grid_size, ellipse_size, method = method)
+    any(g .> 0) &&  @test maximum(g) ≈ 1.0
+    any(g .< 1) &&  @test minimum(g) ≈ 0.0
+end
+
+@testset "overlap subpixel (elliptical apperture)" begin
+    @test elliptical_overlap_single_subpixel(0, 0, 0, 0, 1, 1, 0, 1) ≈ 1
+
+    @test elliptical_overlap_single_subpixel(0, 0, 20, 20, 1/225, 1/225, 0, 2) ≈ 0.25
+    @test elliptical_overlap_single_subpixel(0, 0, 20, 20, 1/225, 1/225, 0, 5) ≈ 0.44
+    @test elliptical_overlap_single_subpixel(0, 0, 20, 20, 1/225, 1/225, 0, 10) ≈ 0.43
+    @test elliptical_overlap_single_subpixel(0, 0, 20, 20, 1/225, 1/225, 0, 100) ≈ 0.4423
 end

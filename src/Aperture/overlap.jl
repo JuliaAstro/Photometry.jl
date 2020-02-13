@@ -180,7 +180,7 @@ function point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
 end
 
 
-function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
+function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
     out = fill(0.0, nx, ny)
 
     # width of each element
@@ -192,6 +192,11 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
 
     # bounding box
     bxmin, bxmax, bymin, bymax = bbox(EllipticalAperture(0, 0, a, b, theta))
+
+    bxmin -= 0.5dx
+    bxmax += 0.5dx
+    bymin -= 0.5dy
+    bymax += 0.5dy
 
     cxx, cyy, cxy = oblique_coefficients(a, b, theta)
 
@@ -211,6 +216,11 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
 
                     #4 flags for four different ends of the pixel
                     #each flag tells wether the point is inside the ellipse or not
+                    #sample strcture of a pixel is shown below
+                    #  2---4
+                    #  |   |
+                    #  |   |
+                    #  1---3
 
                     flag1 = point_completely_inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy)
                     flag2 = point_completely_inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy)
@@ -223,11 +233,11 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                     # partially within radius
                     elseif flag1 || flag2 || flag3 || flag4
                         if method === :exact
-                            print("yet to be implemeted!!")
+                            print("This method has not yet been implemented!")
                         elseif method === :center
-                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
+                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
                         elseif method[1] === :subpixel
-                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
+                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, method[2])
                         end
                     end
                 end
@@ -236,6 +246,8 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
     end
     return out
 end
+
+elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, parameters::AbstractVector; method) = elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, parameters... ; method = :center)
 
 
 function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cxy, subpixels)

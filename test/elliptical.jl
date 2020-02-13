@@ -20,8 +20,11 @@ end
 
 @testset "Elliptical Aperture" begin
 
-    e0 = EllipticalAperture(0, 0, 20, 10 , 0)
-    @test sprint(show, e0) == "EllipticalAperture(0, 0, a=20, b=10, theta=0°)"
+    e = EllipticalAperture(0, 0, 20, 10 , 0)
+    @test sprint(show, e) == "EllipticalAperture(0, 0, a=20, b=10, theta=0°)"
+
+    e = EllipticalAperture(0, 0, 10, 10, 0)
+    @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
 
 end
 

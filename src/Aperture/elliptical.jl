@@ -4,7 +4,7 @@ export EllipticalAperture,
 """
    EllipticalAperture(x, y, a, b, theta)
 
-A elliptical aperture.
+An elliptical aperture.
 
 Where a >= b > 0 and theta in degrees
 
@@ -25,7 +25,7 @@ end
 
 function EllipticalAperture(x, y, a, b, theta)
     if (b < 0.0 || a < b )
-            error("illegal ellipse parameters. Require a >= b > 0.0")
+            error("Invalid ellipse parameters. Require a >= b > 0.0")
     end
     theta = mod(theta, 360)
     return EllipticalAperture(promote(x, y, a, b, theta)...)
@@ -94,7 +94,7 @@ function edges(e::EllipticalAperture)
 end
 
 function mask(e::EllipticalAperture; method = :exact)
-    bounds = edges(c)
-    ny, nx = size(c)
+    bounds = edges(e)
+    ny, nx = size(e)
     return elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
 end
