@@ -11,7 +11,7 @@ Where a >= b > 0 and theta in degrees
 # Examples
 ```jldoctest
 julia> EllipticalAperture(2,2,2,2,1.2)
-EllipticalAperture(2.0, 2.0, a=2.0, b=2.0, theta=1.2)
+EllipticalAperture(2.0, 2.0, a=2.0, b=2.0, theta=1.2°)
 
 ```
 """
@@ -49,30 +49,36 @@ function bbox(e::EllipticalAperture)
 
     sintheta, costheta = sincos(deg2rad(e.theta))
 
-    t = atan((-e.b*tan(deg2rad(e.theta)))/e.a)
+    t = atan((-e.b*tand(e.theta))/e.a)
 
-    xmin = e.x + e.a*cos(t)*costheta - e.b*sin(t)*sintheta
+    sint, cost = sincos(t)
+    xmin = e.x + e.a*cost*costheta - e.b*sint*sintheta
     xmax = xmin
 
     for n in -2:2
-        xmin = min(xmin, e.x + e.a*cos(t + n*pi)*costheta - e.b*sin(t + n*pi)*sintheta)
+        sint, cost = sincos(t + n*pi)
+        xmin = min(xmin, e.x + e.a*cost*costheta - e.b*sint*sintheta)
     end
 
     for n in -2:2
-        xmax = max(xmax, e.x + e.a*cos(t + n*pi)*costheta - e.b*sin(t + n*pi)*sintheta)
+        sint, cost = sincos(t + n*pi)
+        xmax = max(xmax, e.x + e.a*cost*costheta - e.b*sint*sintheta)
     end
 
-    t = atan((e.b*cot(deg2rad(e.theta)))/e.a)
+    t = atan((e.b*cotd(e.theta))/e.a)
 
-    ymin = e.y + e.b*sin(t)*costheta + e.a*cos(t)*sintheta
+    sint, cost = sincos(t)
+    ymin = e.y + e.b*sint*costheta + e.a*cost*sintheta
     ymax = ymin
 
     for n in -2:2
-        ymin = min(ymin, e.y + e.b*sin(t + n*pi)*costheta + e.a*cos(t + n*pi)*sintheta)
+        sint, cost = sincos(t + n*pi)
+        ymin = min(ymin, e.y + e.b*sint*costheta + e.a*cost*sintheta)
     end
 
     for n in -2:2
-        ymax = max(ymax, e.y + e.b*sin(t + n*pi)*costheta + e.a*cos(t + n*pi)*sintheta)
+        sint, cost = sincos(t + n*pi)
+        ymax = max(ymax, e.y + e.b*sint*costheta + e.a*cost*sintheta)
     end
 
     xmin = floor(Int, xmin)

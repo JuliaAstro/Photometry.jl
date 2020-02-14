@@ -156,10 +156,6 @@ function area_arc(x0, y0, x1, y1, r)
 end
 
 """
-Utility function to find whether a point is inside ellipse or not.
-
-If point inside ellipse: Returns true else returns false
-
 point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
 
 x: x coordinate of the test point
@@ -168,17 +164,14 @@ h: x coordinate of the center of ellipse
 k: y coordinate of the center of ellipse
 cxx, cyy, cxy: coefficients of equation of ellipse
 
+Utility function to find whether a point is inside ellipse or not.
+
+If point inside ellipse: Returns true else returns false
+
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-function point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
-    if cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 > 0
-        return false
-    else
-        return true
-    end
-end
-
+point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 <= 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
     out = fill(0.0, nx, ny)
@@ -233,7 +226,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                     # partially within radius
                     elseif flag1 || flag2 || flag3 || flag4
                         if method === :exact
-                            print("This method has not yet been implemented!")
+                            error("The exact method for elliptical overlap has not yet been implemented.")
                         elseif method === :center
                             @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
                         elseif method[1] === :subpixel

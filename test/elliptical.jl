@@ -1,7 +1,6 @@
 using Photometry.Aperture: edges,
-                           bbox
-                           # oblique_coefficients
-using Photometry.Aperture: oblique_coefficients
+                           bbox,
+                           oblique_coefficients
 
 @testset "Apertures" begin
 
@@ -25,6 +24,7 @@ end
 
     e = EllipticalAperture(0, 0, 10, 10, 0)
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
+    @test_throws ErrorException mask(e, method=:exact)
 
 end
 
