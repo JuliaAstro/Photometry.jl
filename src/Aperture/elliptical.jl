@@ -31,6 +31,8 @@ function EllipticalAperture(x, y, a, b, theta)
     return EllipticalAperture(promote(x, y, a, b, theta)...)
 end
 
+EllipticalAperture(center::AbstractVector, a, b, theta) = EllipticalAperture(center..., a, b, theta)
+
 function Base.show(io::IO, e::EllipticalAperture)
     print(io, "EllipticalAperture($(e.x), $(e.y), a=$(e.a), b=$(e.b), theta=$(e.theta)°)")
 end
@@ -99,7 +101,7 @@ function edges(e::EllipticalAperture)
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(e::EllipticalAperture; method = :exact)
+function mask(e::EllipticalAperture; method = :center)
     bounds = edges(e)
     ny, nx = size(e)
     return elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
