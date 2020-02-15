@@ -156,7 +156,7 @@ function area_arc(x0, y0, x1, y1, r)
 end
 
 """
-point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy)
+inside_ellipse(x, y, h, k, cxx, cyy, cxy)
 
 x: x coordinate of the test point
 y: y coordinate of the test point
@@ -171,7 +171,7 @@ If point inside ellipse: Returns true else returns false
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-point_completely_inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 <= 0
+inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 <= 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
     out = fill(0.0, nx, ny)
@@ -215,10 +215,10 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                     #  |   |
                     #  1---3
 
-                    flag1 = point_completely_inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy)
-                    flag2 = point_completely_inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy)
-                    flag3 = point_completely_inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy)
-                    flag4 = point_completely_inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
+                    flag1 = inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy)
+                    flag2 = inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy)
+                    flag3 = inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy)
+                    flag4 = inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
 
                     # fully within radius
                     if flag1 && flag2 && flag3 && flag4
@@ -254,7 +254,7 @@ function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cx
         y = ymin - 0.5dy
         for j in 1:subpixels
             y += dy
-            if point_completely_inside_ellipse(x, y, 0, 0, cxx, cyy, cxy)
+            if inside_ellipse(x, y, 0, 0, cxx, cyy, cxy)
                 frac += 1
             end
         end

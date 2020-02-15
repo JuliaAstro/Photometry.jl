@@ -8,11 +8,11 @@ PARAMS = [
     (3, 5)
 ]
 
-APERTURES1 = [
+ELL_APERTURES = [
     EllipticalAperture
 ]
 
-PARAMS1 = [
+ELL_PARAMS = [
     (3, 3, 0)
 ]
 ###########################
@@ -110,13 +110,13 @@ end
 #################################################
 #Test for elliptical apertures
 
-@testset "outside - $AP" for (AP, params) in zip(APERTURES1, PARAMS1)
+@testset "outside - $AP" for (AP, params) in zip(ELL_APERTURES, ELL_PARAMS)
     data = ones(10, 10)
     aperture = AP(-60, 60, params...)
     @test aperture_photometry(aperture, data, method = (:subpixel, 10)).aperture_sum ≈ 0
 end
 
-@testset "inside zeros - $AP" for (AP, params) in zip(APERTURES1, PARAMS1)
+@testset "inside zeros - $AP" for (AP, params) in zip(ELL_APERTURES, ELL_PARAMS)
     data = zeros(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
@@ -128,7 +128,7 @@ end
 
 end
 
-@testset "inside ones - $AP" for (AP, params) in zip(APERTURES1, PARAMS1)
+@testset "inside ones - $AP" for (AP, params) in zip(ELL_APERTURES, ELL_PARAMS)
     data = ones(40, 40)
     aperture = AP(20.0, 20.0, params...)
 

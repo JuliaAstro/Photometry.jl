@@ -4,7 +4,7 @@ using Photometry.Aperture: circular_overlap,
                            circular_overlap_single_subpixel,
                            area_arc,
                            area_triangle,
-                           point_completely_inside_ellipse,
+                           inside_ellipse,
                            elliptical_overlap,
                            elliptical_overlap_single_subpixel
 
@@ -68,9 +68,9 @@ end
 end
 
 @testset "position with respect to ellipse" begin
-    @test !point_completely_inside_ellipse(5,3,0,0,1/16,1/32,0)
-    @test point_completely_inside_ellipse(0,0,0,0,5,6.2,0)
-    @test point_completely_inside_ellipse(1,2,0,0,1/37,1/36,-1/80)
+    @test !inside_ellipse(5,3,0,0,1/16,1/32,0)
+    @test inside_ellipse(0,0,0,0,5,6.2,0)
+    @test inside_ellipse(1,2,0,0,1/37,1/36,-1/80)
 end
 
 @testset "elliptical overlap" for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0] , [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
