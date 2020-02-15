@@ -123,7 +123,7 @@ end
     table_cent = aperture_photometry(aperture, data, method = :center)
     table_sub = aperture_photometry(aperture, data, method = (:subpixel, 128))
 
-    @test table_sub.aperture_sum ≈ 0 atol = 0.1
+    @test table_sub.aperture_sum ≈ 0 rtol = 1e-3
     @test table_cent.aperture_sum <= table_sub.aperture_sum
 
 end
@@ -137,7 +137,7 @@ end
 
     true_flux = area(aperture)
 
-    @test table_sub.aperture_sum ≈ true_flux atol = 0.1
+    @test table_sub.aperture_sum ≈ true_flux rtol = 1e-3
     @test table_cent.aperture_sum <= table_sub.aperture_sum
 
 end
@@ -151,9 +151,9 @@ function test_elliptical_aperture(data, aperture)
     true_flux = area(aperture)
     true_err = sqrt(true_flux)
 
-    @test table_sub.aperture_sum ≈ true_flux atol = 0.1
+    @test table_sub.aperture_sum ≈ true_flux rtol = 1e-3
     @test table_cent.aperture_sum <= table_sub.aperture_sum
-    @test table_sub.aperture_sum_err ≈ true_err atol = 0.1
+    @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-3
     @test table_cent.aperture_sum_err <= true_err
 end
 
@@ -171,6 +171,6 @@ end
     apertures = [EllipticalAperture(positions[i, :], 5, 5, 0) for i in axes(positions, 1)]
 
     table = aperture_photometry(apertures, data, error, method = (:subpixel, 128))
-    @test table.aperture_sum[1] ≈ 25π atol = 0.1
+    @test table.aperture_sum[1] ≈ 25π rtol = 1e-3
     @test all(table.aperture_sum[2:end] .< 25π)
 end
