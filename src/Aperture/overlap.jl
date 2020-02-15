@@ -171,7 +171,7 @@ If point inside ellipse: Returns true else returns false
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 <= 0
+inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy *(x - h)*(y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
     out = fill(0.0, nx, ny)
