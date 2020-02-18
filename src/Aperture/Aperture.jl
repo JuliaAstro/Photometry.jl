@@ -35,6 +35,15 @@ function Base.size(a::AbstractAperture)
     return (box[4] - box[3] + 1, box[2] - box[1] + 1)
 end
 
+function edges(ap::AbstractAperture)
+    ibox = bbox(ap)
+    xmin = ibox[1] - ap.x - 0.5
+    xmax = ibox[2] - ap.x + 0.5
+    ymin = ibox[3] - ap.y - 0.5
+    ymax = ibox[4] - ap.y + 0.5
+    return (xmin, xmax, ymin, ymax)
+end
+
 function overlap_slices(c::AbstractAperture, shape::Tuple)
     xmin, xmax, ymin, ymax = bbox(c)
 
@@ -114,4 +123,5 @@ aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix,
 include("circular.jl")
 include("overlap.jl")
 include("elliptical.jl")
+include("plotting.jl")
 end

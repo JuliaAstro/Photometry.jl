@@ -9,17 +9,23 @@ export CircularAperture,
 
 A circular aperture.
 
+A circular aperture with radius `r`. `r` must be greater than or equal to 0. 
+
 # Examples
 ```jldoctest
 julia> ap = CircularAperture(0, 0, 10)
 CircularAperture(0, 0, r=10)
-
 ```
 """
 struct CircularAperture{T <: Number} <: AbstractAperture
     x::T
     y::T
     r::T
+
+    function CircularAperture(x::T, y::T, r::T) where T <: Number
+        r ≥ 0 || error("Invalid radius r=$r. r must be greater than or equal to 0.")
+        new{T}(x, y, r)
+    end
 end
 
 CircularAperture(center::AbstractVector, r) = CircularAperture(center..., r)
@@ -51,13 +57,12 @@ end
     CircularAnnulus(x, y, r_in, r_out)
     CircularAnnulus([x, y], r_in, r_out)
 
-A circular aperture.
+A circular annulus with inner radius `r_in` and outer radius `r_out`. 0 ≤ `r_in` ≤ `r_out`.
 
 # Examples
 ```jldoctest
 julia> ap = CircularAnnulus(0, 0, 5, 10)
 CircularAnnulus(0, 0, r_in=5, r_out=10)
-
 ```
 """
 struct CircularAnnulus{T <: Number} <: AbstractAperture
@@ -65,6 +70,11 @@ struct CircularAnnulus{T <: Number} <: AbstractAperture
     y::T
     r_in::T
     r_out::T
+
+    function CircularAnnulus(x::T, y::T, r_in::T, r_out::T) where T <: Number
+        0 ≤ r_in ≤ r_out || error("Invalid radii ($r_in, $r_out). r_out must be greater than r_in which must be greater than or equal to 0.")
+        new{T}(x, y, r_in, r_out)
+end
 end
 
 CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
@@ -89,13 +99,4 @@ function mask(c::CircularAnnulus; method = :exact)
     ny, nx = size(c)
     out = circular_overlap(bounds..., nx, ny, c.r_out, method = method)
     out .-= circular_overlap(bounds..., nx, ny, c.r_in, method = method)
-end
-
-function edges(c::Union{CircularAperture,CircularAnnulus})
-    ibox = bbox(c)
-    xmin = ibox[1] - c.x - 0.5
-    xmax = ibox[2] - c.x + 0.5
-    ymin = ibox[3] - c.y - 0.5
-    ymax = ibox[4] - c.y + 0.5
-    return (xmin, xmax, ymin, ymax)
 end
