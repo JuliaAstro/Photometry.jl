@@ -2,11 +2,12 @@ export EllipticalAperture,
        EllipticalAnnulus
 
 """
-   EllipticalAperture(x, y, a, b, theta)
+    EllipticalAperture(x, y, a, b, theta)
 
-An elliptical aperture.
-
-Where a >= b > 0 and theta in degrees
+This is an elliptical aperture. The structure stores the basic elements required to define an elliptical aperture.
+The elements being x, y, a, b, theta where they correspond to x and y-cordinates
+of center of ellipse, length of semi-major axis of ellipse, length of semi-minor axis of ellipse and angle of rotation from
+positive x-axis in counter-clockwise sense respectively, here a >= b > 0 and theta is in degrees.
 
 # Examples
 ```jldoctest

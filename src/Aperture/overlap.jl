@@ -156,7 +156,7 @@ function area_arc(x0, y0, x1, y1, r)
 end
 
 """
-inside_ellipse(x, y, h, k, cxx, cyy, cxy)
+    inside_ellipse(x, y, h, k, cxx, cyy, cxy)
 
 x: x coordinate of the test point
 y: y coordinate of the test point

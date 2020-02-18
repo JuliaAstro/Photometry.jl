@@ -24,7 +24,7 @@ CircularAnnulus
 
 ## Elliptical Apertures
 
-These apertures are parametrized by the semi-major axis `a`, semi-minor axis `b` and rotation angle in degrees clockwise from the positive x-axis `theta`
+These apertures are parametrized by the semi-major axis `a`, semi-minor axis `b` and rotation angle in degrees counter-clockwise from the positive x-axis `theta`
 
 
 ```@docs
