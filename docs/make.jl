@@ -1,7 +1,13 @@
 using Photometry
 using Documenter
 
-DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = true)
+setup = quote
+    using Photometry
+    using Plots
+    unicodeplots()
+end
+
+DocMeta.setdocmeta!(Photometry, :DocTestSetup, setup; recursive = true)
 
 makedocs(;
     modules = [Photometry],

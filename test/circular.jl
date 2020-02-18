@@ -22,6 +22,9 @@ end
 
     @test sprint(show, c1) == "CircularAperture(0, 0, r=1)"
 
+    @test_throws ErrorException CircularAperture(0, 0, -12)
+    @test_throws ErrorException CircularAperture(0, 0, -1.0)
+
     # cbig = CircularAperture{BigFloat}((0, 1), 2)
 
     # @test area(cbig) ≈ BigFloat(4) * π
@@ -39,6 +42,10 @@ end
     c1 = CircularAnnulus(0, 0, 0, 1)
 
     @test sprint(show, c1) == "CircularAnnulus(0, 0, r_in=0, r_out=1)"
+
+    @test_throws ErrorException CircularAnnulus(0, 0, -3, 4)
+    @test_throws ErrorException CircularAnnulus(0, 0, 4, 3)
+    @test_throws ErrorException CircularAnnulus(0, 0, 4, 3.0)
 
     # cbig = CircularAnnulus{BigFloat}((0, 1), 1, 2)
 
