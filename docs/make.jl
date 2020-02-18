@@ -19,7 +19,7 @@ makedocs(;
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
         ]
-    ],)
+    ])
 
 deploydocs(;
     repo = "github.com/JuliaAstro/Photometry.jl",)
