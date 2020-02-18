@@ -1,13 +1,7 @@
 using Photometry
 using Documenter
 
-setup = quote
-    using Photometry
-    using Plots
-    unicodeplots()
-end
-
-DocMeta.setdocmeta!(Photometry, :DocTestSetup, setup; recursive = true)
+DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = true)
 
 makedocs(;
     modules = [Photometry],
@@ -21,7 +15,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Aperture Photometry" => [
-            "Getting Started" => "apertures/index.md",
+            "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
         ]
