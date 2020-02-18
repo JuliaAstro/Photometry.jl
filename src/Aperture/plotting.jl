@@ -1,12 +1,13 @@
 using RecipesBase
 
-@recipe function f(c::CircularAperture, npoints=1000)
+@recipe function f(c::CircularAperture, npoints = 1000)
     seriestype := :path
     aspect_ratio --> :equal
-    label --> ""
     seriescolor --> :red
+    label --> ""
 
-    t = range(0, 2pi, length=npoints)
+    t = range(0, 2pi, length = npoints)
+    
     x = c.x .+ c.r .* sin.(t)
     y = c.y .+ c.r .* cos.(t)
 
@@ -14,10 +15,10 @@ using RecipesBase
     x, y
 end
 
-@recipe function f(c::CircularAnnulus, npoints=1000)
-    t = range(0, 2pi, length=npoints)
-    seriescolor --> :red
+@recipe function f(c::CircularAnnulus, npoints = 1000)
+    t = range(0, 2pi, length = npoints)
     seriestype := :path
+    seriescolor --> :red
     aspect_ratio --> :equal
     label --> ""
     
@@ -39,13 +40,13 @@ end
 end
 
 
-@recipe function f(e::EllipticalAperture, npoints=1000)
+@recipe function f(e::EllipticalAperture, npoints = 1000)
     seriestype := :path
+    seriescolor --> :red
     aspect_ratio --> :equal
     label --> ""
-    seriescolor --> :red
 
-    t = range(0, 2pi, length=npoints)
+    t = range(0, 2pi, length = npoints)
     x = @. e.x + e.a * cos(t) * cosd(e.theta) - e.b * sin(t) * sind(e.theta)
     y = @. e.y + e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta)
 
