@@ -1,7 +1,7 @@
 # Aperture Photometry
 
-
 ## Introduction
+
 Aperture photometry uses [Apertures](@ref) to cut out and sum values in an image. A very basic mask might be a square of pixels at a certain position. We can model this as a matrix of ones and zeros like
 ```julia
 [0 0 0 0 0

@@ -15,7 +15,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Aperture Photometry" => [
-            "Introduction" => "apertures/index.md",
+            "Getting Started" => "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
         ]
