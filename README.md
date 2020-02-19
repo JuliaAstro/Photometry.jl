@@ -16,7 +16,7 @@ Here are features planned
 - [x] Edge handling
 - [ ] Elliptical Aperture, Elliptical Annulus
 - [ ] Rectangular Aperture, Rectangular Annulus
-- [ ] Plotting for aperture types
+- [x] Plotting for aperture types
 - [ ] Using SkyCoords/WCS for positions
   - Needs some work done in WCS
 

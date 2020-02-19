@@ -30,9 +30,10 @@ using FITSIO
 
 hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
-cutout = @view image[71:150, 81:155]
+chunk = @view image[71:150, 81:155]
 
-heatmap(cutout, aspect_ratio=1, xlims=(1, size(cutout, 2)), ylims=(1, size(cutout, 1)), c=:inferno)
+heatmap(chunk, aspect_ratio=1, c=:inferno,
+    xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 savefig("m67.svg"); nothing # hide
 ```
 
@@ -42,12 +43,12 @@ Now let's add some apertures!
 
 ```@example stars
 positions = [
-    [48, 68],
-    [30, 63],
-    [24, 49],
-    [18, 30],
-    [14, 11],
-    [66, 14.5]
+    [47.5, 67.5],
+    [29.5, 62.5],
+    [23.5, 48.5],
+    [17.5, 29.5],
+    [13.5, 10.5],
+    [65.5, 14.0]
 ]
 
 radii = [3, 3, 2.7, 2, 2.7, 3]
@@ -58,10 +59,16 @@ aps = CircularAperture.(positions, radii)
 now let's plot them up
 
 ```@example stars
-heatmap(cutout, aspect_ratio=1, xlims=(1, size(cutout, 2)), ylims=(1, size(cutout, 1)), c=:inferno)
+heatmap(chunk, aspect_ratio=1, c=:inferno,
+    xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 plot!.(aps, c=:white)
 savefig("m67_aps.svg"); nothing # hide
 ```
 
 ![](m67_aps.svg)
 
+and finally let's get our output table for the photometry
+
+```@example stars
+table = aperture_photometry(aps, chunk)
+```

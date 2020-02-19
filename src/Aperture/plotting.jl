@@ -7,8 +7,8 @@ using RecipesBase
     label --> ""
     t = range(0, 2pi, length = npoints)
     
-    x = c.x .+ c.r .* sin.(t)
-    y = c.y .+ c.r .* cos.(t)
+    x = @. c.x + c.r * sin(t) + 0.5
+    y = @. c.y + c.r * cos(t) + 0.5
 
 
     x, y
@@ -23,15 +23,15 @@ end
     
     # outer ring
     @series begin
-        x = c.x .+ c.r_out .* cos.(t)
-        y = c.y .+ c.r_out .* sin.(t)
+        x = @. c.x + c.r_out * cos(t) + 0.5
+        y = @. c.y + c.r_out * sin(t) + 0.5
         x, y
     end
 
     # inner ring
     @series begin
-        x = c.x .+ c.r_in .* cos.(t)
-        y = c.y .+ c.r_in .* sin.(t)
+        x = @. c.x + c.r_in * cos(t) + 0.5
+        y = @. c.y + c.r_in * sin(t) + 0.5
         x, y
     end
 
@@ -46,8 +46,8 @@ end
     label --> ""
 
     t = range(0, 2pi, length = npoints)
-    x = @. e.x + e.a * cos(t) * cosd(e.theta) - e.b * sin(t) * sind(e.theta)
-    y = @. e.y + e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta)
+    x = @. e.x + e.a * cos(t) * cosd(e.theta) - e.b * sin(t) * sind(e.theta) + 0.5
+    y = @. e.y + e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta) + 0.5
 
     x, y
 end

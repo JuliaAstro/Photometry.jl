@@ -35,13 +35,11 @@ function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
-bbox(c::CircularAperture{<:Integer}) = (c.x - c.r, c.x + c.r, c.y - c.r, c.y + c.r)
-
-function bbox(c::CircularAperture{<:AbstractFloat})
-    xmin = floor(Int, c.x - c.r + 0.5)
-    xmax = ceil(Int, c.x + c.r + 0.5)
-    ymin = floor(Int, c.y - c.r + 0.5)
-    ymax = ceil(Int, c.y + c.r + 0.5)
+function bbox(c::CircularAperture)
+    xmin = floor(Int, c.x - c.r)
+    xmax = floor(Int, c.x + c.r)
+    ymin = floor(Int, c.y - c.r)
+    ymax = floor(Int, c.y + c.r)
     return (xmin, xmax, ymin, ymax)
 end
 
@@ -74,7 +72,7 @@ struct CircularAnnulus{T <: Number} <: AbstractAperture
     function CircularAnnulus(x::T, y::T, r_in::T, r_out::T) where T <: Number
         0 ≤ r_in ≤ r_out || error("Invalid radii ($r_in, $r_out). r_out must be greater than r_in which must be greater than or equal to 0.")
         new{T}(x, y, r_in, r_out)
-end
+    end
 end
 
 CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
@@ -84,13 +82,11 @@ function Base.show(io::IO, c::CircularAnnulus)
     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
-bbox(c::CircularAnnulus{<:Integer}) = (c.x - c.r_out, c.x + c.r_out, c.y - c.r_out, c.y + c.r_out)
-
-function bbox(c::CircularAnnulus{<:AbstractFloat})
-    xmin = floor(Int, c.x - c.r_out + 0.5)
-    xmax = ceil(Int, c.x + c.r_out + 0.5)
-    ymin = floor(Int, c.y - c.r_out + 0.5)
-    ymax = ceil(Int, c.y + c.r_out + 0.5)
+function bbox(c::CircularAnnulus)
+    xmin = floor(Int, c.x - c.r_out)
+    xmax = floor(Int, c.x + c.r_out)
+    ymin = floor(Int, c.y - c.r_out)
+    ymax = floor(Int, c.y + c.r_out)
     return (xmin, xmax, ymin, ymax)
 end
 
