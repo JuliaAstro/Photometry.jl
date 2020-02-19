@@ -5,7 +5,6 @@ using RecipesBase
     aspect_ratio --> :equal
     seriescolor --> :red
     label --> ""
-    yflip := true
     t = range(0, 2pi, length = npoints)
     
     x = c.x .+ c.r .* sin.(t)
@@ -21,7 +20,6 @@ end
     seriescolor --> :red
     aspect_ratio --> :equal
     label --> ""
-    yflip := true
     
     # outer ring
     @series begin
@@ -46,11 +44,10 @@ end
     seriescolor --> :red
     aspect_ratio --> :equal
     label --> ""
-    yflip := true
 
     t = range(0, 2pi, length = npoints)
-    x = @. e.x + e.a * cos(t) * cosd(e.theta) + e.b * sin(t) * sind(e.theta)
-    y = @. e.y - e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta)
+    x = @. e.x + e.a * cos(t) * cosd(e.theta) - e.b * sin(t) * sind(e.theta)
+    y = @. e.y + e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta)
 
     x, y
 end
