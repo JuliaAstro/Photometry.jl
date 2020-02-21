@@ -150,3 +150,32 @@ function bbox(e::EllipticalAnnulus)
 
     return xmin, xmax, ymin, ymax
 end
+
+function mask(e::EllipticalAnnulus; method)
+    bounds = edges(e)
+    ny, nx = size(e)
+    out = elliptical_overlap(bounds..., nx, ny, e.a_out, e.b_out, e.theta_out, method = method)
+    out .-= elliptical_overlap(bounds..., nx, ny, e.a_in, e.b_in, e.theta_in, method = method)
+
+    #This tackles the case when the inner annulus intersects with the outer annulus
+    #As the inner annulus will go out hence creating some negative values in the out matrix due to substraction
+    #Hence to remove the -ve numbers the next subroutine is performed
+    for j=1:size(out,2)
+        for i=1:size(out,1)
+            if out[i,j] < 0
+                out[i,j] = 0
+            end
+        end
+    end
+
+    return out
+end
+
+function edges(e::Union{EllipticalAperture,EllipticalAnnulus})
+    ibox = bbox(e)
+    xmin = ibox[1] - e.x - 0.5
+    xmax = ibox[2] - e.x + 0.5
+    ymin = ibox[3] - e.y - 0.5
+    ymax = ibox[4] - e.y + 0.5
+    return (xmin, xmax, ymin, ymax)
+end
