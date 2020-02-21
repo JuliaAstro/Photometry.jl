@@ -103,79 +103,49 @@ end
 #######################################################
 
 """
-    EllipticalAnnulus(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)
-    EllipticalAnnulus([x, y], a_in, b_in, theta_in, a_out, b_out, theta_out)
+    EllipticalAnnulus(x, y, a, b, θ, factor)
+    EllipticalAnnulus([x, y], a, b, θ, factor)
 
-An elliptical annulus.
+An elliptical annulus with semi-major axis `a`, semi-minor axis `b`, angle `θ` of inner ellipse ,scaling factor `factor` to generate the outer ellipse from inner ellipse.
+`a` and `b` must be ≥ 0, factor ≥ 1, `θ` is measured in degrees counter-clockwise the standard x-axis.
 
 # Examples
 ```jldoctest
-julia> ap = EllipticalAnnulus(0, 0, 10, 5, 25, 16, 10, 45)
-EllipticalAnnulus(0, 0, a_in=10, b_in=5, theta_in=25°, a_out=16, b_out=10, theta_out=45°)
+julia> ap = EllipticalAnnulus(0, 0, 10, 5, 45, 2)
+EllipticalAnnulus(0, 0, a=10, b=5, θ=25°, factor=2)
 
 ```
 """
 struct EllipticalAnnulus{T <: Number} <: AbstractAperture
     x::T
     y::T
-    a_in::T
-    b_in::T
-    theta_in::T
-    a_out::T
-    b_out::T
-    theta_out::T
-end
+    a::T
+    b::T
+    theta::T
+    factor::T
 
-function EllipticalAnnulus(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)
-    if (b_in < 0.0 || a_in < b_in || b_out < 0.0 || a_out < b_out)
-            error("illegal ellipse parameters. Require a_in >= b_in > 0.0, a_out >= b_out > 0.0")
+    function EllipticalAnnulus(x::T, y::T, a::T, b::T, theta::T, factor::T) where T <: Number
+        a < 0 && error("Invalid axis a=$a. a must be greater than or equal to 0")
+        b < 0 && error("Invalid axis b=$b. a must be greater than or equal to 0")
+        factor < 1 && error("Invalid scaling factor=$b. factor must be greater than or equal to 1")
+        new{T}(x, y, a, b, mod(theta, 360), factor)
     end
-    theta_in = mod(theta_in, 360)
-    theta_out = mod(theta_out,360);
-    return EllipticalAperture(promote(x, y, a_in, b_in, theta_in, a_out, b_out, theta_out)...)
 end
 
 function Base.show(io::IO, e::EllipticalAnnulus)
-    print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), b_in=$(e.b_in), theta_in=$(e.theta_in)°, a_out=$(e.a_out), b_out=$(e.b_out), theta_out=$(e.theta_out)°)")
+    print(io, "EllipticalAnnulus($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°, factor=$(e.factor))")
 end
 
 function bbox(e::EllipticalAnnulus)
-    xmin_in, xmax_in, ymin_in, ymax_in = bbox(EllipticalAperture(e.x, e.y, e.a_in, e.b_in, e.theta_in))
-    xmin_out, xmax_out, ymin_out, ymax_out = bbox(EllipticalAperture(e.x, e.y, e.a_out, e.b_out, e.theta_out))
-
-    xmin = min(xmin_in,xmin_out)
-    xmax = max(xmax_in,xmax_out)
-    ymin = min(ymin_in,ymin_out)
-    ymax = max(ymax_in,ymax_out)
-
+    xmin, xmax, ymin, ymax = bbox(EllipticalAperture(e.x, e.y, e.a*e.factor, e.b*e.factor, e.theta))
     return xmin, xmax, ymin, ymax
 end
 
 function mask(e::EllipticalAnnulus; method)
     bounds = edges(e)
     ny, nx = size(e)
-    out = elliptical_overlap(bounds..., nx, ny, e.a_out, e.b_out, e.theta_out, method = method)
-    out .-= elliptical_overlap(bounds..., nx, ny, e.a_in, e.b_in, e.theta_in, method = method)
-
-    #This tackles the case when the inner annulus intersects with the outer annulus
-    #As the inner annulus will go out hence creating some negative values in the out matrix due to substraction
-    #Hence to remove the -ve numbers the next subroutine is performed
-    for j=1:size(out,2)
-        for i=1:size(out,1)
-            if out[i,j] < 0
-                out[i,j] = 0
-            end
-        end
-    end
+    out = elliptical_overlap(bounds..., nx, ny, e.a*e.factor, e.b*e.factor, e.theta, method = method)
+    out .-= elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
 
     return out
-end
-
-function edges(e::Union{EllipticalAperture,EllipticalAnnulus})
-    ibox = bbox(e)
-    xmin = ibox[1] - e.x - 0.5
-    xmax = ibox[2] - e.x + 0.5
-    ymin = ibox[3] - e.y - 0.5
-    ymax = ibox[4] - e.y + 0.5
-    return (xmin, xmax, ymin, ymax)
 end
