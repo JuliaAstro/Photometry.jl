@@ -24,7 +24,6 @@ end
 
     e = EllipticalAperture(0, 0, 10, 10, 0)
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
-    @test_throws ErrorException mask(e, method = :exact)
 
     # test modding of angle
     @test EllipticalAperture(0, 0, 3, 4, 380).theta == 20
