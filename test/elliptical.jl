@@ -51,6 +51,10 @@ end
 
     @test EllipticalAnnulus(0, 0, 4, 3, 380, 2).theta == 20
 
+    @test_throws ErrorException EllipticalAnnulus(0, 0, -2, 4, 0, 2)
+    @test_throws ErrorException EllipticalAnnulus(0, 0, 2, -3, 0, 2)
+    @test_throws ErrorException EllipticalAnnulus(0, 0, 5, 4, 0, 0.5)
+
 end
 
 @testset "Elliptical Annulus bounding box" begin

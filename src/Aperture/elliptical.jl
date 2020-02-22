@@ -132,19 +132,22 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture
     end
 end
 
+EllipticalAnnulus(x, y, a, b, theta, factor) = EllipticalAnnulus(promote(x, y, a, b, theta, factor)...)
+EllipticalAnnulus(center::AbstractVector, a, b, theta, factor) = EllipticalAnnulus(center..., a, b, theta, factor)
+
 function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°, factor=$(e.factor))")
 end
 
 function bbox(e::EllipticalAnnulus)
-    xmin, xmax, ymin, ymax = bbox(EllipticalAperture(e.x, e.y, e.a*e.factor, e.b*e.factor, e.theta))
+    xmin, xmax, ymin, ymax = bbox(EllipticalAperture(e.x, e.y, e.a * e.factor, e.b * e.factor, e.theta))
     return xmin, xmax, ymin, ymax
 end
 
 function mask(e::EllipticalAnnulus; method)
     bounds = edges(e)
     ny, nx = size(e)
-    out = elliptical_overlap(bounds..., nx, ny, e.a*e.factor, e.b*e.factor, e.theta, method = method)
+    out = elliptical_overlap(bounds..., nx, ny, e.a * e.factor, e.b * e.factor, e.theta, method = method)
     out .-= elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
 
     return out

@@ -15,6 +15,7 @@ PARAMS = [
 area(c::CircularAperture) = π * c.r^2
 area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
 area(e::EllipticalAperture) = π * e.a * e.b
+area(e::EllipticalAnnulus) = π * e.a * e.b * (e.factor^2 - 1)
 
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
