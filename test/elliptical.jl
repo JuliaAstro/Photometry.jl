@@ -42,14 +42,14 @@ end
 
 @testset "Elliptical Annulus" begin
 
-    e0 = EllipticalAnnulus(0, 0, 16, 4, 45, 2)
-    @test sprint(show, e0) == "EllipticalAnnulus(0, 0, a=16, b=4, θ=45°, factor=2)"
+    e0 = EllipticalAnnulus(0, 0, 8, 16, 4, 45)
+    @test sprint(show, e0) == "EllipticalAnnulus(0.0, 0.0, a_in=8.0, a_out=16.0, b_in=2.0, b_out=4.0, θ=45.0°)"
 
-    e = EllipticalAnnulus(0, 0, 10, 10, 45, 2)
+    e = EllipticalAnnulus(0, 0, 10, 10, 10, 45)
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
     @test_throws ErrorException mask(e, method = :exact)
 
-    @test EllipticalAnnulus(0, 0, 4, 3, 380, 2).theta == 20
+    @test EllipticalAnnulus(0, 0, 2, 4, 3, 380).theta == 20
 
     @test_throws ErrorException EllipticalAnnulus(0, 0, -2, 4, 0, 2)
     @test_throws ErrorException EllipticalAnnulus(0, 0, 2, -3, 0, 2)
@@ -59,7 +59,7 @@ end
 
 @testset "Elliptical Annulus bounding box" begin
 
-    e = EllipticalAnnulus(0, 0, 16, 4, 0, 2)
-    @test all(bbox(e) == (-32, 32, -8, 8))
+    e = EllipticalAnnulus(0, 0, 8, 16, 4, 0)
+    @test all(bbox(e) == (-16, 16, -4, 4))
 
 end
