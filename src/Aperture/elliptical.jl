@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -103,17 +103,14 @@ end
 #######################################################
 
 """
-    EllipticalAnnulus(x, y, a_in, a_out, b_out, θ, factor)
-    EllipticalAnnulus([x, y], a_in, a_out, b_out, θ, factor)
-
+    EllipticalAnnulus(x, y, a_in, a_out, b_out, θ)
+    EllipticalAnnulus([x, y], a_in, a_out, b_out, θ)
 An elliptical annulus with inner semi-major axis `a_in` outer semi-major axis `a_out`, outer semi-minor axis `b_out`, angle `θ` of inner ellipse.
 `a_out` ≥ `a_in` ≥ 0 and `b` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
-
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
-EllipticalAnnulus(0, 0, a_in=4, b_in=2, a_out=10, b_out=5, θ=45°)
-
+EllipticalAnnulus(0, 0, a_in=4, a_out=10, b_in=2, b_out=5, θ=45°)
 ```
 """
 struct EllipticalAnnulus{T <: Number} <: AbstractAperture
@@ -185,7 +182,7 @@ function bbox(e::EllipticalAnnulus)
     return xmin, xmax, ymin, ymax
 end
 
-function mask(e::EllipticalAnnulus; method)
+function mask(e::EllipticalAnnulus; method = :exact)
     bounds = edges(e)
     ny, nx = size(e)
     out = elliptical_overlap(bounds..., nx, ny, e.a_out, e.b_out, e.theta, method = method)

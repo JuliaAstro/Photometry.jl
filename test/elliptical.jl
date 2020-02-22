@@ -39,7 +39,6 @@ end
     @test all(oblique_coefficients(2, 1, 30) .≈ (7 / 16, 13 / 16, -6sqrt(3) / 16))
 end
 
-
 @testset "Elliptical Annulus" begin
 
     e0 = EllipticalAnnulus(0, 0, 8, 16, 4, 45)
@@ -47,7 +46,6 @@ end
 
     e = EllipticalAnnulus(0, 0, 10, 10, 10, 45)
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
-    @test_throws ErrorException mask(e, method = :exact)
 
     @test EllipticalAnnulus(0, 0, 2, 4, 3, 380).theta == 20
 
