@@ -4,7 +4,7 @@
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/dev)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-yellow.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 This is a package for performing aperture photometry and PSF photometry.
 
@@ -15,11 +15,14 @@ Heavily inspired by [photutils](https://github.com/astropy/photutils), [SEP](htt
 Here are features planned
 - [x] Circular Aperture, Circular Annulus
 - [x] Edge handling
-- [ ] Elliptical Aperture, Elliptical Annulus
+- [x] Elliptical Aperture, Elliptical Annulus
 - [ ] Rectangular Aperture, Rectangular Annulus
 - [x] Plotting for aperture types
 - [ ] Using SkyCoords/WCS for positions
   - Needs some work done in WCS
+- [ ] background modelling
+- [ ] star extraction
+- [ ] filtering
 
 In addition, the funcitonality needs documented, tested, and benchmarked. 
 
@@ -33,4 +36,4 @@ Please see the to-do list above for project ideas as well as any open issues! If
 
 ## License
 
-The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](LICENSE) contains both licenses and any files using derived work are noted at the top of the file.
+The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT expat. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](LICENSE) contains all licenses and any files using derived work are noted at the top of the file.

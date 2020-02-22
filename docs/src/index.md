@@ -7,6 +7,7 @@ DocTestSetup = :(using Photometry)
 
 [![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ## Installation
 
@@ -46,3 +47,7 @@ results
 ## Contributing
 
 If you're interested in contributing, go ahead and check out the [issues](https://github.com/juliaastro/Photometry.jl/issues) or make a [pull request](https://github.com/juliaastro/Photometry.jl/pulls). If you add a new feature, please write appropriate unit tests for it and bump the package's minor version.
+
+## License
+
+The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT expat. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](https://github.com/JuliaAstro/Photometry.jl/blob/master/LICENSE) contains all licenses and any files using derived work are noted at the top of the file.
