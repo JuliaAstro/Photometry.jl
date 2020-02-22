@@ -3,7 +3,7 @@ Part of this work is derived from astropy/photutils and kbarbary/sep. The releva
 are considered under a BSD 3-clause license. =#
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
-    out = fill(0.0, nx, ny)
+    out = fill(0.0, ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx

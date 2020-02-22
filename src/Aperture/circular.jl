@@ -6,6 +6,8 @@ export CircularAperture,
        CircularAnnulus
 
 
+const HALF_PIX = 0.5 + eps(Float32)
+
 """
     CircularAperture(x, y, r)
     CircularAperture([x, y], r)
@@ -38,19 +40,11 @@ function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
-function bbox(c::CircularAperture{<:Integer})
-    xmin = c.x - c.r
-    xmax = c.x + c.r
-    ymin = c.y - c.r
-    ymax = c.y + c.r
-    return (xmin, xmax, ymin, ymax)
-end
-
-function bbox(c::CircularAperture{<:AbstractFloat})
-    xmin = floor(Int, c.x - c.r + 0.5)
-    xmax = ceil(Int, c.x + c.r + 0.5) - 1
-    ymin = floor(Int, c.y - c.r + 0.5)
-    ymax = ceil(Int, c.y + c.r + 0.5) - 1
+function bbox(c::CircularAperture{T}) where T
+    xmin = ceil(Int, c.x - c.r - 0.5)
+    ymin = ceil(Int, c.y - c.r - 0.5)
+    xmax = ceil(Int, c.x + c.r - 0.5)
+    ymax = ceil(Int, c.y + c.r - 0.5)
     return (xmin, xmax, ymin, ymax)
 end
 
@@ -93,19 +87,11 @@ function Base.show(io::IO, c::CircularAnnulus)
     print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
-function bbox(c::CircularAnnulus{<:Integer})
-    xmin = c.x - c.r_out
-    xmax = c.x + c.r_out
-    ymin = c.y - c.r_out
-    ymax = c.y + c.r_out
-    return (xmin, xmax, ymin, ymax)
-end
-
-function bbox(c::CircularAnnulus{<:AbstractFloat})
-    xmin = floor(Int, c.x - c.r_out + 0.5)
-    xmax = ceil(Int, c.x + c.r_out + 0.5) - 1
-    ymin = floor(Int, c.y - c.r_out + 0.5)
-    ymax = ceil(Int, c.y + c.r_out + 0.5) - 1
+function bbox(c::CircularAnnulus)
+    xmin = ceil(Int, c.x - c.r_out - 0.4999999999)
+    ymin = ceil(Int, c.y - c.r_out - 0.4999999999)
+    xmax = ceil(Int, c.x + c.r_out - 0.5)
+    ymax = ceil(Int, c.y + c.r_out - 0.5)
     return (xmin, xmax, ymin, ymax)
 end
 
