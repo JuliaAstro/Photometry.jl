@@ -10,6 +10,9 @@ aperture = Aperture(x0, y0, shape_params...)
 ```
 The position can be pixels or sky coordinates. The sky coordinate positions utilize [SkyCoords.jl](https://juliaastro.github.io/SkyCoords.jl/stable) and [WCS.jl](https://juliaastro.github.io/WCS.jl/stable) for conversion.
 
+!!! warning
+    Sky coordinates are not supported yet.
+
 !!! note
     See [Pixel Convention](@ref) - The origin is the bottom-left with `(1, 1)` being the center of the pixel. 
 
