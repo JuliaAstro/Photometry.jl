@@ -61,15 +61,15 @@ end
 
     # outer ring
     @series begin
-        x = @. e.x + e.factor * e.a * cos(t) * cosd(e.theta) - e.factor * e.b * sin(t) * sind(e.theta) + 0.5
-        y = @. e.y + e.factor * e.a * cos(t) * sind(e.theta) + e.factor * e.b * sin(t) * cosd(e.theta) + 0.5
+        x = @. e.x + e.a_out * cos(t) * cosd(e.theta) - e.b_out * sin(t) * sind(e.theta) + 0.5
+        y = @. e.y + e.a_out * cos(t) * sind(e.theta) + e.b_out * sin(t) * cosd(e.theta) + 0.5
         x, y
     end
 
     # inner ring
     @series begin
-        x = @. e.x + e.a * cos(t) * cosd(e.theta) - e.b * sin(t) * sind(e.theta) + 0.5
-        y = @. e.y + e.a * cos(t) * sind(e.theta) + e.b * sin(t) * cosd(e.theta) + 0.5
+        x = @. e.x + e.a_in * cos(t) * cosd(e.theta) - e.b_in * sin(t) * sind(e.theta) + 0.5
+        y = @. e.y + e.a_in * cos(t) * sind(e.theta) + e.b_in * sin(t) * cosd(e.theta) + 0.5
         x, y
     end
 

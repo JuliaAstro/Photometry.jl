@@ -105,8 +105,8 @@ end
 """
     EllipticalAnnulus(x, y, a_in, a_out, b_out, θ)
     EllipticalAnnulus([x, y], a_in, a_out, b_out, θ)
-An elliptical annulus with inner semi-major axis `a_in` outer semi-major axis `a_out`, outer semi-minor axis `b_out`, angle `θ` of inner ellipse.
-`a_out` ≥ `a_in` ≥ 0 and `b` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
+An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis `a_out`, outer semi-minor axis `b_out`, angle of inclination of outer ellipse `θ`.
+`a_out` ≥ `a_in` ≥ 0 and `b_out` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
@@ -123,10 +123,8 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture
     theta::T
 
     function EllipticalAnnulus(x::T, y::T, a_in::T, b_in::T, a_out::T, b_out::T, theta::T) where T <: Number
-        a_in < 0 && error("Invalid axis a_in=$a_in. a_in must be greater than or equal to 0")
-        b_out < 0 && error("Invalid axis b_out=$b_out. b_out must be greater than or equal to 0")
-        a_out < 0 && error("Invalid axis a_out=$a_out. a_out must be greater than or equal to 0")
-        a_in > a_out && error("Invalid axis a_in=$a_in. a_in must be less than or equal to a_out")
+        0 ≤ a_in ≤ a_out || error("Invalid axis a_in=$a_in or a_out=$a_out. a_out must be greater than a_in which must be greater than or equal to 0")
+        0 ≤ b_in ≤ b_out || error("Invalid axis b_in=$b_in or b_out=$b_out. b_out must be greater than b_in which must be greater than or equal to 0")
         new{T}(x, y, a_in, b_in, a_out, b_out, mod(theta, 360))
     end
 end
