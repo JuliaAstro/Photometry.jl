@@ -1,13 +1,15 @@
 APERTURES = [
     CircularAperture,
     CircularAnnulus,
-    EllipticalAperture
+    EllipticalAperture,
+    EllipticalAnnulus
 ]
 
 PARAMS = [
     (3),
     (3, 5),
-    (3, 3, 0)
+    (3, 3, 0),
+    (3, 5, 5, 0)
 ]
 
 ###########################
@@ -15,6 +17,7 @@ PARAMS = [
 area(c::CircularAperture) = π * c.r^2
 area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
 area(e::EllipticalAperture) = π * e.a * e.b
+area(e::EllipticalAnnulus) = π * e.a_out * e.b_out - π * e.a_in * e.b_in
 
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -102,14 +105,18 @@ end # photometry - circular
     function test_elliptical_aperture(data, aperture)
         error = ones(size(data))
 
+        table_ex = aperture_photometry(aperture, data, error, method = :exact)
         table_cent = aperture_photometry(aperture, data, error, method = :center)
         table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 128))
 
         true_flux = area(aperture)
         true_err = sqrt(true_flux)
 
+        @test table_ex.aperture_sum ≈ true_flux
         @test table_sub.aperture_sum ≈ true_flux rtol = 1e-3
         @test table_cent.aperture_sum <= table_sub.aperture_sum
+
+        @test table_ex.aperture_sum_err ≈ true_err
         @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-3
         @test table_cent.aperture_sum_err <= true_err
     end
@@ -119,6 +126,12 @@ end # photometry - circular
         aperture = EllipticalAperture(20, 20, 10, 10, 0)
         test_elliptical_aperture(data, aperture)
 
+    end
+
+    @testset "errors - EllipticalAnnulus" begin
+        data = ones(40, 40)
+        aperture = EllipticalAnnulus(20, 20, 8, 10, 10, 0)
+        test_elliptical_aperture(data, aperture)
     end
 
     @testset "partial overlap elliptical aperture" begin

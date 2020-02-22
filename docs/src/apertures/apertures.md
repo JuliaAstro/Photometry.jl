@@ -32,6 +32,7 @@ These apertures are parametrized by the semi-major axis `a`, semi-minor axis `b`
 
 ```@docs
 EllipticalAperture
+EllipticalAnnulus
 ```
 
 

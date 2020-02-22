@@ -1,7 +1,7 @@
 using Photometry.Aperture: edges,
                            bbox
 
-@testset "Apertures" begin  
+@testset "Apertures" begin
     ap_circ = CircularAperture(50, 40, 10)
     @test edges(ap_circ) == (-10.5, 10.5, -10.5, 10.5)
     @test bbox(ap_circ) == (40, 60, 30, 50)
@@ -51,5 +51,5 @@ end
 
     c = CircularAnnulus(0, 0, 5, 10)
     @test mask(c, method = :center) == mask(c, method = (:subpixel, 1))
-
+    
 end
