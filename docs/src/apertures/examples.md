@@ -12,10 +12,10 @@ plot(CircularAperture(2, 3, 4), c=1, xlims=(0, 9), ylims=(0, 9))
 plot!(CircularAnnulus(5, 5, 2.1, 3), c=2)
 plot!(EllipticalAperture(0, 0, 10, 1, 32), c=3)
 
-savefig("apertures.svg"); nothing # hide
+savefig("apertures.png"); nothing # hide
 ```
 
-![](apertures.svg)
+![](apertures.png)
 
 ## Simple Stars
 
@@ -34,10 +34,10 @@ chunk = @view image[71:150, 81:155]
 
 heatmap(chunk, aspect_ratio=1, c=:inferno,
     xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
-savefig("m67.svg"); nothing # hide
+savefig("m67.png"); nothing # hide
 ```
 
-![](m67.svg)
+![](m67.png)
 
 Now let's add some apertures!
 
@@ -62,10 +62,10 @@ now let's plot them up
 heatmap(chunk, aspect_ratio=1, c=:inferno,
     xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 plot!.(aps, c=:white)
-savefig("m67_aps.svg"); nothing # hide
+savefig("m67_aps.png"); nothing # hide
 ```
 
-![](m67_aps.svg)
+![](m67_aps.png)
 
 and finally let's get our output table for the photometry
 
