@@ -110,7 +110,7 @@ An elliptical annulus with inner semi-major axis `a_in` outer semi-major axis `a
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
-EllipticalAnnulus(0, 0, a_in=4, a_out=10, b_in=2, b_out=5, θ=45°)
+EllipticalAnnulus(0.0, 0.0, a_in=4.0, a_out=10.0, b_in=2.0, b_out=5.0, θ=45.0°)
 ```
 """
 struct EllipticalAnnulus{T <: Number} <: AbstractAperture
