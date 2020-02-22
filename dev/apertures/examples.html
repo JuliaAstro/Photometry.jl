@@ -10,7 +10,7 @@ GKS: can&#39;t connect to GKS socket application
 Did you start &#39;gksqt&#39;?
 
 GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="apertures.svg" alt/></p><h2 id="Simple-Stars-1"><a class="docs-heading-anchor" href="#Simple-Stars-1">Simple Stars</a><a class="docs-heading-anchor-permalink" href="#Simple-Stars-1" title="Permalink"></a></h2><p>Here is an example where we will find aperture fluxes for stars from M67. The dataset is provided as part of the <a href="https://github.com/astropy/photutils-datasets">astropy/photutils-datasets</a> repository.</p><p>Let&#39;s start by downloading and showing our image</p><pre><code class="language-">using Photometry
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="apertures.png" alt/></p><h2 id="Simple-Stars-1"><a class="docs-heading-anchor" href="#Simple-Stars-1">Simple Stars</a><a class="docs-heading-anchor-permalink" href="#Simple-Stars-1" title="Permalink"></a></h2><p>Here is an example where we will find aperture fluxes for stars from M67. The dataset is provided as part of the <a href="https://github.com/astropy/photutils-datasets">astropy/photutils-datasets</a> repository.</p><p>Let&#39;s start by downloading and showing our image</p><pre><code class="language-">using Photometry
 using Plots
 using FITSIO
 
@@ -20,7 +20,7 @@ chunk = @view image[71:150, 81:155]
 
 heatmap(chunk, aspect_ratio=1, c=:inferno,
     xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
-savefig(&quot;m67.svg&quot;); nothing # hide</code></pre><p><img src="m67.svg" alt/></p><p>Now let&#39;s add some apertures!</p><pre><code class="language-julia">positions = [
+savefig(&quot;m67.png&quot;); nothing # hide</code></pre><p><img src="m67.png" alt/></p><p>Now let&#39;s add some apertures!</p><pre><code class="language-julia">positions = [
     [47.5, 67.5],
     [29.5, 62.5],
     [23.5, 48.5],
@@ -40,4 +40,4 @@ aps = CircularAperture.(positions, radii)</code></pre><pre><code class="language
  CircularAperture(65.5, 14.0, r=3.0)</code></pre><p>now let&#39;s plot them up</p><pre><code class="language-">heatmap(chunk, aspect_ratio=1, c=:inferno,
     xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 plot!.(aps, c=:white)
-savefig(&quot;m67_aps.svg&quot;); nothing # hide</code></pre><p><img src="m67_aps.svg" alt/></p><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-">table = aperture_photometry(aps, chunk)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="apertures.html">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 22 February 2020 05:31">Saturday 22 February 2020</span>. Using Julia version 1.0.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+savefig(&quot;m67_aps.png&quot;); nothing # hide</code></pre><p><img src="m67_aps.png" alt/></p><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-">table = aperture_photometry(aps, chunk)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="apertures.html">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 22 February 2020 05:35">Saturday 22 February 2020</span>. Using Julia version 1.0.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
