@@ -3,7 +3,7 @@ Part of this work is derived from astropy/photutils and kbarbary/sep. The releva
 are considered under a BSD 3-clause license. =#
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
-    out = fill(0.0, ny, nx)
+    out = fill(0.0, nx, ny)
 
     # width of each element
     dx = (xmax - xmin) / nx
@@ -184,7 +184,7 @@ General equation of ellipse:
 inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
-    out = fill(0.0, nx, ny)
+    out = fill(0.0, ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx
