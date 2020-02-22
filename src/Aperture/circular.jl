@@ -1,3 +1,6 @@
+#= 
+Part of this work is derived from astropy/photutils. The relevant derivations
+are considered under a BSD 3-clause license. =#
 
 export CircularAperture,
        CircularAnnulus
@@ -72,7 +75,7 @@ struct CircularAnnulus{T <: Number} <: AbstractAperture
     function CircularAnnulus(x::T, y::T, r_in::T, r_out::T) where T <: Number
         0 ≤ r_in ≤ r_out || error("Invalid radii ($r_in, $r_out). r_out must be greater than r_in which must be greater than or equal to 0.")
         new{T}(x, y, r_in, r_out)
-    end
+end
 end
 
 CircularAnnulus(center::AbstractVector, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)

@@ -1,9 +1,6 @@
-
-export Exact,
-       Center,
-       Subpixel
-
-abstract type OverlapMethod end
+#= 
+Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
+are considered under a BSD 3-clause license. =#
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     out = fill(0.0, nx, ny)
