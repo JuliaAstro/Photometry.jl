@@ -98,6 +98,9 @@ end
 function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
     cut = cutout(a, data)
     cut === nothing && return similar(data, 0, 0)
+    if size(cut) != size(mask(a, method = method))
+        @show a
+    end
     return cut .* mask(a, method = method)
 end
 
