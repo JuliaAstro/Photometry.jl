@@ -3,7 +3,7 @@ Part of this work is derived from astropy/photutils and kbarbary/sep. The releva
 are considered under a BSD 3-clause license. =#
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
-    out = fill(0.0, nx, ny)
+    out = fill(0.0, ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx
@@ -236,7 +236,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                     # partially within radius
                     elseif flag1 || flag2 || flag3 || flag4
                         if method === :exact
-                            @inbounds out[j, i] = elliptical_overlap_core(pxmin, pymin, pxmax, pymax, a, b, theta)
+                            @inbounds out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, a, b, theta)
                         elseif method === :center
                             @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
                         elseif method[1] === :subpixel
@@ -450,7 +450,7 @@ function circle_line(x1, y1, x2, y2)
     end
 end
 
-function elliptical_overlap_core(xmin, ymin, xmax, ymax, a, b, θ)
+function elliptical_overlap_exact(xmin, ymin, xmax, ymax, a, b, θ)
     sint, cost = sincos(deg2rad(-θ))
 
     scale = a * b

@@ -11,7 +11,7 @@ using Photometry.Aperture: circular_overlap,
                            circle_segment_single2,
                            triangle_unitcircle_overlap,
                            elliptical_overlap,
-                           elliptical_overlap_core,
+                           elliptical_overlap_exact,
                            elliptical_overlap_single_subpixel
 
 @testset "overlap - circular" begin
@@ -126,8 +126,8 @@ end # circles
     end
 
     @testset "elliptical overlap" begin
-        @test elliptical_overlap_core(0.5, 2.5, 1.5, 3.5, 3.0, 3.0, 0) ≈ 0.311725 atol = 1e-6
-        @test elliptical_overlap_core(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
+        @test elliptical_overlap_exact(0.5, 2.5, 1.5, 3.5, 3.0, 3.0, 0) ≈ 0.311725 atol = 1e-6
+        @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
     end
 
 end # overlap elliptical 
