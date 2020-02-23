@@ -88,8 +88,8 @@ function Base.show(io::IO, c::CircularAnnulus)
 end
 
 function bbox(c::CircularAnnulus)
-    xmin = ceil(Int, c.x - c.r_out - 0.4999999999)
-    ymin = ceil(Int, c.y - c.r_out - 0.4999999999)
+    xmin = ceil(Int, c.x - c.r_out - 0.5)
+    ymin = ceil(Int, c.y - c.r_out - 0.5)
     xmax = ceil(Int, c.x + c.r_out - 0.5)
     ymax = ceil(Int, c.y + c.r_out - 0.5)
     return (xmin, xmax, ymin, ymax)
