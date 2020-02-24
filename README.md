@@ -1,14 +1,14 @@
 # Photometry.jl
 
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![CI](https://github.com/juliaastro/photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/juliaastro/photometry.jl/workflows/CI)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/dev)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-This is a package for performing aperture photometry and PSF photometry.
+This is a package for performing astronomical photometry using modern and efficient algorithms.
 
-Heavily inspired by [photutils](https://github.com/astropy/photutils), [SEP](https://github.com/kbarbary/sep), and [AperturePhotometry.jl](https://github.com/kbarbary/AperturePhotometry.jl).
+Inspired by [photutils](https://github.com/astropy/photutils), [SEP](https://github.com/kbarbary/sep), and [AperturePhotometry.jl](https://github.com/kbarbary/AperturePhotometry.jl).
 
 ## To-do list
 
