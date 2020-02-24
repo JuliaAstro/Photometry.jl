@@ -1,6 +1,6 @@
 # Photometry.jl
 
-[![CI](https://github.com/juliaastro/photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/juliaastro/photometry.jl/workflows/CI)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?brnach=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/dev)

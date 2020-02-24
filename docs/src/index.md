@@ -5,7 +5,7 @@ DocTestSetup = :(using Photometry)
 
 # Photometry
 
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?brnach=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
