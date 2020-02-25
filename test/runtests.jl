@@ -6,4 +6,5 @@ using Test
     include("circular.jl")
     include("photometry.jl")
     include("elliptical.jl")
+    include("plots.jl")
 end
