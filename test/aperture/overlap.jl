@@ -87,7 +87,7 @@ end # circles
         @test elliptical_overlap_single_subpixel(0, 0, 20, 20, 1 / 225, 1 / 225, 0, 100) ≈ 0.4423
     end
 
-    @testset "circle line" for line in readlines(joinpath(@__DIR__, "data", "circle_line.csv"))
+    @testset "circle line" for line in readlines(joinpath(@__DIR__, "..", "data", "circle_line.csv"))
         tokens = split(line, ',')
         numbers = parse.(Float64, tokens)
         x1, y1, x2, y2 = numbers[1:4]
@@ -98,7 +98,7 @@ end # circles
         @test point2[2] ≈ numbers[8] atol = 1e-6
     end
 
-    @testset "circle segment" for line in readlines(joinpath(@__DIR__, "data", "circle_segment.csv"))
+    @testset "circle segment" for line in readlines(joinpath(@__DIR__, "..", "data", "circle_segment.csv"))
         tokens = split(line, ',')
         numbers = parse.(Float64, tokens)
         x1, y1, x2, y2 = numbers[1:4]
@@ -109,7 +109,7 @@ end # circles
         @test point2[2] ≈ numbers[8] atol = 1e-6
     end
 
-    @testset "circle segment single" for line in readlines(joinpath(@__DIR__, "data", "circle_segment_single.csv"))
+    @testset "circle segment single" for line in readlines(joinpath(@__DIR__, "..", "data", "circle_segment_single.csv"))
         tokens = split(line, ',')
         numbers = parse.(Float64, tokens)
         x1, y1, x2, y2 = numbers[1:4]
@@ -118,7 +118,7 @@ end # circles
         @test point1[2] ≈ numbers[6] atol = 1e-6
     end
 
-    @testset "triangle unitcircle overlap" for line in readlines(joinpath(@__DIR__, "data", "triangle_unitcircle_overlap.csv"))
+    @testset "triangle unitcircle overlap" for line in readlines(joinpath(@__DIR__, "..", "data", "triangle_unitcircle_overlap.csv"))
         tokens = split(line, ',')
         numbers = parse.(Float64, tokens)
         x1, y1, x2, y2, x3, y3 = numbers[1:6]

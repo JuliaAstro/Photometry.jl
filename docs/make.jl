@@ -18,6 +18,10 @@ makedocs(;
             "Getting Started" => "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
+        ],
+        "Background Estimation" => [
+            "Getting Started" => "background/index.md",
+            "Background Estimators" => "background/estimators.md"
         ]
     ])
 
