@@ -1,7 +1,7 @@
 using Statistics
 
 """
-    Mean
+    Mean <: BackgroundEstimator
 
 This estimator returns the mean of the input.
 
