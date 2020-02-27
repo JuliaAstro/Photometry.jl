@@ -4,7 +4,7 @@ using Statistics, StatsBase
     sigma_clip(data, sigma_low, sigma_high; center=median, std=std, iterations=5)
     sigma_clip(data, sigma; center=median, std=std, iteration=5)
 
-This function returns sigma clipped values of the input `data`.
+This function returns sigma clipped values of the input `data`. The funtion `sigma_clip!` is an inplace implementation and mutates the `data`.
 `sigma_high` and `sigma_low` are for un-symmetrical clipping, when `sigma_low = sigma_high` then they can be passed as `sigma`.
 `center`, `std` and `iterations` are optional parameters which are functions for finding central element, standard deviation and number of iterations of sigma
 clipping to be carried out.
@@ -27,16 +27,17 @@ julia> sigma_clip(data, 1, 1)
 ```
 """
 
-function sigma_clip(data::AbstractArray, sigma_low::Real, sigma_high::Real; iterations::Integer=5, center=median, std=std)
+function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real; iterations::Integer=5, center=median, std=std)
     for i=1:iterations
         mean = center(data)
         deviation = std(data)
-        data = clamp.(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
+        clamp!(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
     end
     return data
 end
 
-sigma_clip(data, sigma; kwargs...) = sigma_clip(data, sigma, sigma; kwargs...)
+sigma_clip!(data, sigma; kwargs...) = sigma_clip!(data, sigma, sigma; kwargs...)
+sigma_clip(data, rest...; kwargs...) = sigma_clip!(copy(data), rest...; kwargs...)
 
 """
     Mean <: BackgroundEstimator
