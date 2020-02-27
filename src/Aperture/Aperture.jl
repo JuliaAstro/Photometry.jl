@@ -8,7 +8,11 @@ using DataFrames: DataFrame
 
 export mask,
        cutout,
-       aperture_photometry
+       aperture_photometry,
+       CircularAperture,
+       CircularAnnulus,
+       EllipticalAperture,
+       EllipticalAnnulus
 
 """
 The abstract super-type for Apertures

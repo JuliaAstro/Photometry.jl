@@ -2,12 +2,6 @@
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
-export CircularAperture,
-       CircularAnnulus
-
-
-const HALF_PIX = 0.5 + eps(Float32)
-
 """
     CircularAperture(x, y, r)
     CircularAperture([x, y], r)

@@ -2,9 +2,6 @@
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
-export EllipticalAperture,
-       EllipticalAnnulus
-
 """
     EllipticalAperture(x, y, a, b, θ)
     EllipticalAperture([x, y], a, b, θ)
