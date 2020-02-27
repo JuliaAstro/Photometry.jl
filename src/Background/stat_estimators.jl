@@ -27,7 +27,7 @@ julia> sigma_clip(data, 1, 1)
 ```
 """
 
-function sigma_clip(data::AbstractArray, sigma_low::Number, sigma_high::Number; iterations::Number=5, center=median, std=std)
+function sigma_clip(data::AbstractArray, sigma_low::Real, sigma_high::Real; iterations::Integer=5, center=median, std=std)
     for i=1:iterations
         mean = center(data)
         deviation = std(data)
