@@ -10,5 +10,5 @@ using Test
 end
 
 @testset "Background Estimation" begin
-
+    include("background/simple.jl")
 end
