@@ -19,3 +19,12 @@ end
     test_ones(E)
     test_zeros(E)
 end
+
+@testset "Median" begin
+    @test estimate_background(Median(1, 1), ones(10, 10)) == 1.0
+    @test estimate_background(Median(1), ones(10, 10)) == 1.0
+    test_ones(Median(1, 1))
+    test_zeros(Median(1, 1))
+    test_ones(Median(1))
+    test_zeros(Median(1))
+end
