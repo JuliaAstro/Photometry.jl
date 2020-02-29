@@ -47,11 +47,7 @@ struct Median{T <: Number} <: BackgroundEstimator
         sigma_high < 0 && error("Invalid sigma sigma_high=$sigma_high. sigma_high must be greater than or equal to 0")
         new{T}(sigma_low, sigma_high)
     end
-
-    function Median(sigma::T) where T <: Number
-        sigma < 0 && error("Invalid sigma=$sigma. sigma must be greater than or equal to 0")
-        new{T}(sigma, sigma)
-    end
 end
 
+Median(sigma) = Median(sigma, sigma)
 estimate_background(center::Median, data; dims = :, iterations=5) = median(sigma_clip(data, center.sigma_low, center.sigma_high, iterations = iterations), dims = dims)
