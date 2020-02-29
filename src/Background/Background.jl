@@ -1,7 +1,8 @@
 module Background
 
 export estimate_background,
-       Mean
+       Mean,
+       Median
 
 
 # Abstract types
@@ -33,9 +34,9 @@ estimate_background(T::Type{<:BackgroundEstimator}, d::AbstractArray; dims = :) 
 
 Perform 2D background estimation using the given estimator using meshes and kernels.
 
-This function will estimate backgrounds in meshes of size `box_size`, using a filter kernel of size `kernel_size`. These correspond to the dimension, so for 2D data you could specify (20,) or (20,20) as the box/kernel size, matching with dims=1 for the scalar variant. 
+This function will estimate backgrounds in meshes of size `box_size`, using a filter kernel of size `kernel_size`. These correspond to the dimension, so for 2D data you could specify (20,) or (20,20) as the box/kernel size, matching with dims=1 for the scalar variant.
 
-If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`. 
+If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
 If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
 
