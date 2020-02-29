@@ -3,7 +3,9 @@ using Statistics, StatsBase
 """
     sigma_clip(data, sigma_low, sigma_high; center=median, std=std)
     sigma_clip(data, sigma; center=median, std=std)
-
+    sigma_clip!(data, sigma_low, sigma_high; center=median, std=std)
+    sigma_clip!(data, sigma; center=median, std=std)
+    
 This function returns sigma clipped values of the input `data`. The funtion `sigma_clip!` is an inplace implementation and mutates the `data`.
 `sigma_high` and `sigma_low` are for un-symmetrical clipping, when `sigma_low = sigma_high` then they can be passed as `sigma`.
 `center` and `std` are optional parameters which are functions for finding central element and standard deviation.
