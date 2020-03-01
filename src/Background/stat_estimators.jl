@@ -26,7 +26,7 @@ estimate_background(::Mean, data; dims = :) = mean(data, dims = dims)
 
 This estimator returns the median of the input.
 
-#Example
+# Example
 ```jldoctest
 julia> data = ones(5 ,5)
 
