@@ -74,7 +74,7 @@ A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height
 # Examples
 ```jldoctest
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
-RectangularAnnulus(0, 0, w_in=5, w_out=10, h_in=4, h_out=8, θ=45°)
+RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, θ=45.0°)
 ```
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture
@@ -89,7 +89,8 @@ struct RectangularAnnulus{T <: Number} <: AbstractAperture
     function RectangularAnnulus(x::T, y::T, w_in::T, w_out::T, h_out::T, θ::T) where T <: Number
         0 < w_in ≤ w_out || error("Invalid sides ($w_in, $w_out). `w_out` must be greater than or equal to `w_in` which must be greater than 0.")
         h_out ≤ 0 && error("Invalid side($h_out). `h_out` must be greater than 0.")
-        new{T}(x, y, w_in, w_out, w_in / w_out * h_out, h_out, mod(θ, 360))
+        P = typeof(one(T) / 1)
+        new{P}(x, y, w_in, w_out, w_in / w_out * h_out, h_out, mod(θ, 360))
     end
 end
 

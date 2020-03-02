@@ -72,6 +72,64 @@ end
         y = @. e.y + e.a_in * cos(t) * sind(e.theta) + e.b_in * sin(t) * cosd(e.theta) + 0.5
         x, y
     end
+end
 
 
+@recipe function f(ap::RectangularAperture, npoints = 1000)
+    seriestype := :path
+    seriescolor --> :red
+    aspect_ratio --> :equal
+    label --> ""
+
+    t = range(0, 2π, length = npoints)
+    w2 = ap.w / 2
+    h2 = ap.h / 2
+    
+    x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
+    y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
+
+    sinth, costh = sincos(deg2rad(ap.theta))
+    u = @. ap.x + x * costh - y * sinth + 0.5
+    v = @. ap.y + x * sinth + y * costh + 0.5
+
+    u, v
+end
+
+@recipe function f(ap::RectangularAnnulus, npoints = 1000)
+    seriestype := :path
+    seriescolor --> :red
+    aspect_ratio --> :equal
+    label --> ""
+
+    t = range(0, 2π, length = npoints)
+
+    # outer box
+    @series begin
+        w2 = ap.w_out / 2
+        h2 = ap.h_out / 2
+        
+        x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
+        y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
+    
+        sinth, costh = sincos(deg2rad(ap.theta))
+        u = @. ap.x + x * costh - y * sinth + 0.5
+        v = @. ap.y + x * sinth + y * costh + 0.5
+
+        u, v
+    end
+
+    # inner box
+    @series begin
+        w2 = ap.w_in / 2
+        h2 = ap.h_in / 2
+        
+        x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
+        y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
+    
+        sinth, costh = sincos(deg2rad(ap.theta))
+        u = @. ap.x + x * costh - y * sinth + 0.5
+        v = @. ap.y + x * sinth + y * costh + 0.5
+
+        u, v
+    end
 end

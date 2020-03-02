@@ -30,7 +30,7 @@ end
 
     ap1 = RectangularAnnulus(0, 0, 1, 1, 1, 0)
 
-    @test sprint(show, ap1) == "RectangularAnnulus(0, 0, w_in=1, w_out=1, h_in=1, h_out=1, θ=0°)"
+    @test sprint(show, ap1) == "RectangularAnnulus(0.0, 0.0, w_in=1.0, w_out=1.0, h_in=1.0, h_out=1.0, θ=0.0°)"
 
     @test_throws ErrorException RectangularAnnulus(0, 0, 0, 0, 0, 0)
     @test_throws ErrorException RectangularAnnulus(0, 0, -12, 2, 3, 0)
