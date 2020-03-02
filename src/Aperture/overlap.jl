@@ -18,7 +18,7 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     bymin = -r - 0.5dy
     bymax = r + 0.5dy
 
-    for i in 1:nx
+    @inbounds for i in 1:nx
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
         pxcen = pxmin + 0.5dx
@@ -37,15 +37,15 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
 
                     # fully within radius
                     if d < r - pixel_radius
-                        @inbounds out[j, i] = 1
+                        out[j, i] = 1
                     # partially within radius
                     elseif d < r + pixel_radius
                         if method === :exact
-                            @inbounds out[j, i] = circular_overlap_single_exact(pxmin, pymin, pxmax, pymax, r) / (dx * dy)
+                            out[j, i] = circular_overlap_single_exact(pxmin, pymin, pxmax, pymax, r) / (dx * dy)
                         elseif method === :center
-                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
+                            out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
                         elseif method[1] === :subpixel
-                            @inbounds out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
+                            out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
                         end
                     end
                 end
@@ -203,7 +203,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
 
     cxx, cyy, cxy = oblique_coefficients(a, b, theta)
 
-    for i in 1:nx
+    @inbounds for i in 1:nx
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
         pxcen = pxmin + 0.5dx
@@ -224,23 +224,24 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
                     #  |   |
                     #  |   |
                     #  1---3
-
-                    flag1 = inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy)
-                    flag2 = inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy)
-                    flag3 = inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy)
-                    flag4 = inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
+                    flags = [
+                        inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy),
+                        inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy),
+                        inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy),
+                        inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
+                    ]
 
                     # fully within radius
-                    if flag1 && flag2 && flag3 && flag4
-                        @inbounds out[j, i] = 1
+                    if all(flags)
+                        out[j, i] = 1
                     # partially within radius
-                    elseif flag1 || flag2 || flag3 || flag4
+                    elseif any(flags)
                         if method === :exact
-                            @inbounds out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, a, b, theta)
+                            out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, a, b, theta)
                         elseif method === :center
-                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
+                            out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
                         elseif method[1] === :subpixel
-                            @inbounds out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, method[2])
+                            out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, method[2])
                         end
                     end
                 end
@@ -467,4 +468,105 @@ function elliptical_overlap_exact(xmin, ymin, xmax, ymax, a, b, θ)
 
     return scale * (triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3) +
                     triangle_unitcircle_overlap(x1, y1, x4, y4, x3, y3))
+end
+
+####################################
+# Rectangular routines
+
+function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
+    out = fill(0.0, ny, nx)
+
+    # width of each element
+    dx = (xmax - xmin) / nx
+    dy = (ymax - ymin) / ny
+
+    # bounding box
+    bxmin, bxmax, bymin, bymax = bbox(RectangularAperture(0, 0, w, h, θ))
+
+    bxmin -= 0.5dx
+    bxmax += 0.5dx
+    bymin -= 0.5dy
+    bymax += 0.5dy
+
+    @inbounds for i in 1:nx
+        # lower end of pixel
+        pxmin = xmin + (i - 1) * dx
+        pxcen = pxmin + 0.5dx
+        # upper end of pixel
+        pxmax = pxmin + dx
+        if pxmax > bxmin && pxmin < bxmax
+            for j in 1:ny
+                pymin = ymin + (j - 1) * dy
+                pycen = pymin + 0.5dy
+                pymax = pymin + dy
+
+                if pymax > bymin && pymin < bymax
+                    if method === :exact
+                        out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
+                    elseif method === :center
+                        out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, 1)
+                    elseif method[1] === :subpixel
+                        out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, method[2])
+                    end
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels)
+    dx = (x1 - x0) / subpixels
+    dy = (y1 - y0) / subpixels
+
+    frac = 0
+
+    x = x0 - 0.5dx
+    for i in 1:subpixels
+        x += dx
+        y = y0 - 0.5dy
+        for j in 1:subpixels
+            y += dx
+            if intersects_rectangle(x, y, w, h, θ)
+                frac += 1
+            end
+        end
+    end
+
+    return frac / subpixels^2
+
+end
+
+# see https://math.stackexchange.com/questions/69099/equation-of-a-rectangle
+"""intersection with rectangular using implicit Lamé curve"""
+function intersects_rectangle(x, y, w, h, θ)
+    sinth, costh = sincos(deg2rad(θ))
+    u = x * costh - y * sinth
+    v = x * sinth + y * costh
+
+    return abs(u / w + v / h) + abs(u / w - v / h) < 2
+end
+
+function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
+    sint, cost = sincos(deg2rad(-θ))
+
+    scale = w * h
+
+    # reproject ellipse 
+    x1 = (xmin * cost - ymin * sint) / w
+    y1 = (xmin * sint + ymin * cost) / h
+    x2 = (xmax * cost - ymin * sint) / w
+    y2 = (xmax * sint + ymin * cost) / h
+    x3 = (xmax * cost - ymax * sint) / w
+    y3 = (xmax * sint + ymax * cost) / h
+    x4 = (xmin * cost - ymax * sint) / w
+    y4 = (xmin * sint + ymax * cost) / h
+
+    return scale * (triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3) +
+                    triangle_unitsquare_overlap(x1, y1, x4, y4, x3, y3))
+end
+
+function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
+
 end
