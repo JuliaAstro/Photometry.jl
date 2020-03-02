@@ -125,5 +125,5 @@ function mask(ap::RectangularAnnulus; method = :exact)
     bounds = edges(ap)
     ny, nx = size(ap)
     out = rectangular_overlap(bounds..., nx, ny, ap.w_out, ap.h_out, ap.theta, method = method)
-    out .-= rectangular_overlap(bounds..., nx, ny,  p.w_in, ap.h_in, ap.theta, method = method)
+    out .-= rectangular_overlap(bounds..., nx, ny,  ap.w_in, ap.h_in, ap.theta, method = method)
 end
