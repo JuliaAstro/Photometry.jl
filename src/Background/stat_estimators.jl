@@ -28,7 +28,7 @@ This estimator returns the median of the input.
 
 # Example
 ```jldoctest
-julia> data = ones(5 ,5)
+julia> data = ones(5 ,5);
 
 julia> estimate_background(Median, data)
 1.0
@@ -46,6 +46,8 @@ estimate_background(::Median, data; dims = :) = median(data, dims = dims)
     Mode <: BackgroundEstimator
 
 This estimator returns the mode of the input.
+!!! note
+    `Mode` does not supports the dims keyword.
 
 # Example
 ```jldoctest
