@@ -29,11 +29,11 @@ struct RectangularAperture{T <: Number} <: AbstractAperture
     end
 end
 
-RectangularAperture(center::AbstractVector, w, h, θ) = RectangularAperture(center...,  w, h, θ)
-RectangularAperture(x, y,  w, h, θ) = RectangularAperture(promote(x, y,  w, h, θ)...)
+RectangularAperture(center::AbstractVector, w, h, θ) = RectangularAperture(center..., w, h, θ)
+RectangularAperture(x, y,  w, h, θ) = RectangularAperture(promote(x, y, w, h, θ)...)
 
 function Base.show(io::IO, ap::RectangularAperture)
-    print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w)), l=$(ap.l), θ=$(ap.theta)°")
+    print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w), h=$(ap.h), θ=$(ap.theta)°)")
 end
 
 function bbox(ap::RectangularAperture{T}) where T
@@ -42,18 +42,18 @@ function bbox(ap::RectangularAperture{T}) where T
     h2 = ap.h / 2
     sint, cost = sincos(deg2rad(ap.theta))
     
-    Δx1 = abs(w2 * cost - h2 * sint)
-    Δy1 = abs(w2 * sint + h2 * cost)
-    Δx2 = abs(w2 * cost + h2 * sint)
-    Δy2 = abs(w2 * sint - h2 * cost)
+    dx1 = abs(w2 * cost - h2 * sint)
+    dy1 = abs(w2 * sint + h2 * cost)
+    dx2 = abs(w2 * cost + h2 * sint)
+    dy2 = abs(w2 * sint - h2 * cost)
     
-    Δx = max(Δx1, Δx2)
-    Δy = max(Δy1, Δy2)
+    dx = max(dx1, dx2)
+    dy = max(dy1, dy2)
     
-    xmin = ceil(Int, ap.x - Δx - 0.5)
-    ymin = ceil(Int, ap.y - Δy - 0.5)
-    xmax = ceil(Int, ap.x + Δx - 0.5)
-    ymax = ceil(Int, ap.y + Δy - 0.5)
+    xmin = ceil(Int, ap.x - dx - 0.5)
+    ymin = ceil(Int, ap.y - dy - 0.5)
+    xmax = ceil(Int, ap.x + dx - 0.5)
+    ymax = ceil(Int, ap.y + dy - 0.5)
     return (xmin, xmax, ymin, ymax)
 end
 
@@ -69,7 +69,7 @@ end
     RectangularAnnulus(x, y, w_in, w_out, h_out, θ)
     RectangularAnnulus([x, y], w_in, w_out, h_out, θ)
 
-A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in ≥ 0`.
+A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in > 0`.
 
 # Examples
 ```jldoctest
@@ -87,8 +87,8 @@ struct RectangularAnnulus{T <: Number} <: AbstractAperture
     theta::T
 
     function RectangularAnnulus(x::T, y::T, w_in::T, w_out::T, h_out::T, θ::T) where T <: Number
-        0 ≤ w_in ≤ w_out || error("Invalid sides ($w_in, $w_out). `w_out` must be greater than `w_in` which must be greater than or equal to 0.")
-        h_out < 0 && error("Invalid side($h_out). `h_out` must be greater than 0.")
+        0 < w_in ≤ w_out || error("Invalid sides ($w_in, $w_out). `w_out` must be greater than or equal to `w_in` which must be greater than 0.")
+        h_out ≤ 0 && error("Invalid side($h_out). `h_out` must be greater than 0.")
         new{T}(x, y, w_in, w_out, w_in / w_out * h_out, h_out, mod(θ, 360))
     end
 end
