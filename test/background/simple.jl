@@ -19,3 +19,9 @@ end
     test_ones(E)
     test_zeros(E)
 end
+
+@testset "mode" begin
+    x = [1,2,3,4,5,6,5,4,3,4,34,3,43,43,3,3,3,3,1]
+    @test estimate_background(Mode, x) == 3
+    @test estimate_background(Mode, x) == estimate_background(Mode(), x)
+end

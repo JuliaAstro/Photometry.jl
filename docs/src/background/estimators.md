@@ -6,6 +6,8 @@ All of these estimators are subtypes of [`Background.BackgroundEstimator`](@ref)
 
 ```@docs
 Mean
+Median
+Mode
 ```
 
 ## API/Reference
