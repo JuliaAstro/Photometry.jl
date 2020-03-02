@@ -5,7 +5,9 @@ APERTURES = [
     CircularAperture(3, 3, 3),
     CircularAnnulus(3, 3, 2, 4),
     EllipticalAperture(3, 3, 4, 2, 45),
-    EllipticalAnnulus(3, 3, 3, 4, 2, -26)
+    EllipticalAnnulus(3, 3, 3, 4, 2, -26),
+    RectangularAperture(3, 3, 3, 4, 15),
+    RectangularAnnulus(3, 3, 3, 4, 2, -5)
 ]
 
 @testset "Aperture Plots - $(typeof(ap))" for ap in APERTURES

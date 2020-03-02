@@ -7,10 +7,12 @@ We have recipes for all our aperture types, so you can easily create overlays on
 using Photometry
 using Plots
 
-plot(CircularAperture(2, 3, 4), c=1, xlims=(0, 9), ylims=(0, 9))
+plot(CircularAperture(2, 3, 4), c=1, xlims=(-1, 12), ylims=(0, 9))
 plot!(CircularAnnulus(5, 5, 2.1, 3), c=2)
 plot!(EllipticalAperture(0, 0, 10, 1, 32), c=3)
-plot!(EllipticalAnnulus(5, 5, 4, 10, 1, 32), c=4)
+plot!(EllipticalAnnulus(5, 5, 4, 5, 2, -32), c=4)
+plot!(RectangularAperture(0, 0, 4, 4, 4), c=5)
+plot!(RectangularAnnulus(5, 1, 3, 4, 4, 4), c=6)
 
 savefig("apertures.png"); nothing # hide
 ```
