@@ -2,7 +2,8 @@ module Background
 
 export estimate_background,
        Mean,
-       Median
+       Median,
+       Mode
 
 
 # Abstract types
@@ -17,7 +18,7 @@ abstract type BackgroundEstimator end
 """
     estimate_background(::BackgroundEstimator, data; dims=:)
 
-Perform 2D background estimation using the given estimator. 
+Perform 2D background estimation using the given estimator.
 
 The value returned will be an two arrays corresponding to the estimated background, whose dimensionality will depend on the `dims` keyword and the estimator used.
 

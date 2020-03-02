@@ -1,4 +1,4 @@
-using Statistics
+using Statistics, StatsBase
 
 """
     Mean <: BackgroundEstimator
@@ -41,3 +41,20 @@ julia> estimate_background(Median, data, dims=1)
 struct Median <: BackgroundEstimator end
 
 estimate_background(::Median, data; dims = :) = median(data, dims = dims)
+
+"""
+    Mode <: BackgroundEstimator
+
+This estimator returns the mode of the input.
+
+# Example
+```jldoctest
+julia> data = ones(5, 5);
+
+julia> estimate_background(Mode, data)
+1.0
+```
+"""
+struct Mode <: BackgroundEstimator end
+
+estimate_background(::Mode, data; dims = :) = mode(data)
