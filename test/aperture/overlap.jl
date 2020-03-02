@@ -12,7 +12,10 @@ using Photometry.Aperture: circular_overlap,
                            triangle_unitcircle_overlap,
                            elliptical_overlap,
                            elliptical_overlap_exact,
-                           elliptical_overlap_single_subpixel
+                           elliptical_overlap_single_subpixel,
+                           rectangular_overlap,
+                           rectangular_overlap_exact,
+                           rectangular_overlap_single_subpixel
 
 @testset "overlap - circular" begin
 
@@ -131,6 +134,10 @@ end # circles
     end
 
 end # overlap elliptical 
+
+@testset "overlap - rectangular" begin
+
+end
 
 @testset "overlap - utils" begin
 
