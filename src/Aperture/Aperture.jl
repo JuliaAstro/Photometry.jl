@@ -12,7 +12,9 @@ export mask,
        CircularAperture,
        CircularAnnulus,
        EllipticalAperture,
-       EllipticalAnnulus
+       EllipticalAnnulus,
+       RectangularAperture,
+       RectangularAnnulus
 
 """
 The abstract super-type for Apertures

@@ -6,6 +6,7 @@ using Test
     include("aperture/circular.jl")
     include("aperture/photometry.jl")
     include("aperture/elliptical.jl")
+    include("aperture/rectangular.jl")
     include("aperture/plots.jl")
 end
 
