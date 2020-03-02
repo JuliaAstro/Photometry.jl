@@ -291,7 +291,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     inside = ds .< 1
 
     # on circle
-    on = isapprox.(ds, 1, atol = 1e-10, rtol = 0)
+    on = isapprox.(ds, 1, atol = 1e-10)
 
     # triangle is completely inside circle
     if inside[3] || on[3]
@@ -299,8 +299,8 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
 
     # if vertex 1 or 2 are on the edge, then dot product with 3 to determine intersection
     elseif inside[2] || on[2]
-        intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
-        intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
+        intersect13 = on[1] && x1 * (x3 - x1) + y1 * (y3 - y1) < 0
+        intersect23 = on[2] && x2 * (x3 - x2) + y2 * (y3 - y2) < 0
         if intersect13 && intersect23
             point1 = circle_segment_single2(x1, y1, x3, y3)
             point2 = circle_segment_single2(x2, y2, x3, y3)
@@ -568,5 +568,155 @@ function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
 end
 
 function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
+    # distances
+    d1 = x1^2 + y1^2
+    d2 = x2^2 + y2^2
+    d3 = x3^2 + y3^2
 
+    # order by distances
+    ds = [d1, d2, d3]
+    order = sortperm(ds)
+    ds = ds[order]
+    x1, x2, x3 = [x1, x2, x3][order]
+    y1, y2, y3 = [y1, y2, y3][order]
+
+    points = zip((x1, x2, x3), (y1, y2, y3))
+    # which are inside
+    inside = [x < 1 && y < 1 for (x, y) in points]
+
+    # which are on
+    on = [isapprox(x, 1, atol = 1e-10) || isapprox(y, 1, atol = 1e-10) for (x, y) in points]
+
+    # completely inside circle
+    if inside[3] || on[3]
+        return area_triangle(x1, y1, x2, y2, x3, y3)
+    # if vertex 1 or 2 are on the edge, then dot product with 3 to  determine intersection
+    elseif inside[2] || on[2]
+        intersect13 = on[1] && x1 * (x3 - x1) + y1 * (y3 - y1) < 0
+        intersect23 = on[2] && x2 * (x3 - x2) + y2 * (y3 - y2) < 0
+        if intersect13 && intersect23
+            point1 = square_segment_single2(x1, y1, x3, y3)
+            point2 = square_segment_single2(x2, y2, x3, y3)
+
+            return (area_triangle(x1, y1, x2, y2, point1...) +
+                    area_triangle(x2, y2, point1..., point2...) +
+                    area_triangle(point1..., point2..., 1, 1)) 
+        elseif intersect13
+            point1 = square_segment_single2(x1, y1, x3, y3)
+
+            return (area_triangle(x1, y1, x2, y2, point1...) +
+                    area_triangle(x2, y2, point1..., 1, 1))
+        elseif intersect23
+            point2 = square_segment_single2(x2, y2, x3, y3)
+
+            return (area_triangle(x1, y1, x2, y2, point2...) +
+                    area_triangle(x2, y2, point2..., 1, 1))
+        else
+            return area_triangle(x1, y1, x2, y2, 1, 1)
+        end
+    elseif inside[1]
+        point1, point2 = square_segment(x2, y2, x3, y3)
+        point3 = square_segment_single2(x1, y1, x2, y2)
+        point4 = square_segment_single2(x1, y1, x3, y3)
+
+        if point1[1] > 1 # no intersection
+            # check if (x1, y2) and origin are on opposite sides of segment
+            if (((0 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (0 - point3[1])) !=
+                ((y1 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (x1 - point3[1])))
+                return (area_triangle(x1, y1, point3..., point4...) + π - area_triangle(point3..., point4..., 1, 1))
+            else
+                return area_triangle(x1, y1, point3..., point4...) + area_triangle(point3..., point4..., 1, 1)
+            end
+        else
+            
+              # ensure that point1 is the point closest to (x2, y2)
+              if (((point2[1] - x2) * (point2[1] - x2) + (point2[2] - y2) * (point2[2] - y2)) <
+                  ((point1[1] - x2) * (point1[1] - x2) + (point1[2] - y2) * (point1[2] - y2)))
+                point1, point2 = point2, point1
+              end
+        
+              return (area_triangle(x1, y1, point3..., point1...) +
+                      area_triangle(x1, y1, point1..., point2...) +
+                      area_triangle(x1, y1, point2..., point4...) +
+                      area_triangle(point1..., point3..., 1, 1) +
+                      area_triangle(point2..., point4..., 1, 1))
+        end
+    else
+        point1, point2 = square_segment(x1, y1, x2, y2)
+        point3, point4 = square_segment(x2, y2, x3, y3)
+        point5, point6 = square_segment(x3, y3, x1, y1)
+
+        if point1[1] ≤ 1
+            xp = (point1[1] + point2[1]) / 2
+            yp = (point1[2] + point2[2]) / 2
+            return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
+                    triangle_unitsquare_overlap(x2, y2, x3, y3, xp, yp))
+        elseif point3[1] ≤ 1
+            xp = (point3[1] + point4[1]) / 2
+            yp = (point3[2] + point4[2]) / 2
+            return (triangle_unitsquare_overlap(x3, y3, x1, y1, xp, yp) +
+                    triangle_unitsquare_overlap(x2, y2, x1, y1, xp, yp))
+        elseif point5[1] ≤ 1
+            xp = (point5[1] + point6[1]) / 2
+            yp = (point5[2] + point6[2]) / 2
+            return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
+                    triangle_unitsquare_overlap(x3, y3, x2, y2, xp, yp))
+        else
+            return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0
+        end
+    end
+end
+
+# intersection of a segment with the unit square
+function square_segment(x1, y1, x2, y2)
+    point1, point2 = square_line(x1, y1, x2, y2)
+
+    if ((point1[1] > x1 && point1[1] > x2) || (point1[1] < x1 && point1[1] < x2) ||
+        (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
+        point1 = (2, 2)
+    end
+
+    if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
+        (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
+        point2 = (2, 2)
+    end
+
+    return point1[1] > 1 && point2[1] < 2 ?  (point1, point2) : (point2, point1)
+end
+
+# closest intersection of a line with the unit square
+function square_segment_single2(x1, y1, x2, y2)
+    point1, point2 = square_line(x1, y1, x2, y2)
+    dx1 = abs(point1[1] - x2)
+    dy1 = abs(point1[2] - y2)
+    dx2 = abs(point2[1] - x2)
+    dy2 = abs(point2[2] - y2)
+
+    if dx1 > dy1
+        return dx1 > dx2 ? point2 : point1
+    else
+        return dy1 > dy2 ? point2 : point1
+    end
+end
+
+# intersection of a line defined by two points with a unit square
+function square_line(x1, y1, x2, y2)
+    dx = x2 - x1
+    dy = y2 - y1
+
+    dx ≈ dy ≈ 0 && return (2, 2), (2, 2)
+
+    # find canonical form
+    a = -dy / dx
+    c = a * x1 - y1
+
+    # intersection with lines x=-1, y=1, x=1, y=-1
+    points = []
+    for (a2, b2, c2) in zip((1, 0, 1), (0, 1, -1), (1, 0, -1), (0, 1, 1))
+        x = (c2 - b2 * c) / (a * b2 - a2)
+        y = (a2 * c - a * c2) / (a * b2 - a2)
+        abs(x) + abs(y) ≤ 2 && push!(points, (x, y))
+    end
+
+    return points...
 end
