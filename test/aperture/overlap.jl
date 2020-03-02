@@ -13,6 +13,9 @@ using Photometry.Aperture: circular_overlap,
                            elliptical_overlap,
                            elliptical_overlap_exact,
                            elliptical_overlap_single_subpixel,
+                           square_line,
+                           square_segment,
+                           square_segment_single2,
                            rectangular_overlap,
                            rectangular_overlap_exact,
                            rectangular_overlap_single_subpixel
@@ -133,11 +136,26 @@ end # circles
         @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
     end
 
-end # overlap elliptical 
+end # overlap elliptical
 
-@testset "overlap - rectangular" begin
+@testset "overlap - rectangular" begin 
 
-end
+    # POINTS = [
+    #     (0, 0.5, 1, 0.5),
+    #     (0.5, 0, 0.5, 1),
+    #     (0, 0, 1, 1),
+    #     (0, 1, 1, 0),
+    #     (0.5, 1, 1, 0.5)
+    # ]
+    # @testset "square line" for point in POINTS
+    #     x1, y1, x2, y2 = point
+    #     point1, point2 = square_line(x1, y1, x2, y2)
+    #     @test point1[1] ≈ point[1]
+    #     @test point1[2] ≈ point[2]
+    #     @test point2[1] ≈ point[3]
+    #     @test point2[2] ≈ point[4]
+    # end
+end # overlap rectangular 
 
 @testset "overlap - utils" begin
 
