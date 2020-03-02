@@ -106,18 +106,18 @@ function bbox(ap::RectangularAnnulus)
     h2 = ap.h_out / 2
     sint, cost = sincos(deg2rad(ap.theta))
     
-    Δx1 = abs(w2 * cost - h2 * sint)
-    Δy1 = abs(w2 * sint + h2 * cost)
-    Δx2 = abs(w2 * cost + h2 * sint)
-    Δy2 = abs(w2 * sint - h2 * cost)
+    dx1 = abs(w2 * cost - h2 * sint)
+    dy1 = abs(w2 * sint + h2 * cost)
+    dx2 = abs(w2 * cost + h2 * sint)
+    dy2 = abs(w2 * sint - h2 * cost)
     
-    Δx = max(Δx1, Δx2)
-    Δy = max(Δy1, Δy2)
+    dx = max(dx1, dx2)
+    dy = max(dy1, dy2)
     
-    xmin = ceil(Int, ap.x - Δx - 0.5)
-    ymin = ceil(Int, ap.y - Δy - 0.5)
-    xmax = ceil(Int, ap.x + Δx - 0.5)
-    ymax = ceil(Int, ap.y + Δy - 0.5)
+    xmin = ceil(Int, ap.x - dx - 0.5)
+    ymin = ceil(Int, ap.y - dy - 0.5)
+    xmax = ceil(Int, ap.x + dx - 0.5)
+    ymax = ceil(Int, ap.y + dy - 0.5)
     return (xmin, xmax, ymin, ymax)
 end
 

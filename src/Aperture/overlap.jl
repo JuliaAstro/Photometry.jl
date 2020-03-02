@@ -299,8 +299,8 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
 
     # if vertex 1 or 2 are on the edge, then dot product with 3 to determine intersection
     elseif inside[2] || on[2]
-        intersect13 = on[1] && x1 * (x3 - x1) + y1 * (y3 - y1) < 0
-        intersect23 = on[2] && x2 * (x3 - x2) + y2 * (y3 - y2) < 0
+        intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
+        intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
         if intersect13 && intersect23
             point1 = circle_segment_single2(x1, y1, x3, y3)
             point2 = circle_segment_single2(x2, y2, x3, y3)
@@ -500,9 +500,9 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
                 pycen = pymin + 0.5dy
                 pymax = pymin + dy
 
-                if pymax > bymin && pymin < bymax
+                if bymin < pymax && pymin < bymax
                     if method === :exact
-                        out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
+                        out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
                     elseif method === :center
                         out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, 1)
                     elseif method[1] === :subpixel
@@ -550,12 +550,13 @@ end
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     sint, cost = sincos(deg2rad(-θ))
-
+    w = w / 2
+    h = h / 2
     scale = w * h
 
-    # reproject ellipse 
-    x1 = (xmin * cost - ymin * sint) / w
+    # reproject rectangle
     y1 = (xmin * sint + ymin * cost) / h
+    x1 = (xmin * cost - ymin * sint) / w
     x2 = (xmax * cost - ymin * sint) / w
     y2 = (xmax * sint + ymin * cost) / h
     x3 = (xmax * cost - ymax * sint) / w
@@ -592,8 +593,8 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
         return area_triangle(x1, y1, x2, y2, x3, y3)
     # if vertex 1 or 2 are on the edge, then dot product with 3 to  determine intersection
     elseif inside[2] || on[2]
-        intersect13 = on[1] && x1 * (x3 - x1) + y1 * (y3 - y1) < 0
-        intersect23 = on[2] && x2 * (x3 - x2) + y2 * (y3 - y2) < 0
+        intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
+        intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
         if intersect13 && intersect23
             point1 = square_segment_single2(x1, y1, x3, y3)
             point2 = square_segment_single2(x2, y2, x3, y3)
@@ -706,17 +707,27 @@ function square_line(x1, y1, x2, y2)
 
     dx ≈ dy ≈ 0 && return (2, 2), (2, 2)
 
-    # find canonical form
-    a = -dy / dx
-    c = a * x1 - y1
-
-    # intersection with lines x=-1, y=1, x=1, y=-1
+    # find y = mx + b
+    m = dy / dx
+    b = y1 - m * x1
+    
     points = []
-    for (a2, b2, c2) in zip((1, 0, 1), (0, 1, -1), (1, 0, -1), (0, 1, 1))
-        x = (c2 - b2 * c) / (a * b2 - a2)
-        y = (a2 * c - a * c2) / (a * b2 - a2)
-        abs(x) + abs(y) ≤ 2 && push!(points, (x, y))
+    if b ≤ m # intersects x=-1
+        push!(points, (-1, b - m))
     end
 
-    return points...
+    if (1 - b) ≤ m # intersects y=1
+        push!(points, ((1 - b) / m, 1))
+    end
+    
+    if m + b ≤ 1 # intersects x=1
+        push!(points, (1, m + b))
+    end
+    
+    if 1 + b ≥ -m # intersects y=-1
+        push!(points, (-(1 + b) / m, -1))
+    end
+
+    return Tuple(points)
 end
+

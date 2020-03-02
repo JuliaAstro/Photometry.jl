@@ -2,22 +2,28 @@ APERTURES = [
     CircularAperture,
     CircularAnnulus,
     EllipticalAperture,
-    EllipticalAnnulus
+    EllipticalAnnulus,
+    RectangularAperture,
+    RectangularAnnulus
 ]
 
 PARAMS = [
     (3),
     (3, 5),
     (3, 3, 0),
-    (3, 5, 5, 0)
+    (3, 5, 4, 0),
+    (3, 5, 0),
+    (3, 5, 4, 0),
 ]
 
 ###########################
 # Some helpers for testing
-area(c::CircularAperture) = π * c.r^2
-area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
-area(e::EllipticalAperture) = π * e.a * e.b
-area(e::EllipticalAnnulus) = π * e.a_out * e.b_out - π * e.a_in * e.b_in
+area(ap::CircularAperture) = π * ap.r^2
+area(ap::CircularAnnulus) = π * (ap.r_out^2 - ap.r_in^2)
+area(ap::EllipticalAperture) = π * ap.a * ap.b
+area(ap::EllipticalAnnulus) = π * ap.a_out * ap.b_out - π * ap.a_in * ap.b_in
+area(ap::RectangularAperture) = ap.w * ap.h
+area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
