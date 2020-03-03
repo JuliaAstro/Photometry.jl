@@ -80,17 +80,15 @@ This function returns sigma clipped values of the input `data`.
 `center` and `std` are optional parameters which are functions for finding central element and standard deviation.
 # Example
 ```jldoctest
-julia> data = [1, 2, 3];
-julia> sigma_clip(data, 1)
-3-element Array{Float64,1}:
- 1.0
- 2.0
- 3.0
-julia> sigma_clip(data, 1, 1)
-3-element Array{Float64,1}:
- 1.0
- 2.0
- 3.0
+julia> x = randn(100000);
+
+julia> extrema(x)
+(-4.387579729097121, 4.518192547139076)
+
+julia> sigma_clip!(x,1);
+
+julia> extrema(x)
+(-1.0021043865183705, 1.0011542162690115)
 ```
 """
 sigma_clip(data, rest...; kwargs...) = sigma_clip!(float(data), rest...; kwargs...)
