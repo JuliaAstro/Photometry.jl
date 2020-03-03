@@ -550,19 +550,24 @@ end
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     sint, cost = sincos(deg2rad(-θ))
-    w = w / 2
-    h = h / 2
     scale = w * h
 
-    # reproject rectangle
-    y1 = (xmin * sint + ymin * cost) / h
-    x1 = (xmin * cost - ymin * sint) / w
-    x2 = (xmax * cost - ymin * sint) / w
-    y2 = (xmax * sint + ymin * cost) / h
-    x3 = (xmax * cost - ymax * sint) / w
-    y3 = (xmax * sint + ymax * cost) / h
-    x4 = (xmin * cost - ymax * sint) / w
-    y4 = (xmin * sint + ymax * cost) / h
+    #= 
+    If we take our rectangle centered at (0, 0) and construct
+    the transformation required to turn it into a unit-square
+    from (0, 0) to (1, 1), we can turn the pixel into
+    the corresponding parallelogram, divide it into two
+    triangles and find their cross-section =#
+
+    # derotate, rescale, and translate
+    x1 = (xmin * cost - ymin * sint) / w + 0.5
+    y1 = (xmin * sint + ymin * cost) / h + 0.5
+    x2 = (xmax * cost - ymin * sint) / w + 0.5
+    y2 = (xmax * sint + ymin * cost) / h + 0.5
+    x3 = (xmax * cost - ymax * sint) / w + 0.5
+    y3 = (xmax * sint + ymax * cost) / h + 0.5
+    x4 = (xmin * cost - ymax * sint) / w + 0.5
+    y4 = (xmin * sint + ymax * cost) / h + 0.5
 
     return scale * (triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3) +
                     triangle_unitsquare_overlap(x1, y1, x4, y4, x3, y3))
@@ -583,10 +588,10 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
 
     points = zip((x1, x2, x3), (y1, y2, y3))
     # which are inside
-    inside = [x < 1 && y < 1 for (x, y) in points]
+    inside = [0 < x < 1 && 0 < y < 1 for (x, y) in points]
 
     # which are on
-    on = [isapprox(x, 1, atol = 1e-10) || isapprox(y, 1, atol = 1e-10) for (x, y) in points]
+    on = [isapprox(x, 1, atol = 1e-10) || isapprox(y, 1, atol = 1e-10) || isapprox(x, 0, atol = 1e-10) || isapprox(y, 0, atol = 1e-10) for (x, y) in points]
 
     # completely inside circle
     if inside[3] || on[3]
@@ -705,29 +710,42 @@ function square_line(x1, y1, x2, y2)
     dx = x2 - x1
     dy = y2 - y1
 
-    dx ≈ dy ≈ 0 && return (2, 2), (2, 2)
+    dx ≈ dy ≈ 0 && return (2.0, 2.0), (2.0, 2.0)
 
     # find y = mx + b
     m = dy / dx
     b = y1 - m * x1
-    
+
+    # if vertical line
+    if isinf(m)
+        return 0 ≤ x1 ≤ 1 ? ((x1, 1.0), (x2, 0.0)) : ((2.0, 2.0), (2.0, 2.0))
+    end
+
     points = []
-    if b ≤ m # intersects x=-1
-        push!(points, (-1, b - m))
+    if 0 ≤ b ≤ 1 # intersects x=0
+        push!(points, (0.0, float(b)))
     end
 
-    if (1 - b) ≤ m # intersects y=1
-        push!(points, ((1 - b) / m, 1))
+    if 0 ≤ (1 - b) / m ≤ 1 # intersects y=1
+        push!(points, ((1 - b) / m, 1.0))
     end
     
-    if m + b ≤ 1 # intersects x=1
-        push!(points, (1, m + b))
+    if 0 ≤ m + b ≤ 1 # intersects x=1
+        push!(points, (1.0, float(m + b)))
     end
     
-    if 1 + b ≥ -m # intersects y=-1
-        push!(points, (-(1 + b) / m, -1))
+    if 0 ≤ -b / m ≤ 1 # intersects y=0
+        push!(points, (-b / m, 0.0))
     end
 
-    return Tuple(points)
+    # need to get the unique points, taking care that if it only has one point to repeat it
+    function process(point)
+        x, y = point
+        x = iszero(x) ? zero(x) : x
+        y = iszero(y) ? zero(y) : y
+        return x, y
+    end
+    out = unique(process, points)
+    return length(out) == 0 ? Tuple(repeat(out, 2)) : Tuple(out)
 end
 
