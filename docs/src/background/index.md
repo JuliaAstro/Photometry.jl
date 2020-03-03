@@ -6,5 +6,6 @@ The module provides tools and algorithms for estimating the background of astron
 
 ```@docs
 estimate_background
+sigma_clip
 sigma_clip!
 ```
