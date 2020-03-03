@@ -3,7 +3,9 @@ module Background
 export estimate_background,
        Mean,
        Median,
-       Mode
+       Mode,
+       sigma_clip,
+       sigma_clip!
 
 
 # Abstract types
