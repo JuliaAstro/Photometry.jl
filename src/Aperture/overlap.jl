@@ -603,6 +603,10 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     elseif inside[2] || on[2]
         intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
         intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
+
+        @show intersect13
+        @show intersect23
+        
         if intersect13 && intersect23
             point1 = square_segment_single2(x1, y1, x3, y3)
             point2 = square_segment_single2(x2, y2, x3, y3)
@@ -655,23 +659,23 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
         point3, point4 = square_segment(x2, y2, x3, y3)
         point5, point6 = square_segment(x3, y3, x1, y1)
 
-        if point1[1] ≤ 1
+        if 0 < point1[1] < 1
             xp = (point1[1] + point2[1]) / 2
             yp = (point1[2] + point2[2]) / 2
             return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
                     triangle_unitsquare_overlap(x2, y2, x3, y3, xp, yp))
-        elseif point3[1] ≤ 1
+        elseif 0 < point3[1] < 1
             xp = (point3[1] + point4[1]) / 2
             yp = (point3[2] + point4[2]) / 2
             return (triangle_unitsquare_overlap(x3, y3, x1, y1, xp, yp) +
                     triangle_unitsquare_overlap(x2, y2, x1, y1, xp, yp))
-        elseif point5[1] ≤ 1
+        elseif 0 < point5[1] < 1
             xp = (point5[1] + point6[1]) / 2
             yp = (point5[2] + point6[2]) / 2
             return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
                     triangle_unitsquare_overlap(x3, y3, x2, y2, xp, yp))
         else
-            return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0
+            return inside_triangle(0.5, 0.5, x1, y1, x2, y2, x3, y3) ? 1 : 0
         end
     end
 end
@@ -690,7 +694,7 @@ function square_segment(x1, y1, x2, y2)
         point2 = (2, 2)
     end
 
-    return point1[1] > 1 && point2[1] < 2 ?  (point1, point2) : (point2, point1)
+    return sort!([point1, point2])
 end
 
 # closest intersection of a line with the unit square

@@ -163,6 +163,12 @@ end # overlap elliptical
         @test triangle_unitsquare_overlap(0, 0, 0, 1, 1, 0) ≈ 1 / 2
         @test triangle_unitsquare_overlap(0, 1, 1, 1, 1, 0) ≈ 1 / 2
         @test triangle_unitsquare_overlap(0, 0, 0, 2, 2, 0) ≈ 1
+        @test triangle_unitsquare_overlap(-1, -1, -1, 5, 5, -1) ≈ 1
+        @test triangle_unitsquare_overlap(2, 2, 2, 2, 2, 2) ≈ 0
+        @test triangle_unitsquare_overlap(0, 0, 0, 2, 1, 0) ≈ 3 / 4
+        @test triangle_unitsquare_overlap(-1, 0, 0, 0, 0, -1) ≈ 0
+        @test triangle_unitsquare_overlap(0, 0, 0, 2, 0.5, 0) ≈ 3 / 8
+        @test triangle_unitsquare_overlap(0.2, 0.2, 0.2, 0.4, 0.4, 0.2) ≈ 0.2
     end
 end # overlap rectangular 
 
