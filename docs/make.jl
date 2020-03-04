@@ -1,6 +1,11 @@
 using Photometry
 using Documenter
 
+setup = quote
+    using Photometry
+    using Random
+    Random.seed!(123456)
+end
 DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = true)
 
 makedocs(;

@@ -62,11 +62,10 @@ In-place version of [`sigma_clip`](@ref)
 
 !!! warning
     `sigma_clip!` mutates the element in place and mutation cannot lead to change in type.
-    User should be careful about using the data-types. E.g.- `x = [1,2,3]`, calling `clamp!(x, 0.5, 0.5)`
-    would lead to error because the value of 1 and 3 should have become `Float` from `Int`, but mutation of type is not
-    permissible.
-"""
+    Please be considerate of your input type, because if you are using `Int64` and we try to clip it to `0.5` an `InexactError` will be thrown. 
 
+    To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.    
+"""
 function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std)
     mean = center(data)
     deviation = std(data)
@@ -85,7 +84,7 @@ This will replace values in `data` lower than `center - sigma_low * std` with th
 
 # Example
 ```jldoctest
-julia> x = randn(100000);
+julia> x = randn(100_000);
 
 julia> extrema(x)
 (-4.387579729097121, 4.518192547139076)
@@ -99,6 +98,6 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 sigma_clip(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std) = sigma_clip!(float(data), sigma_low, sigma_high; center = center, std = std)
 
 # Estimators
-include("stat_estimators.jl")
+include("estimators.jl")
 
 end # Background
