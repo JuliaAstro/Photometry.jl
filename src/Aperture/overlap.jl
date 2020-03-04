@@ -591,7 +591,10 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     inside = [0 < x < 1 && 0 < y < 1 for (x, y) in points]
 
     # which are on
-    on = [isapprox(x, 1, atol = 1e-10) || isapprox(y, 1, atol = 1e-10) || isapprox(x, 0, atol = 1e-10) || isapprox(y, 0, atol = 1e-10) for (x, y) in points]
+    on = [(x ≈ 0 && 0 ≤ y ≤ 1 ||
+           x ≈ 1 && 0 ≤ y ≤ 1 ||
+           y ≈ 0 && 0 ≤ x ≤ 1 ||
+           y ≈ 1 && 0 ≤ x ≤ 1) for (x, y) in points]
 
     # completely inside circle
     if inside[3] || on[3]
@@ -738,6 +741,9 @@ function square_line(x1, y1, x2, y2)
         push!(points, (-b / m, 0.0))
     end
 
+    # no intersection
+    length(points) == 0 && return (2.0, 2.0), (2.0, 2.0)
+
     # need to get the unique points, taking care that if it only has one point to repeat it
     function process(point)
         x, y = point
@@ -746,6 +752,6 @@ function square_line(x1, y1, x2, y2)
         return x, y
     end
     out = unique(process, points)
-    return length(out) == 0 ? Tuple(repeat(out, 2)) : Tuple(out)
+    return length(out) == 1 ? Tuple(repeat(out, 2)) : Tuple(out)
 end
 

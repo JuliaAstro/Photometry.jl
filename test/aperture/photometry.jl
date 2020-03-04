@@ -3,8 +3,8 @@ APERTURES = [
     CircularAnnulus,
     EllipticalAperture,
     EllipticalAnnulus,
-    RectangularAperture,
-    RectangularAnnulus
+    # RectangularAperture,
+    # RectangularAnnulus
 ]
 
 PARAMS = [
