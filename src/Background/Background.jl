@@ -1,9 +1,13 @@
 module Background
 
+using Statistics
+
 export estimate_background,
        Mean,
        Median,
-       Mode
+       Mode,
+       sigma_clip,
+       sigma_clip!
 
 
 # Abstract types
@@ -49,6 +53,45 @@ estimate_background(T::Type{<:BackgroundEstimator}, d::AbstractArray, b::Tuple, 
 estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size::Integer, kernel_size; dims = :) = estimate_background(alg, data, (box_size, box_size), kernel_size; dims = dims)
 estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size, kernel_size::Integer; dims = :) = estimate_background(alg, data, box_size, (kernel_size, kernel_size); dims = dims)
 
+
+"""
+    sigma_clip!(data, sigma_low, sigma_high; center=median, std=std)
+    sigma_clip!(data, sigma; center=median, std=std)
+In-place version of [`sigma_clip`](@ref)
+!!! warning
+    `sigma_clip!` mutates the element in place and mutation cannot lead to change in type.
+    User should be careful about using the data-types. E.g.- `x = [1,2,3]`, calling `clamp!(x, 0.5, 0.5)`
+    would lead to error because the value of 1 and 3 should have become `Float` from `Int`, but mutation of type is not
+    permissible.
+"""
+
+function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real=sigma_low; center=median, std=std)
+    mean = center(data)
+    deviation = std(data)
+    clamp!(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
+    return data
+end
+
+"""
+    sigma_clip(data, sigma_low, sigma_high; center=median, std=std)
+    sigma_clip(data, sigma; center=median, std=std)
+This function returns sigma clipped values of the input `data`.
+`sigma_high` and `sigma_low` are for un-symmetrical clipping, when `sigma_low = sigma_high` then they can be passed as `sigma`.
+`center` and `std` are optional parameters which are functions for finding central element and standard deviation.
+# Example
+```jldoctest
+julia> x = randn(100000);
+
+julia> extrema(x)
+(-4.387579729097121, 4.518192547139076)
+
+julia> sigma_clip!(x,1);
+
+julia> extrema(x)
+(-1.0021043865183705, 1.0011542162690115)
+```
+"""
+sigma_clip(data, rest...; kwargs...) = sigma_clip!(float(data), rest...; kwargs...)
 
 # Estimators
 include("stat_estimators.jl")
