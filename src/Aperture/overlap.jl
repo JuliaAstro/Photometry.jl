@@ -575,9 +575,9 @@ end
 
 function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     # distances
-    d1 = x1^2 + y1^2
-    d2 = x2^2 + y2^2
-    d3 = x3^2 + y3^2
+    d1 = (x1 - 0.5)^2 + (y1 - 0.5)^2
+    d2 = (x2 - 0.5)^2 + (y2 - 0.5)^2
+    d3 = (x3 - 0.5)^2 + (y3 - 0.5)^2
 
     # order by distances
     ds = [d1, d2, d3]
@@ -603,9 +603,6 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     elseif inside[2] || on[2]
         intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
         intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
-
-        @show intersect13
-        @show intersect23
         
         if intersect13 && intersect23
             point1 = square_segment_single2(x1, y1, x3, y3)
