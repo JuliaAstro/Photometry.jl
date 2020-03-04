@@ -55,9 +55,11 @@ estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size, ker
 
 
 """
-    sigma_clip!(data, sigma_low, sigma_high; center=median, std=std)
     sigma_clip!(data, sigma; center=median, std=std)
+    sigma_clip!(data, sigma_low, sigma_high; center=median, std=std)
+
 In-place version of [`sigma_clip`](@ref)
+
 !!! warning
     `sigma_clip!` mutates the element in place and mutation cannot lead to change in type.
     User should be careful about using the data-types. E.g.- `x = [1,2,3]`, calling `clamp!(x, 0.5, 0.5)`
@@ -65,19 +67,22 @@ In-place version of [`sigma_clip`](@ref)
     permissible.
 """
 
-function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real=sigma_low; center=median, std=std)
+function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std)
     mean = center(data)
     deviation = std(data)
-    clamp!(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
-    return data
+    return clamp!(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
 end
 
 """
-    sigma_clip(data, sigma_low, sigma_high; center=median, std=std)
     sigma_clip(data, sigma; center=median, std=std)
-This function returns sigma clipped values of the input `data`.
-`sigma_high` and `sigma_low` are for un-symmetrical clipping, when `sigma_low = sigma_high` then they can be passed as `sigma`.
-`center` and `std` are optional parameters which are functions for finding central element and standard deviation.
+    sigma_clip(data, sigma_low, sigma_high; center=median, std=std)
+
+This function returns sigma-clipped values of the input `data`.
+
+Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise assume they are equal. `center` and `std` are optional keyword arguments which are functions for finding central element and standard deviation.
+
+This will replace values in `data` lower than `center - sigma_low * std` with that value, and values higher than `center + sigma_high * std` with that value.
+
 # Example
 ```jldoctest
 julia> x = randn(100000);
@@ -85,13 +90,13 @@ julia> x = randn(100000);
 julia> extrema(x)
 (-4.387579729097121, 4.518192547139076)
 
-julia> sigma_clip!(x,1);
+julia> x_clip = sigma_clip(x,1);
 
-julia> extrema(x)
+julia> extrema(x_clip) # should be close to (-1, 1)
 (-1.0021043865183705, 1.0011542162690115)
 ```
 """
-sigma_clip(data, rest...; kwargs...) = sigma_clip!(float(data), rest...; kwargs...)
+sigma_clip(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std) = sigma_clip!(float(data), sigma_low, sigma_high; center = center, std = std)
 
 # Estimators
 include("stat_estimators.jl")

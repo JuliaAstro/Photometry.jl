@@ -1,4 +1,5 @@
-using Statistics, StatsBase
+using Statistics
+using StatsBase
 
 """
     Mean
