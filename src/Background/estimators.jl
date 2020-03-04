@@ -1,7 +1,7 @@
 using Statistics, StatsBase
 
 """
-    Mean <: BackgroundEstimator
+    Mean
 
 This estimator returns the mean of the input.
 
@@ -22,7 +22,7 @@ struct Mean <: BackgroundEstimator end
 estimate_background(::Mean, data; dims = :) = mean(data, dims = dims)
 
 """
-    Median <: BackgroundEstimator
+    Median
 
 This estimator returns the median of the input.
 
@@ -43,7 +43,7 @@ struct Median <: BackgroundEstimator end
 estimate_background(::Median, data; dims = :) = median(data, dims = dims)
 
 """
-    Mode <: BackgroundEstimator
+    Mode
 
 This estimator returns the mode of the input.
 !!! note
