@@ -62,7 +62,27 @@ struct Mode <: BackgroundEstimator end
 
 estimate_background(::Mode, data; dims = :) = mode(data)
 
+"""
+    SourceExtractor
 
+This estimator returns the background of the input using the SourceExtractor algorithm.
+
+The background is calculated using a mode estimator of the form `(2.5 * median) - (1.5 * mean)`.
+
+If `(mean - median) / std > 0.3` then the median is used and if `std = 0` then the mean is used.
+
+# Example
+```jldoctest
+julia> data = ones(5 ,5);
+
+julia> estimate_background(SourceExtractor, data)
+1.0
+
+julia> estimate_background(SourceExtractor, data, dims=1)
+1×5 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0
+```
+"""
 struct SourceExtractor <: BackgroundEstimator end
 
 function estimate_background(::SourceExtractor, data; dims = :)

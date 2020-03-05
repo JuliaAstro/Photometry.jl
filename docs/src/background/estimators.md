@@ -6,6 +6,7 @@ All of these estimators are subtypes of [`Background.BackgroundEstimator`](@ref)
 Mean
 Median
 Mode
+SourceExtractor
 ```
 
 ## API/Reference
