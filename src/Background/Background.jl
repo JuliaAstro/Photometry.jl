@@ -3,11 +3,13 @@ module Background
 using Statistics
 
 export estimate_background,
-       Mean,
-       Median,
-       Mode,
        sigma_clip,
        sigma_clip!
+
+export Mean,
+       Median,
+       Mode,
+       SourceExtractor
 
 
 # Abstract types
@@ -62,9 +64,9 @@ In-place version of [`sigma_clip`](@ref)
 
 !!! warning
     `sigma_clip!` mutates the element in place and mutation cannot lead to change in type.
-    Please be considerate of your input type, because if you are using `Int64` and we try to clip it to `0.5` an `InexactError` will be thrown. 
+    Please be considerate of your input type, because if you are using `Int64` and we try to clip it to `0.5` an `InexactError` will be thrown.
 
-    To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.    
+    To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.
 """
 function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std)
     mean = center(data)
