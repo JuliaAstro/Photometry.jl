@@ -4,9 +4,9 @@ using Statistics
 
 export estimate_background,
        sigma_clip,
-       sigma_clip!
-
-export Mean,
+       sigma_clip!,
+       # Estimators
+       Mean,
        Median,
        Mode,
        SourceExtractor

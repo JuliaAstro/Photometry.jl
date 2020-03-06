@@ -85,26 +85,18 @@ julia> estimate_background(SourceExtractor, data, dims=1)
 """
 struct SourceExtractor <: BackgroundEstimator end
 
+""" Utility function for SourceExtractor algorithm"""
+function validate_SE(background::Number, _mean::Number, _median::Number, _std::Number)
+    _std ≈ 0 && return _mean
+    abs(_mean - _median) / std > 0.3 && return _median
+    return background
+end
+
 function estimate_background(::SourceExtractor, data; dims = :)
     _mean = mean(data, dims = dims)
     _median = median(data, dims = dims)
     _std = std(data, dims = dims)
 
-    background = 2.5 * _median - 1.5 * _mean
-    if typeof(background) != Float64
-        for i in length(background)
-            if _std[i] == 0
-                background[i] = _mean[i]
-            elseif abs(_mean[i] - _median[i])/_std[i] > 0.3
-                background[i] = _median[i]
-            end
-        end
-    else
-        if _std == 0
-            background = _mean
-        elseif abs(_mean - _median)/_std > 0.3
-            background = _median
-        end
-    end
-    return background
+    background = @. 2.5 * _median - 1.5 * _mean
+    return validate_SE.(background, _mean, _median, _std)
 end
