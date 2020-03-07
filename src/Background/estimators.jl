@@ -111,7 +111,7 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 ```jldoctest
 julia> x = ones(5,5);
 
-julia> estimate_background(MMMBackground(), x)
+julia> estimate_background(MMMBackground, x)
 1.0
 
 julia> estimate_background(MMMBackground(4,3), x, dims = 1)

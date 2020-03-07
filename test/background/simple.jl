@@ -14,10 +14,8 @@ function test_zeros(estimator)
     @test estimate_background(estimator, data, dims = 2) ≈ zeros(10)
 end
 
-@testset "$E"  for E in [Mean, Median, MMMBackground(), SourceExtractor]
-    if E != MMMBackground()
-        @test estimate_background(E, ones(10, 10)) == estimate_background(E(), ones(10, 10))
-    end
+@testset "$E"  for E in [Mean, Median, MMMBackground, SourceExtractor]
+    @test estimate_background(E, ones(10, 10)) == estimate_background(E(), ones(10, 10))
     test_ones(E)
     test_zeros(E)
 end
