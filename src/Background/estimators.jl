@@ -118,6 +118,9 @@ julia> estimate_background(MMMBackground(4,3), x, dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
+
+# See Also
+[`SourceExtractor`](@ref)
 """
 struct MMMBackground{T <: Number} <: BackgroundEstimator
     median_factor::T
