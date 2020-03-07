@@ -79,8 +79,6 @@ julia> estimate_background(SourceExtractor, data)
 1.0
 
 julia> estimate_background(SourceExtractor, data, dims=1)
-1×5 Array{Float64,2}:
- 1.0  1.0  1.0  1.0  1.0
 ```
 """
 struct SourceExtractor <: BackgroundEstimator end
@@ -100,3 +98,25 @@ function estimate_background(::SourceExtractor, data; dims = :)
     background = @. 2.5 * _median - 1.5 * _mean
     return validate_SE.(background, _mean, _median, _std)
 end
+
+"""
+    MMMBackground <: BackgroundEstimator
+
+This estimator returns background using DAOPHOT MMM algorithm.
+The background is estiamated as `3*median - 2*mean`, the factors `3` and `2` can be changed by changing `median_factor` and `mean_factor`.
+
+# Example
+```jldoctest
+julia> x = ones(5,5);
+
+julia> estimate_background(MMMBackground(), x)
+1.0
+
+julia> estimate_background(MMMBackground(), x, dims = 1)
+1×5 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0
+```
+"""
+struct MMMBackground <: BackgroundEstimator end
+
+estimate_background(::MMMBackground, data; median_factor = 3, mean_factor = 2, dims = :) = median_factor * median(data, dims = dims) - mean_factor * mean(data, dims = dims)
