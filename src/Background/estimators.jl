@@ -79,6 +79,8 @@ julia> estimate_background(SourceExtractor, data)
 1.0
 
 julia> estimate_background(SourceExtractor, data, dims=1)
+1×5 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0
 ```
 """
 struct SourceExtractor <: BackgroundEstimator end
@@ -111,7 +113,7 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 ```jldoctest
 julia> x = ones(5,5);
 
-julia> estimate_background(MMMBackground(), x)
+julia> estimate_background(MMMBackground, x)
 1.0
 
 julia> estimate_background(MMMBackground(4,3), x, dims = 1)
