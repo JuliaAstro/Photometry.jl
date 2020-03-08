@@ -1,6 +1,5 @@
 using Statistics
 using StatsBase
-using Compat
 
 """
     Mean
@@ -9,7 +8,7 @@ This estimator returns the mean of the input.
 
 # Example
 ```jldoctest
-julia> data = ones(5, 5);
+julia> data = ones(3, 5);
 
 julia> estimate_background(Mean, data)
 1.0
@@ -30,7 +29,7 @@ This estimator returns the median of the input.
 
 # Example
 ```jldoctest
-julia> data = ones(5 ,5);
+julia> data = ones(3, 5);
 
 julia> estimate_background(Median, data)
 1.0
@@ -51,7 +50,7 @@ This estimator returns the mode of the input.
 
 # Example
 ```jldoctest
-julia> data = ones(5, 5);
+julia> data = ones(3, 5);
 
 julia> estimate_background(Mode, data)
 1.0
@@ -63,7 +62,7 @@ julia> estimate_background(Mode, data, dims=1)
 """
 struct Mode <: BackgroundEstimator end
 
-estimate_background(::Mode, data; dims = :) = dims isa Colon ? mode(data) : @compat mode.(eachslice(data, dims = dims))
+estimate_background(::Mode, data; dims = :) = dims isa Colon ? mode(data) : mapslices(mode, data; dims = dims)
 
 """
     SourceExtractor
@@ -76,7 +75,7 @@ If `(mean - median) / std > 0.3` then the median is used and if `std = 0` then t
 
 # Example
 ```jldoctest
-julia> data = ones(5 ,5);
+julia> data = ones(3, 5);
 
 julia> estimate_background(SourceExtractor, data)
 1.0
@@ -114,12 +113,12 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 
 # Example
 ```jldoctest
-julia> x = ones(5,5);
+julia> x = ones(3, 5);
 
 julia> estimate_background(MMMBackground, x)
 1.0
 
-julia> estimate_background(MMMBackground(4,3), x, dims = 1)
+julia> estimate_background(MMMBackground(4, 3), x, dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
