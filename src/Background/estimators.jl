@@ -1,5 +1,6 @@
 using Statistics
 using StatsBase
+using Compat
 
 """
     Mean
@@ -47,8 +48,6 @@ estimate_background(::Median, data; dims = :) = median(data, dims = dims)
     Mode
 
 This estimator returns the mode of the input.
-!!! note
-    `Mode` does not supports the dims keyword.
 
 # Example
 ```jldoctest
@@ -56,11 +55,15 @@ julia> data = ones(5, 5);
 
 julia> estimate_background(Mode, data)
 1.0
+
+julia> estimate_background(Mode, data, dims=1)
+1×5 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0
 ```
 """
 struct Mode <: BackgroundEstimator end
 
-estimate_background(::Mode, data; dims = :) = mode(data)
+estimate_background(::Mode, data; dims = :) = dims isa Colon ? mode(data) : @compat mode.(eachslice(data, dims = dims))
 
 """
     SourceExtractor
