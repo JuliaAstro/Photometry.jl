@@ -473,6 +473,8 @@ end
 ####################################
 # Rectangular routines
 
+
+
 function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
     out = fill(0.0, ny, nx)
 
@@ -502,7 +504,8 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
 
                 if bymin < pymax && pymin < bymax
                     if method === :exact
-                        out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
+                        # out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
+                        error("Exact overlap for rectangular apertures is not implemented, yet. See https://github.com/JuliaAstro/Photometry.jl/issues/22")
                     elseif method === :center
                         out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, 1)
                     elseif method[1] === :subpixel
@@ -521,13 +524,12 @@ function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels
     dy = (y1 - y0) / subpixels
 
     frac = 0
-
     x = x0 - 0.5dx
     for i in 1:subpixels
         x += dx
         y = y0 - 0.5dy
         for j in 1:subpixels
-            y += dx
+            y += dy
             if intersects_rectangle(x, y, w, h, θ)
                 frac += 1
             end
@@ -541,11 +543,12 @@ end
 # see https://math.stackexchange.com/questions/69099/equation-of-a-rectangle
 """intersection with rectangular using implicit Lamé curve"""
 function intersects_rectangle(x, y, w, h, θ)
-    sinth, costh = sincos(deg2rad(θ))
+    # transform into frame of rectangle
+    sinth, costh = sincos(deg2rad(-θ))
     u = x * costh - y * sinth
     v = x * sinth + y * costh
 
-    return abs(u / w + v / h) + abs(u / w - v / h) < 2
+    return abs(u) < w / 2 && abs(v) < h / 2
 end
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
@@ -572,6 +575,7 @@ function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     return scale * (triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3) +
                     triangle_unitsquare_overlap(x1, y1, x4, y4, x3, y3))
 end
+    
 
 function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     # distances
@@ -620,7 +624,7 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
             point2 = square_segment_single2(x2, y2, x3, y3)
 
             return (area_triangle(x1, y1, x2, y2, point2...) +
-                    area_triangle(x2, y2, point2..., 1, 1))
+                    area_triangle(x2, y2, point2..., 0, 1))
         else
             return area_triangle(x1, y1, x2, y2, 1, 1)
         end
@@ -675,8 +679,8 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
             return inside_triangle(0.5, 0.5, x1, y1, x2, y2, x3, y3) ? 1 : 0
         end
     end
-end
-
+    end
+    
 # intersection of a segment with the unit square
 function square_segment(x1, y1, x2, y2)
     point1, point2 = square_line(x1, y1, x2, y2)
@@ -685,15 +689,15 @@ function square_segment(x1, y1, x2, y2)
         (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
         point1 = (2, 2)
     end
-
+    
     if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
         (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
         point2 = (2, 2)
     end
-
+    
     return sort!([point1, point2])
 end
-
+    
 # closest intersection of a line with the unit square
 function square_segment_single2(x1, y1, x2, y2)
     point1, point2 = square_line(x1, y1, x2, y2)
@@ -707,8 +711,8 @@ function square_segment_single2(x1, y1, x2, y2)
     else
         return dy1 > dy2 ? point2 : point1
     end
-end
-
+    end
+    
 # intersection of a line defined by two points with a unit square
 function square_line(x1, y1, x2, y2)
     dx = x2 - x1
@@ -724,12 +728,12 @@ function square_line(x1, y1, x2, y2)
     if isinf(m)
         return 0 ≤ x1 ≤ 1 ? ((x1, 1.0), (x2, 0.0)) : ((2.0, 2.0), (2.0, 2.0))
     end
-
+    
     points = []
     if 0 ≤ b ≤ 1 # intersects x=0
         push!(points, (0.0, float(b)))
     end
-
+    
     if 0 ≤ (1 - b) / m ≤ 1 # intersects y=1
         push!(points, ((1 - b) / m, 1.0))
     end
@@ -741,7 +745,7 @@ function square_line(x1, y1, x2, y2)
     if 0 ≤ -b / m ≤ 1 # intersects y=0
         push!(points, (-b / m, 0.0))
     end
-
+    
     # no intersection
     length(points) == 0 && return (2.0, 2.0), (2.0, 2.0)
 
@@ -755,4 +759,4 @@ function square_line(x1, y1, x2, y2)
     out = unique(process, points)
     return length(out) == 1 ? Tuple(repeat(out, 2)) : Tuple(out)
 end
-
+    
