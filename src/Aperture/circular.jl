@@ -4,7 +4,7 @@ are considered under a BSD 3-clause license. =#
 
 """
     CircularAperture(x, y, r)
-    CircularAperture([x, y], r)
+    CircularAperture(position, r)
 
 A circular aperture.
 
@@ -52,7 +52,7 @@ end
 
 """
     CircularAnnulus(x, y, r_in, r_out)
-    CircularAnnulus([x, y], r_in, r_out)
+    CircularAnnulus(position, r_in, r_out)
 
 A circular annulus with inner radius `r_in` and outer radius `r_out`. 0 ≤ `r_in` ≤ `r_out`.
 

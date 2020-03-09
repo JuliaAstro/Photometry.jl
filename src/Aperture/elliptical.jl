@@ -4,7 +4,7 @@ are considered under a BSD 3-clause license. =#
 
 """
     EllipticalAperture(x, y, a, b, θ)
-    EllipticalAperture([x, y], a, b, θ)
+    EllipticalAperture(position, a, b, θ)
 
 An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and position angle `θ`. `a` and `b` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
 
@@ -101,7 +101,7 @@ end
 
 """
     EllipticalAnnulus(x, y, a_in, a_out, b_out, θ)
-    EllipticalAnnulus([x, y], a_in, a_out, b_out, θ)
+    EllipticalAnnulus(position, a_in, a_out, b_out, θ)
 An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis `a_out`, outer semi-minor axis `b_out`, and position angle `θ`.
 `a_out` ≥ `a_in` ≥ 0 and `b_out` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
 

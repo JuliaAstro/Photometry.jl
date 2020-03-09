@@ -5,7 +5,7 @@ are considered under a BSD 3-clause license. =#
 
 """
     RectangularAperture(x, y, w, h, θ)
-    RectangularAperture([x, y], w, h, θ)
+    RectangularAperture(position, w, h, θ)
 
 A rectangular aperture.
 
@@ -70,7 +70,7 @@ end
 
 """
     RectangularAnnulus(x, y, w_in, w_out, h_out, θ)
-    RectangularAnnulus([x, y], w_in, w_out, h_out, θ)
+    RectangularAnnulus(position, w_in, w_out, h_out, θ)
 
 A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in > 0`.
 
