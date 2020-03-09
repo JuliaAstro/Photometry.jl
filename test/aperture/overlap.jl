@@ -12,7 +12,14 @@ using Photometry.Aperture: circular_overlap,
                            triangle_unitcircle_overlap,
                            elliptical_overlap,
                            elliptical_overlap_exact,
-                           elliptical_overlap_single_subpixel
+                           elliptical_overlap_single_subpixel,
+                        #    square_line,
+                        #    square_segment,
+                        #    square_segment_single2,
+                        #    triangle_unitsquare_overlap,
+                           rectangular_overlap,
+                        #    rectangular_overlap_exact,
+                           rectangular_overlap_single_subpixel
 
 @testset "overlap - circular" begin
 
@@ -130,7 +137,40 @@ end # circles
         @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
     end
 
-end # overlap elliptical 
+end # overlap elliptical
+
+# @testset "overlap - rectangular" begin 
+#     INPUTS = [
+#         [(0, 0.2, 1, 0.8), (0, 0.2, 1, 0.8)],
+#         [(0, 0.9, 1, 0.2), (0, 0.9, 1, 0.2)],
+#         [(0, 2, 1, -2), (0.25, 1, 0.5, 0)],
+#         [(0, -2, 0.5, 0), (0.75, 1, 0.5, 0)],
+#         [(0, 0, 1, 1), (0, 0, 1, 1)],
+#         [(0, 1, 1, 0), (0, 1, 1, 0)],
+#         [(0, 0.5, 1, 0.5), (0, 0.5, 1, 0.5)],
+#         [(0.5, 1, 0.5, 0), (0.5, 1, 0.5, 0)],
+#         [(0.0, 0.0, 0.0, 0.0), (2, 2, 2, 2)]
+#     ]
+#     @testset "square line" for (point, expect) in INPUTS
+#         point1, point2 = square_line(point...)
+#         @test point1[1] ≈ expect[1]
+#         @test point1[2] ≈ expect[2]
+#         @test point2[1] ≈ expect[3]
+#         @test point2[2] ≈ expect[4]
+#     end
+
+#     @testset "triangle_unitsquare_overlap" begin
+#         @test triangle_unitsquare_overlap(0, 0, 0, 1, 1, 0) ≈ 1 / 2
+#         @test triangle_unitsquare_overlap(0, 1, 1, 1, 1, 0) ≈ 1 / 2
+#         @test triangle_unitsquare_overlap(0, 0, 0, 2, 2, 0) ≈ 1
+#         @test triangle_unitsquare_overlap(-1, -1, -1, 5, 5, -1) ≈ 1
+#         @test triangle_unitsquare_overlap(2, 2, 2, 2, 2, 2) ≈ 0
+#         @test triangle_unitsquare_overlap(0, 0, 0, 2, 1, 0) ≈ 3 / 4
+#         @test triangle_unitsquare_overlap(-1, 0, 0, 0, 0, -1) ≈ 0
+#         @test triangle_unitsquare_overlap(0, 0, 0, 2, 0.5, 0) ≈ 3 / 8
+#         @test triangle_unitsquare_overlap(0.2, 0.2, 0.2, 0.4, 0.4, 0.2) ≈ 0.2
+#     end
+# end # overlap rectangular 
 
 @testset "overlap - utils" begin
 

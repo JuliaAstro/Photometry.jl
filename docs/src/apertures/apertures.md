@@ -38,8 +38,12 @@ EllipticalAnnulus
 
 ## Rectangular Apertures
 
-These apertures are parametrized by side-length `a`, side-length `b`, and position angle in degrees counter-clockwise from the positive x-axis `θ`.
+These apertures are parametrized by width `w`, height `h`, and position angle in degrees counter-clockwise from the positive x-axis `θ`.
 
+```@docs
+RectangularAperture
+RectangularAnnulus
+```
 
 ## API/Reference
 

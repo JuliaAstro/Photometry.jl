@@ -12,7 +12,9 @@ export mask,
        CircularAperture,
        CircularAnnulus,
        EllipticalAperture,
-       EllipticalAnnulus
+       EllipticalAnnulus,
+       RectangularAperture,
+       RectangularAnnulus
 
 """
 The abstract super-type for Apertures
@@ -129,7 +131,8 @@ end
 aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error = zeros(size(data)); method = :exact) = DataFrame(aperture_photometry.(a, Ref(data), Ref(error); method = method))
 
 include("circular.jl")
-include("overlap.jl")
 include("elliptical.jl")
+include("rectangle.jl")
+include("overlap.jl")
 include("plotting.jl")
 end

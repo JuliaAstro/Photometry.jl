@@ -2,22 +2,24 @@ APERTURES = [
     CircularAperture,
     CircularAnnulus,
     EllipticalAperture,
-    EllipticalAnnulus
+    EllipticalAnnulus,
 ]
 
 PARAMS = [
     (3),
     (3, 5),
     (3, 3, 0),
-    (3, 5, 5, 0)
+    (3, 5, 4, 0),
 ]
 
 ###########################
 # Some helpers for testing
-area(c::CircularAperture) = π * c.r^2
-area(c::CircularAnnulus) = π * (c.r_out^2 - c.r_in^2)
-area(e::EllipticalAperture) = π * e.a * e.b
-area(e::EllipticalAnnulus) = π * e.a_out * e.b_out - π * e.a_in * e.b_in
+area(ap::CircularAperture) = π * ap.r^2
+area(ap::CircularAnnulus) = π * (ap.r_out^2 - ap.r_in^2)
+area(ap::EllipticalAperture) = π * ap.a * ap.b
+area(ap::EllipticalAnnulus) = π * ap.a_out * ap.b_out - π * ap.a_in * ap.b_in
+area(ap::RectangularAperture) = ap.w * ap.h
+area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -146,3 +148,44 @@ end # photometry - circular
     end
 
 end # photometry elliptical
+
+@testset "photometry - rectangular" begin
+    function test_aperture(data, aperture)
+        error = ones(size(data))
+
+        table_cent = aperture_photometry(aperture, data, error, method = :center)
+        table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 64))
+
+        true_flux = area(aperture)
+        true_err = sqrt(true_flux)
+
+        @test table_sub.aperture_sum ≈ true_flux rtol = 1e-2
+        @test table_cent.aperture_sum < table_sub.aperture_sum
+
+        @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-2
+        @test table_cent.aperture_sum_err < table_sub.aperture_sum_err
+    end
+
+    @testset "errors - RectangularAperture" begin
+        data = ones(40, 40)
+        aperture = RectangularAperture(20, 20, 10, 5, 0)
+        test_aperture(data, aperture)
+    end
+
+    @testset "errors - RectangularAnnulus" begin
+        data = ones(40, 40)
+        aperture = RectangularAnnulus(20, 20, 8, 10, 4, 0)
+        test_aperture(data, aperture)
+    end
+
+    @testset "partial overlap" begin
+        data = ones(20, 20)
+        error = ones(size(data))
+        positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
+        apertures = [RectangularAperture(positions[i, :], 10, 10, 0) for i in axes(positions, 1)]
+
+        table = aperture_photometry(apertures, data, error, method = (:subpixel, 64))
+        @test table.aperture_sum[1] ≈ 100 rtol = 1e-2
+        @test all(table.aperture_sum[2:end] .< 100)
+    end
+end # photometry - circular
