@@ -168,13 +168,13 @@ end # photometry elliptical
 
     @testset "errors - RectangularAperture" begin
         data = ones(40, 40)
-        aperture = RectangularAperture(20, 20, 10, 5, 15)
+        aperture = RectangularAperture(20, 20, 10, 5, 0)
         test_aperture(data, aperture)
     end
 
     @testset "errors - RectangularAnnulus" begin
         data = ones(40, 40)
-        aperture = RectangularAnnulus(20, 20, 8, 10, 4, 15)
+        aperture = RectangularAnnulus(20, 20, 8, 10, 4, 0)
         test_aperture(data, aperture)
     end
 
@@ -182,10 +182,10 @@ end # photometry elliptical
         data = ones(20, 20)
         error = ones(size(data))
         positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
-        apertures = [RectangularAperture(positions[i, :], 5, 5, 0) for i in axes(positions, 1)]
+        apertures = [RectangularAperture(positions[i, :], 10, 10, 0) for i in axes(positions, 1)]
 
         table = aperture_photometry(apertures, data, error, method = (:subpixel, 64))
-        @test table.aperture_sum[1] ≈ 25 rtol = 1e-2
-        @test all(table.aperture_sum[2:end] .< 25)
+        @test table.aperture_sum[1] ≈ 100 rtol = 1e-2
+        @test all(table.aperture_sum[2:end] .< 100)
     end
 end # photometry - circular
