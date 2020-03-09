@@ -10,7 +10,7 @@ export estimate_background,
        Median,
        Mode,
        SourceExtractor,
-       MMMBackground
+       MMM
 
 
 # Abstract types

@@ -7,7 +7,7 @@ Mean
 Median
 Mode
 SourceExtractor
-MMMBackground
+MMM
 ```
 
 ## API/Reference

@@ -104,7 +104,7 @@ function estimate_background(::SourceExtractor, data; dims = :)
 end
 
 """
-    MMMBackground(median_factor=3, mean_factor=2)
+    MMM(median_factor=3, mean_factor=2)
 
 Estimate the background using a mode estimator of the form `median_factor * median - mean_factor * mean`.
 This algorithm is based on the `MMM` routine originally implemented in DAOPHOT. `MMM` uses factors of `median_factor=3` and `mean_factor=2` by default.
@@ -115,10 +115,10 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 ```jldoctest
 julia> x = ones(3, 5);
 
-julia> estimate_background(MMMBackground, x)
+julia> estimate_background(MMM, x)
 1.0
 
-julia> estimate_background(MMMBackground(4, 3), x, dims = 1)
+julia> estimate_background(MMM(4, 3), x, dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
@@ -126,10 +126,10 @@ julia> estimate_background(MMMBackground(4, 3), x, dims = 1)
 # See Also
 [`SourceExtractor`](@ref)
 """
-struct MMMBackground{T <: Number} <: BackgroundEstimator
+struct MMM{T <: Number} <: BackgroundEstimator
     median_factor::T
     mean_factor::T
 end
 
-MMMBackground() = MMMBackground(3, 2)
-estimate_background(alg::MMMBackground, data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
+MMM() = MMM(3, 2)
+estimate_background(alg::MMM, data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
