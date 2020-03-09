@@ -133,3 +133,61 @@ end
 
 MMM() = MMM(3, 2)
 estimate_background(alg::MMM, data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
+
+"""
+    Biweight_location(M=nothing, c=6.0)
+
+Estimate the background using robust statistic biweight location.
+
+# Example
+```jldoctest
+julia> x = ones(3,5);
+
+julia> estimate_background(Biweight_location, x)
+1.0
+
+julia> estimate_background(Biweight_location, x, dims = 1)
+1×5 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0
+ ```
+"""
+struct Biweight_location{T <: Number} <: BackgroundEstimator
+    M::Union{Nothing, T}
+    c::T
+end
+
+Biweight_location() = Biweight_location(nothing, 6.0)
+
+function Biweight_util(data::Array{T}, M::Union{Nothing, T}, c::T) where T <: Number
+
+    if M == nothing
+        M = median(data)
+    end
+
+    MAD = mad(data, normalize = false)
+
+    if MAD == 0
+        return M
+    end
+
+    u = float(data)
+    u .-= M
+    u ./= (c*MAD)
+
+    num = 0
+    den = 0
+
+    for i in eachindex(u)
+        if abs(u[i]) < 1
+            num += u[i] * (1 - u[i]^2)^2
+            den += (1 - u[i]^2)^2
+        end
+    end
+    if den == 0
+        return M
+    end
+    return M + (c * MAD * num)/den
+end
+
+
+estimate_background(alg::Biweight_location, data; dims = :) = dims isa Colon ? Biweight_util(data, alg.M, alg.c) : mapslices(X -> Biweight_util(X, alg.M, alg.c), data, dims=dims)

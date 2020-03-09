@@ -10,7 +10,8 @@ export estimate_background,
        Median,
        Mode,
        SourceExtractor,
-       MMM
+       MMM,
+       Biweight_location
 
 
 # Abstract types
