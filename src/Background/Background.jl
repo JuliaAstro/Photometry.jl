@@ -58,8 +58,8 @@ estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size, ker
 
 
 """
-    sigma_clip!(data, sigma; center=median, std=std)
-    sigma_clip!(data, sigma_low, sigma_high; center=median, std=std)
+    sigma_clip!(x, sigma; center=median(x), std=std(x))
+    sigma_clip!(x, sigma_low, sigma_high; center=median(x), std=std(x))
 
 In-place version of [`sigma_clip`](@ref)
 
@@ -69,21 +69,17 @@ In-place version of [`sigma_clip`](@ref)
 
     To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.
 """
-function sigma_clip!(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std)
-    mean = center(data)
-    deviation = std(data)
-    return clamp!(data, mean - sigma_low * deviation, mean + sigma_high * deviation)
-end
+sigma_clip!(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = clamp!(x, center - sigma_low * std, center + sigma_high * std)
 
 """
-    sigma_clip(data, sigma; center=median, std=std)
-    sigma_clip(data, sigma_low, sigma_high; center=median, std=std)
+    sigma_clip(x, sigma; center=median(x), std=std(x))
+    sigma_clip(x, sigma_low, sigma_high; center=median(x), std=std(x))
 
-This function returns sigma-clipped values of the input `data`.
+This function returns sigma-clipped values of the input `x`.
 
 Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise assume they are equal. `center` and `std` are optional keyword arguments which are functions for finding central element and standard deviation.
 
-This will replace values in `data` lower than `center - sigma_low * std` with that value, and values higher than `center + sigma_high * std` with that value.
+This will replace values in `x` lower than `center - sigma_low * std` with that value, and values higher than `center + sigma_high * std` with that value.
 
 # Example
 ```jldoctest
@@ -98,7 +94,7 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 (-1.0021043865183705, 1.0011542162690115)
 ```
 """
-sigma_clip(data::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median, std = std) = sigma_clip!(float(data), sigma_low, sigma_high; center = center, std = std)
+sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)
 
 # Estimators
 include("estimators.jl")
