@@ -15,10 +15,10 @@ A rectangular aperture with width `w`, height `h`, and position angle `θ` in de
 ```jldoctest
 julia> ap = RectangularAperture(0, 0, 10, 4, 0)
 RectangularAperture(0, 0, w=10, h=4, θ=0°)
+```
 
 !!! warning
     The `:exact` method is not implemented for `RectangularAperture`
-```
 """
 struct RectangularAperture{T <: Number} <: AbstractAperture
     x::T
@@ -78,10 +78,10 @@ A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height
 ```jldoctest
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
 RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, θ=45.0°)
+```
 
 !!! warning
     The `:exact` method is not implemented for `RectangularAperture`
-```
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture
     x::T
