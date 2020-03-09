@@ -13,12 +13,12 @@ using Photometry.Aperture: circular_overlap,
                            elliptical_overlap,
                            elliptical_overlap_exact,
                            elliptical_overlap_single_subpixel,
-                           square_line,
-                           square_segment,
-                           square_segment_single2,
-                           triangle_unitsquare_overlap,
+                        #    square_line,
+                        #    square_segment,
+                        #    square_segment_single2,
+                        #    triangle_unitsquare_overlap,
                            rectangular_overlap,
-                           rectangular_overlap_exact,
+                        #    rectangular_overlap_exact,
                            rectangular_overlap_single_subpixel
 
 @testset "overlap - circular" begin
