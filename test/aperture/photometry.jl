@@ -2,7 +2,7 @@ APERTURES = [
     CircularAperture,
     CircularAnnulus,
     EllipticalAperture,
-    EllipticalAnnulus
+    EllipticalAnnulus,
 ]
 
 PARAMS = [

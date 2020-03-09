@@ -493,13 +493,11 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
     @inbounds for i in 1:nx
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
-        pxcen = pxmin + 0.5dx
         # upper end of pixel
         pxmax = pxmin + dx
         if pxmax > bxmin && pxmin < bxmax
             for j in 1:ny
                 pymin = ymin + (j - 1) * dy
-                pycen = pymin + 0.5dy
                 pymax = pymin + dy
 
                 if bymin < pymax && pymin < bymax
@@ -550,6 +548,10 @@ function intersects_rectangle(x, y, w, h, θ)
 
     return abs(u) < w / 2 && abs(v) < h / 2
 end
+#= 
+
+This code was previously used for trying to implement exact overlap of rectangular apertures. For now, it will sit in this comment block for posterity. 
+
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     sint, cost = sincos(deg2rad(-θ))
@@ -758,5 +760,4 @@ function square_line(x1, y1, x2, y2)
     end
     out = unique(process, points)
     return length(out) == 1 ? Tuple(repeat(out, 2)) : Tuple(out)
-end
-    
+end =#
