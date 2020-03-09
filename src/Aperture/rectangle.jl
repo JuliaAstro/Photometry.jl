@@ -81,7 +81,7 @@ RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, Î¸=45.0Â
 ```
 
 !!! warning
-    The `:exact` method is not implemented for `RectangularAperture`
+    The `:exact` method is not implemented for `RectangularAnnulus`
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture
     x::T
