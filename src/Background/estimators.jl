@@ -135,59 +135,58 @@ MMM() = MMM(3, 2)
 estimate_background(alg::MMM, data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
 
 """
-    Biweight_location(M=nothing, c=6.0)
+    BiweightLocation(c = 6.0, M = nothing)
 
-Estimate the background using robust statistic biweight location.
+Estimate the background using the robust biweight location statistic.
+
+``\\xi_{biloc}=M + \\frac{\\sum_{|u_i|<1}{(x_i - M)(1 - u_i^2)^2}}{\\sum_{|u_i|<1}{(1-u_i^2)^2}}``
+with
+``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
+where MAD is median absolute deviation.
 
 # Example
 ```jldoctest
 julia> x = ones(3,5);
 
-julia> estimate_background(Biweight_location, x)
+julia> estimate_background(BiweightLocation, x)
 1.0
 
-julia> estimate_background(Biweight_location, x, dims = 1)
+julia> estimate_background(BiweightLocation(5.5), x; dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
  ```
 """
-struct Biweight_location{T <: Number} <: BackgroundEstimator
-    M::Union{Nothing, T}
+struct BiweightLocation{T <: Number} <: BackgroundEstimator
     c::T
+    M::Union{Nothing, T}
 end
 
-Biweight_location() = Biweight_location(nothing, 6.0)
+BiweightLocation(c; M = nothing) = BiweightLocation(c, M)
+BiweightLocation() = BiweightLocation(6.0)
 
-function Biweight_util(data::Array{T}, M::Union{Nothing, T}, c::T) where T <: Number
+function biweight_location(data::AbstractArray, c, M=median(data))
 
-    if M == nothing
-        M = median(data)
-    end
+    M = M === nothing ? median(data) : M
 
     MAD = mad(data, normalize = false)
 
-    if MAD == 0
-        return M
-    end
+    MAD ≈ 0 && return M
 
-    u = float(data)
-    u .-= M
-    u ./= (c*MAD)
+    u = @. (data - M) / (c * MAD)
 
     num = 0
     den = 0
 
-    for i in eachindex(u)
-        if abs(u[i]) < 1
-            num += u[i] * (1 - u[i]^2)^2
-            den += (1 - u[i]^2)^2
+    for ui in u
+        if abs(ui) < 1
+            num += ui * (1 - ui^2)^2
+            den += (1 - ui^2)^2
         end
     end
-    if den == 0
-        return M
-    end
+
+    den ≈ 0 && return M
     return M + (c * MAD * num)/den
 end
 
 
-estimate_background(alg::Biweight_location, data; dims = :) = dims isa Colon ? Biweight_util(data, alg.M, alg.c) : mapslices(X -> Biweight_util(X, alg.M, alg.c), data, dims=dims)
+estimate_background(alg::BiweightLocation, data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) : mapslices(X -> biweight_location(X, alg.c, alg.M), data, dims=dims)

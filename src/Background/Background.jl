@@ -11,7 +11,7 @@ export estimate_background,
        Mode,
        SourceExtractor,
        MMM,
-       Biweight_location
+       BiweightLocation
 
 
 # Abstract types
