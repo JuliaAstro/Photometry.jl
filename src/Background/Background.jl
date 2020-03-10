@@ -19,27 +19,43 @@ export estimate_background,
     Background.BackgroundEstimator
 
 This abstract type embodies the possible background estimation algorithms for dispatch with [`estimate_background`](@ref).
+
+To implement a new estimator, you must define the struct and define a method like `(::MyEstimator)(data::AbstractArray; dims=:)`.
 """
 abstract type BackgroundEstimator end
 
+"""
+    Background.BackgroundRMSEstimator
+
+This abstract type embodies the possible background RMS estimation algorithms for dispatch with [`estimate_background`](@ref).
+
+To implement a new estimator, you must define the struct and define a method like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
+"""
+abstract type BackgroundRMSEstimator end
+
+# Estimators
+include("estimators.jl")
+
+###############################################################################
 
 """
-    estimate_background(::BackgroundEstimator, data; dims=:)
+    estimate_background(data, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS, data; dims=:)
 
-Perform 2D background estimation using the given estimator.
+Perform 2D background estimation using the given estimators.
 
-The value returned will be an two arrays corresponding to the estimated background, whose dimensionality will depend on the `dims` keyword and the estimator used.
+The value returned will be two arrays corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
 If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
 
 # See Also
 [Background Estimators](@ref)
+[Background RMS Estimators](@ref)
 """
-estimate_background(::BackgroundEstimator, ::AbstractArray; dims = :)
-estimate_background(T::Type{<:BackgroundEstimator}, d::AbstractArray; dims = :) = estimate_background(T(), d; dims = dims)
+estimate_background(::AbstractArray, ::BackgroundEstimator = SourceExtractor(), ::BackgroundRMSEstimator = StdRMS(); dims = :)
+estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator} = SourceExtractor, R::Type{<:BackgroundRMSEstimator} = StdRMS; dims = :) = estimate_background(d, T(), R(); dims = dims)
 
 """
-    estimate_background(:BackgroundEstimator, data, box_size, kernel_size; dims=:)
+    estimate_background(::BackgroundEstimator, data, mesh_size; edge=:pad, dims=:)
 
 Perform 2D background estimation using the given estimator using meshes and kernels.
 
@@ -97,7 +113,5 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 """
 sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)
 
-# Estimators
-include("estimators.jl")
 
 end # Background
