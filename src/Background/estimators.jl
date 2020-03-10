@@ -174,8 +174,8 @@ function biweight_location(data::AbstractArray, c, M=median(data))
 
     u = @. (data - M) / (c * MAD)
 
-    num = 0
-    den = 0
+    num = zero(eltype(u))
+    den = zero(eltype(u))
 
     for ui in u
         if abs(ui) < 1
