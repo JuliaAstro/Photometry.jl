@@ -10,7 +10,7 @@ using StatsBase
 
 This estimator returns the mean of the input.
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -31,7 +31,7 @@ struct Mean <: BackgroundEstimator end
 
 This estimator returns the median of the input.
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -52,7 +52,7 @@ struct Median <: BackgroundEstimator end
 
 This estimator returns the mode of the input.
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -77,7 +77,7 @@ The background is calculated using a mode estimator of the form `(2.5 * median) 
 
 If `(mean - median) / std > 0.3` then the median is used and if `std = 0` then the mean is used.
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -115,7 +115,7 @@ This algorithm is based on the `MMM` routine originally implemented in DAOPHOT. 
 This estimator assumes that contaminated sky pixel values overwhelmingly display positive departures from the true value.
 
 
-# Example
+# Examples
 ```jldoctest
 julia> x = ones(3, 5);
 
@@ -202,7 +202,7 @@ end
 
 Uses the standard deviation statistic for background RMS estimation.
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -227,7 +227,7 @@ This is typically given as
 
 ``\\sigma \\approx 1.4826 \\cdot \\text{MAD}``
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
@@ -251,7 +251,7 @@ Uses the robust biweight scale statistic for background RMS estimation.
 
 The biweight scale is the square root of the biweight midvariance. The biweight midvariance uses a tuning constant, `c`, and an optional initial guess of the central value `M`. 
 
-# Example
+# Examples
 ```jldoctest
 julia> data = ones(3, 5);
 

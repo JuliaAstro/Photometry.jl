@@ -43,17 +43,19 @@ include("estimators.jl")
 ###############################################################################
 
 """
-    estimate_background(data, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS, data; dims=:)
+    estimate_background(data, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; dims=:)
 
-Perform 2D background estimation using the given estimators.
+Perform scalar background estimation using the given estimators.
 
-The value returned will be two arrays corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
+The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
 If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
 
 # See Also
 [Background Estimators](@ref)
 [Background RMS Estimators](@ref)
+
+# Examples
 """
 estimate_background(::AbstractArray, ::BackgroundEstimator = SourceExtractor(), ::BackgroundRMSEstimator = StdRMS(); dims = :)
 estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator} = SourceExtractor, R::Type{<:BackgroundRMSEstimator} = StdRMS; dims = :) = estimate_background(d, T(), R(); dims = dims)
@@ -102,7 +104,7 @@ Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise 
 
 This will replace values in `x` lower than `center - sigma_low * std` with that value, and values higher than `center + sigma_high * std` with that value.
 
-# Example
+# Examples
 ```jldoctest
 julia> x = randn(100_000);
 
