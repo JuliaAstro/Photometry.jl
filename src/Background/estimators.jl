@@ -142,7 +142,7 @@ Estimate the background using the robust biweight location statistic.
 ``\\xi_{biloc}=M + \\frac{\\sum_{|u_i|<1}{(x_i - M)(1 - u_i^2)^2}}{\\sum_{|u_i|<1}{(1-u_i^2)^2}}``
 with
 ``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
-where MAD is median absolute deviation.
+here ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 
 # Example
 ```jldoctest
