@@ -37,3 +37,19 @@ end
     # using different std
     @test sigma_clip(y, 1, std = 1) ≈ [2.5, 2.5, 3, 4, 4.5, 4.5]
 end
+
+
+###############################################################################
+# RMS Estimators
+
+function test_ones_rms(estimator)
+    data = ones(10, 10)
+
+    @test estimator(data) ≈ 0.0
+    @test estimator(data, dims = 1) ≈ zeros(1, 10)
+    @test estimator(data, dims = 2) ≈ zeros(10)
+end
+
+@testset "$E"  for E in [StdRMS(), MADStdRMS(), BiweightScaleRMS()]
+    test_ones_rms(E)
+end

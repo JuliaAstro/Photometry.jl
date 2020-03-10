@@ -9,9 +9,13 @@ export estimate_background,
        Mean,
        Median,
        Mode,
-       SourceExtractor,
        MMM,
-       BiweightLocation
+       SourceExtractor,
+       BiweightLocation,
+       # RMS Estimators
+       StdRMS,
+       MADStdRMS,
+       BiweightScaleRMS
 
 
 # Abstract types

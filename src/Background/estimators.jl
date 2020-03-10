@@ -197,4 +197,94 @@ end
 ########################################################################
 # RMS Estimators
 
+"""
+    StdRMS
 
+Uses the standard deviation statistic for background RMS estimation.
+
+# Example
+```jldoctest
+julia> data = ones(3, 5);
+
+julia> StdRMS()(data)
+0.0
+
+julia> StdRMS()(data, dims=1)
+1×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+```
+"""
+struct StdRMS <: BackgroundRMSEstimator end
+
+(::StdRMS)(data; dims = :) = std(data; dims = dims)
+
+"""
+    MADStdRMS
+
+Uses the standard median absolute deviation (MAD) statistic for background RMS estimation.
+
+This is typically given as 
+
+``\\sigma \\approx 1.4826 \\cdot \\text{MAD}``
+
+# Example
+```jldoctest
+julia> data = ones(3, 5);
+
+julia> MADStdRMS()(data)
+0.0
+
+julia> MADStdRMS()(data, dims=1)
+1×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+```
+"""
+struct MADStdRMS <: BackgroundRMSEstimator end
+
+(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) : mapslices(x->mad(x, normalize = true), data; dims = dims)
+
+
+"""
+    BiweightScaleRMS(c=9.0, M=nothing)
+
+Uses the robust biweight scale statistic for background RMS estimation.
+
+The biweight scale is the square root of the biweight midvariance. The biweight midvariance uses a tuning constant, `c`, and an optional initial guess of the central value `M`. 
+
+# Example
+```jldoctest
+julia> data = ones(3, 5);
+
+julia> BiweightScaleRMS()(data)
+0.0
+
+julia> BiweightScaleRMS(3.0)(data, dims=1)
+1×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+```
+"""
+struct BiweightScaleRMS <: BackgroundRMSEstimator 
+    c::Number
+    M
+end
+
+BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
+
+function biweight_scale(x, c, M)
+    M = M === nothing ? median(x) : M
+    _mad = mad(x, normalize = false)
+    # avoid divide by zero error
+    _mad = _mad ≈ 0 ? 1 : _mad
+    u = @. (x - M) / (c * _mad)
+    
+    num = den = 0
+    for ui in u
+        abs(ui) < 1 || continue
+        num += (c * _mad * ui)^2 * (1 - ui^2)^4
+        den += (1 - ui^2) * (1 - 5ui^2)
+    end
+    
+    return sqrt(length(x) * num) / abs(den)
+end
+
+(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) : mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)
