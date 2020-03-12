@@ -1,6 +1,7 @@
 module Background
 
 using Statistics
+using Images: padarray, Fill
 
 export estimate_background,
        sigma_clip,
@@ -56,16 +57,27 @@ If the background estimator has no parameters (like [`Mean`](@ref)), you can jus
 [Background RMS Estimators](@ref)
 
 # Examples
+```jldoctest
+julia> data = ones(3, 5);
+
+julia> bkg, bkg_rms = estimate_background(data)
+1.0, 0.0
+
+julia> bkg, bkg_rms = estimate_background(data, MAD, MADStdRMS)
+1.0, 0.0
+```
 """
-estimate_background(::AbstractArray, ::BackgroundEstimator = SourceExtractor(), ::BackgroundRMSEstimator = StdRMS(); dims = :)
-estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator} = SourceExtractor, R::Type{<:BackgroundRMSEstimator} = StdRMS; dims = :) = estimate_background(d, T(), R(); dims = dims)
+function estimate_background(data, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); dims = :)
+    return bkg(data, dims = dims), bkg_rms(data, dims = dims)
+end
+estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
 
 """
-    estimate_background(::BackgroundEstimator, data, mesh_size; edge=:pad, dims=:)
+    estimate_background(data, mesh_size, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; edge_method=:pad, dims=:)
 
-Perform 2D background estimation using the given estimator using meshes and kernels.
+Perform 2D background estimation using the given estimators using meshes.
 
-This function will estimate backgrounds in meshes of size `box_size`, using a filter kernel of size `kernel_size`. These correspond to the dimension, so for 2D data you could specify (20,) or (20,20) as the box/kernel size, matching with dims=1 for the scalar variant.
+This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data).
 
 If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
@@ -73,11 +85,36 @@ If the background estimator has no parameters (like [`Mean`](@ref)), you can jus
 
 # See Also
 [Background Estimators](@ref)
+[Background RMS Estimators](@ref)
 """
-estimate_background(::BackgroundEstimator, ::AbstractArray, ::Tuple, ::Tuple; dims = :) = error("Not implemented!")
-estimate_background(T::Type{<:BackgroundEstimator}, d::AbstractArray, b::Tuple, k::Tuple; dims = :) = estimate_background(T(), d, b, k; dims = dims)
-estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size::Integer, kernel_size; dims = :) = estimate_background(alg, data, (box_size, box_size), kernel_size; dims = dims)
-estimate_background(alg::BackgroundEstimator, data::AbstractArray, box_size, kernel_size::Integer; dims = :) = estimate_background(alg, data, box_size, (kernel_size, kernel_size); dims = dims)
+function estimate_background(data, mesh_size::Tuple, BKG::BackgroundEstimator = SourceExtractor(), BKG_RMS::BackgroundRMSEstimator = StdRMS(); edge_method = :pad, dims = :)
+    nmesh = size(data) ./ mesh_size
+    if edge_method === :pad
+        error(":(")
+    elseif edge_method === :crop
+        nmesh = floor.(Int, nmesh)
+        maxidx = nmesh .* mesh_size
+        idxs = Base.OneTo.(maxidx)
+        X = @view data[idxs...]
+    else
+        error("Invalid edge method: $edge_method")
+    end
+
+    bkg = Array{eltype(data)}(undef, nmesh)
+    bkg_rms = Array{eltype(data)}(undef, nmesh)
+    for i in 1:nmesh[1], j in 1:nmesh[2]
+        rows = i * nmesh[1]:i * nmesh[1] + mesh_size[1]
+        cols = j * nmesh[2]:j * nmesh[2] + mesh_size[2]
+        bkg[i, j] = BKG(X[rows, cols])
+        bkg_rms[i, j] = BKG_RMS(X[rows, cols])
+    end
+
+    return bkg, bkg_rms
+end
+
+estimate_background(data, mesh_size::Int, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); edge_method = :pad, dims = :) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms; edge_method = edge_method, dims = dims)
+
+estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; edge_method = :pad, dims = :) = estimate_background(data, T(), R(); edge_method = edge_method, dims = dims)
 
 
 """

@@ -265,7 +265,7 @@ julia> BiweightScaleRMS(3.0)(data, dims=1)
 """
 struct BiweightScaleRMS <: BackgroundRMSEstimator 
     c::Number
-    M
+    M::Union{Nothing,Number}
 end
 
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
