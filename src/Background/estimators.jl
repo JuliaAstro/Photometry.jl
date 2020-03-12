@@ -161,7 +161,7 @@ struct BiweightLocation{T <: Number} <: BackgroundEstimator
     M::Union{Nothing, T}
 end
 
-BiweightLocation(c; M = nothing) = BiweightLocation(c, M)
+BiweightLocation(c) = BiweightLocation(c, nothing)
 BiweightLocation() = BiweightLocation(6.0)
 
 function biweight_location(data::AbstractArray, c, M=median(data))
