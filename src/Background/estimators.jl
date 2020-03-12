@@ -4,7 +4,6 @@ using StatsBase
 ########################################################################
 # Background Estimators
 
-
 """
     Mean
 
@@ -277,7 +276,7 @@ function biweight_scale(x, c, M)
     _mad = _mad ≈ 0 ? 1 : _mad
     u = @. (x - M) / (c * _mad)
     
-    num = den = 0
+    num = den = zero(eltype(u))
     for ui in u
         abs(ui) < 1 || continue
         num += (c * _mad * ui)^2 * (1 - ui^2)^4
