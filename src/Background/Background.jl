@@ -2,10 +2,12 @@ module Background
 
 using Statistics
 using Images: padarray, Fill
+using Interpolations: CubicSplineInterpolation
 
 export estimate_background,
        sigma_clip,
        sigma_clip!,
+       zoom_interpolate,
        # Estimators
        Mean,
        Median,
@@ -90,12 +92,14 @@ If the background estimator has no parameters (like [`Mean`](@ref)), you can jus
 function estimate_background(data, 
     mesh_size::NTuple{2,<:Integer}, 
     BKG::BackgroundEstimator = SourceExtractor(), 
-    BKG_RMS::BackgroundRMSEstimator = StdRMS(); 
+    BKG_RMS::BackgroundRMSEstimator = StdRMS(),
+    ITP = zoom_interpolate; 
     edge_method = :pad)
 
     if edge_method === :pad
         nextra = size(data) .% mesh_size
-        npad = mesh_size .- nextra
+        # have to make sure to avoid padding an extra mesh_size if nextra is 0
+        npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(mesh_size, nextra)])
         X = padarray(data, Fill(NaN, (0, 0), npad))
         nmesh = size(X) .÷ mesh_size
     elseif edge_method === :crop
@@ -115,6 +119,10 @@ function estimate_background(data,
         bkg[i, j] = BKG(X[rows, cols])
         bkg_rms[i, j] = BKG_RMS(X[rows, cols])
     end
+
+    # Now interpolate back to original size
+    bkg = ITP(bkg, mesh_size)
+    bkg_rms = ITP(bkg, mesh_size)
 
     return bkg, bkg_rms
 end
@@ -162,6 +170,16 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 ```
 """
 sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)
+
+
+
+
+
+function zoom_interpolate(mesh, factors::NTuple{2,<:Integer})
+    out_axes = [range(1, n, length = n * f) for (n, f) in zip(size(mesh), factors)]
+    itp = CubicSplineInterpolation(axes(mesh), mesh)
+    return [itp(i, j) for i in out_axes[1], j in out_axes[2]]
+end
 
 
 end # Background
