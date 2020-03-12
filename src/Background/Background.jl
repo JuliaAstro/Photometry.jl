@@ -93,12 +93,13 @@ function estimate_background(data,
     BKG_RMS::BackgroundRMSEstimator = StdRMS(); 
     edge_method = :pad)
 
-    nmesh = size(data) .÷ mesh_size
     if edge_method === :pad
         nextra = size(data) .% mesh_size
         npad = mesh_size .- nextra
         X = padarray(data, Fill(NaN, (0, 0), npad))
+        nmesh = size(X) .÷ mesh_size
     elseif edge_method === :crop
+        nmesh = size(data) .÷ mesh_size
         maxidx = nmesh .* mesh_size
         idxs = Base.OneTo.(maxidx)
         X = data[idxs...]
