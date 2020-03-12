@@ -90,7 +90,7 @@ struct SourceExtractor <: BackgroundEstimator end
 """ Utility function for SourceExtractor algorithm"""
 function validate_SE(background::Number, _mean::Number, _median::Number, _std::Number)
     _std ≈ 0 && return _mean
-    abs(_mean - _median) / std > 0.3 && return _median
+    abs(_mean - _median) / _std > 0.3 && return _median
     return background
 end
 
