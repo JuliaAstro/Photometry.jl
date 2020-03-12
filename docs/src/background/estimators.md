@@ -8,6 +8,7 @@ Median
 Mode
 SourceExtractor
 MMM
+BiweightLocation
 ```
 
 ## API/Reference
