@@ -87,15 +87,22 @@ If the background estimator has no parameters (like [`Mean`](@ref)), you can jus
 [Background Estimators](@ref)
 [Background RMS Estimators](@ref)
 """
-function estimate_background(data, mesh_size::Tuple, BKG::BackgroundEstimator = SourceExtractor(), BKG_RMS::BackgroundRMSEstimator = StdRMS(); edge_method = :pad, dims = :)
-    nmesh = size(data) ./ mesh_size
+function estimate_background(data, 
+    mesh_size::NTuple{2,<:Integer}, 
+    BKG::BackgroundEstimator = SourceExtractor(), 
+    BKG_RMS::BackgroundRMSEstimator = StdRMS(); 
+    edge_method = :pad, 
+    dims = :)
+
+    nmesh = size(data) .÷ mesh_size
     if edge_method === :pad
-        error(":(")
+        nextra = size(data) .% mesh_size
+        npad = mesh_size .- nextra
+        X = padarray(data, Fill(NaN, (0, 0), npad))
     elseif edge_method === :crop
-        nmesh = floor.(Int, nmesh)
         maxidx = nmesh .* mesh_size
         idxs = Base.OneTo.(maxidx)
-        X = @view data[idxs...]
+        X = data[idxs...]
     else
         error("Invalid edge method: $edge_method")
     end
