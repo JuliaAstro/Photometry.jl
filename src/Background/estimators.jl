@@ -152,10 +152,10 @@ here ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 ```jldoctest
 julia> x = ones(3,5);
 
-julia> estimate_background(BiweightLocation, x)
+julia> BiweightLocation()(x)
 1.0
 
-julia> estimate_background(BiweightLocation(5.5), x; dims = 1)
+julia> BiweightLocation(5.5)(x; dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
  ```
@@ -277,7 +277,7 @@ function biweight_scale(x, c, M)
     u = @. (x - M) / (c * _mad)
     
     num = den = zero(eltype(u))
-    for ui in u
+        for ui in u
         abs(ui) < 1 || continue
         num += (c * _mad * ui)^2 * (1 - ui^2)^4
         den += (1 - ui^2) * (1 - 5ui^2)

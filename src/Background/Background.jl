@@ -73,7 +73,7 @@ end
 estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
 
 """
-    estimate_background(data, mesh_size, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; edge_method=:pad, dims=:)
+    estimate_background(data, mesh_size, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; edge_method=:pad)
 
 Perform 2D background estimation using the given estimators using meshes.
 
@@ -91,8 +91,7 @@ function estimate_background(data,
     mesh_size::NTuple{2,<:Integer}, 
     BKG::BackgroundEstimator = SourceExtractor(), 
     BKG_RMS::BackgroundRMSEstimator = StdRMS(); 
-    edge_method = :pad, 
-    dims = :)
+    edge_method = :pad)
 
     nmesh = size(data) .÷ mesh_size
     if edge_method === :pad
@@ -109,7 +108,7 @@ function estimate_background(data,
 
     bkg = Array{eltype(data)}(undef, nmesh)
     bkg_rms = Array{eltype(data)}(undef, nmesh)
-    for i in 1:nmesh[1], j in 1:nmesh[2]
+    @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
         rows = i * nmesh[1]:i * nmesh[1] + mesh_size[1]
         cols = j * nmesh[2]:j * nmesh[2] + mesh_size[2]
         bkg[i, j] = BKG(X[rows, cols])
@@ -119,9 +118,9 @@ function estimate_background(data,
     return bkg, bkg_rms
 end
 
-estimate_background(data, mesh_size::Int, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); edge_method = :pad, dims = :) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms; edge_method = edge_method, dims = dims)
+estimate_background(data, mesh_size::Int, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms; edge_method = edge_method)
 
-estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; edge_method = :pad, dims = :) = estimate_background(data, T(), R(); edge_method = edge_method, dims = dims)
+estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; edge_method = :pad) = estimate_background(data, T(), R(); edge_method = edge_method)
 
 
 """
