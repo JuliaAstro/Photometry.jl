@@ -1,25 +1,26 @@
 ###############################################################################
-# RMS Estimators
+# Location Estimators
 
-function test_ones(estimator::Photometry.Background.BackgroundEstimator)
+const LOC_EST = [Mean, Median, Mode, MMM, SourceExtractor, BiweightLocation]
+
+@testset "Trivial $E"  for E in LOC_EST
+    estimator = E()
+
     data = ones(10, 10)
 
     @test estimator(data) ≈ 1.0
     @test estimator(data, dims = 1) ≈ ones(1, 10)
     @test estimator(data, dims = 2) ≈ ones(10)
-end
 
-function test_zeros(estimator::Photometry.Background.BackgroundEstimator)
     data = zeros(10, 10)
 
     @test estimator(data) ≈ 0.0
     @test estimator(data, dims = 1) ≈ zeros(1, 10)
     @test estimator(data, dims = 2) ≈ zeros(10)
-end
 
-@testset "$E"  for E in [Mean, Median, Mode, MMM, SourceExtractor, BiweightLocation]
-    test_ones(E())
-    test_zeros(E())
+    data = randn(100, 100)
+
+    E <: Mode || @test estimator(data) ≈ 0.0 atol = 1e-2
 end
 
 @testset "mode" begin

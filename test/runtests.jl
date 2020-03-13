@@ -1,5 +1,8 @@
 using Photometry
 using Test
+using Random
+
+Random.seed!(8462852)
 
 @testset "Aperture Photometry" begin
     include("aperture/overlap.jl")
