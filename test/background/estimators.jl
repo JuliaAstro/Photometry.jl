@@ -1,4 +1,7 @@
-function test_ones(estimator)
+###############################################################################
+# RMS Estimators
+
+function test_ones(estimator::Photometry.Background.BackgroundEstimator)
     data = ones(10, 10)
 
     @test estimator(data) ≈ 1.0
@@ -6,7 +9,7 @@ function test_ones(estimator)
     @test estimator(data, dims = 2) ≈ ones(10)
 end
 
-function test_zeros(estimator)
+function test_zeros(estimator::Photometry.Background.BackgroundEstimator)
     data = zeros(10, 10)
 
     @test estimator(data) ≈ 0.0
@@ -14,9 +17,9 @@ function test_zeros(estimator)
     @test estimator(data, dims = 2) ≈ zeros(10)
 end
 
-@testset "$E"  for E in [Mean(), Median(), Mode(), MMM(), SourceExtractor(), BiweightLocation()]
-    test_ones(E)
-    test_zeros(E)
+@testset "$E"  for E in [Mean, Median, Mode, MMM, SourceExtractor, BiweightLocation]
+    test_ones(E())
+    test_zeros(E())
 end
 
 @testset "mode" begin
@@ -42,7 +45,7 @@ end
 ###############################################################################
 # RMS Estimators
 
-function test_ones_rms(estimator)
+function test_ones(estimator::Photometry.Background.BackgroundRMSEstimator)
     data = ones(10, 10)
 
     @test estimator(data) ≈ 0.0
@@ -50,6 +53,6 @@ function test_ones_rms(estimator)
     @test estimator(data, dims = 2) ≈ zeros(10)
 end
 
-@testset "$E"  for E in [StdRMS(), MADStdRMS(), BiweightScaleRMS()]
-    test_ones_rms(E)
+@testset "$E"  for E in [StdRMS, MADStdRMS, BiweightScaleRMS]
+    test_ones(E())
 end
