@@ -73,7 +73,9 @@ include("interpolators.jl")
 # Core functions
 
 """
-    estimate_background(data, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; dims=:)
+    estimate_background(data,
+        ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; 
+        dims=:)
 
 Perform scalar background estimation using the given estimators.
 
@@ -105,8 +107,7 @@ end
 estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
 
 """
-    estimate_background(
-        data, 
+    estimate_background(data, 
         mesh_size, 
         ::BackgroundEstimator=SourceExtractor, 
         ::BackgroundRMSEstimator=StdRMS,
@@ -150,8 +151,8 @@ function estimate_background(data,
         error("Invalid edge method: $edge_method")
     end
 
-    bkg = Array{eltype(data)}(undef, nmesh)
-    bkg_rms = Array{eltype(data)}(undef, nmesh)
+    bkg = bkg_rms = similar(data, nmesh)
+    
     @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
         rows = i * nmesh[1]:i * nmesh[1] + mesh_size[1]
         cols = j * nmesh[2]:j * nmesh[2] + mesh_size[2]
