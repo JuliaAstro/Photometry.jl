@@ -1,4 +1,5 @@
 using Interpolations: CubicSplineInterpolation
+using ImageTransformations: imresize!
 
 """
     ZoomInterpolator(factors)
@@ -11,29 +12,29 @@ Use a cubic-spline interpolation scheme to increase resolution of a mesh.
 ```jldoctest
 julia> ZoomInterpolator(2)([1 0; 0 1])
 4×4 Array{Float64,2}:
-  1.0          0.666667  0.333333  -2.77556e-17
-  0.666667     0.555556  0.444444   0.333333   
-  0.333333     0.444444  0.555556   0.666667   
- -5.55112e-17  0.333333  0.666667   1.0
+  1.0          0.75   0.25   -2.77556e-17
+  0.75         0.625  0.375   0.25       
+  0.25         0.375  0.625   0.75       
+ -5.55112e-17  0.25   0.75    1.0        
 
 julia> ZoomInterpolator(2, 3)([1 0; 0 1])
 4×6 Array{Float64,2}:
-  1.0          0.8  0.6       0.4       0.2  -2.77556e-17
-  0.666667     0.6  0.533333  0.466667  0.4   0.333333   
-  0.333333     0.4  0.466667  0.533333  0.6   0.666667   
- -5.55112e-17  0.2  0.4       0.6       0.8   1.0
+  1.0           1.0          …  -2.77556e-17  -2.77556e-17
+  0.75          0.75             0.25          0.25       
+  0.25          0.25             0.75          0.75       
+ -5.55112e-17  -5.55112e-17      1.0           1.0        
 
 ```
 """
 struct ZoomInterpolator <: BackgroundInterpolator
-factors::NTuple{2,<:Integer}
+    factors::NTuple{2,<:Integer}
 end
 
 ZoomInterpolator(factor::Integer) = ZoomInterpolator((factor, factor))
 ZoomInterpolator(f1::Integer, args...) = ZoomInterpolator((f1, args...))
 
-function (z::ZoomInterpolator)(mesh)
-out_axes = [range(1, n, length = n * f) for (n, f) in zip(size(mesh), z.factors)]
-itp = CubicSplineInterpolation(axes(mesh), mesh)
-return [itp(i, j) for i in out_axes[1], j in out_axes[2]]
+function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where {T}
+    itp = CubicSplineInterpolation(axes(mesh), mesh)
+    out = similar(mesh, float(T), size(mesh) .* z.factors)
+    return imresize!(out, itp)
 end

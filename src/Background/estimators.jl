@@ -148,6 +148,7 @@ Estimate the background using the robust biweight location statistic.
 ``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
 
 Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
+' 
 
 # Examples
 ```jldoctest

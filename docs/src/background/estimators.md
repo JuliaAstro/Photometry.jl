@@ -25,7 +25,7 @@ MADStdRMS
 BiweightScaleRMS
 ```
 
-## API/Reference
+## Abstract Types
 
 ```@docs
 Background.BackgroundEstimator

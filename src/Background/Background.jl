@@ -1,7 +1,7 @@
 module Background
 
 using Statistics
-using Images: padarray, Fill
+using ImageFiltering: padarray, Fill
 
 export estimate_background,
        sigma_clip,
@@ -33,7 +33,7 @@ This abstract type embodies the possible background estimation algorithms for di
 To implement a new estimator, you must define the struct and define a method like `(::MyEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
-[`Location Estimators`](@ref)
+[Location Estimators](@ref)
 """
 abstract type BackgroundEstimator end
 
@@ -45,7 +45,7 @@ This abstract type embodies the possible background RMS estimation algorithms fo
 To implement a new estimator, you must define the struct and define a method like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
-[`RMS Estimators`](@ref)
+[RMS Estimators](@ref)
 """
 abstract type BackgroundRMSEstimator end
 
@@ -62,7 +62,7 @@ This abstract type embodies the different ways of converting a low-resolution me
 To implement a new interpolation scheme, you must define the struct and define a method like `(::MyInterpolator)(mesh)`
 
 # See Also
-[`Interpolators`](@ref)
+[Interpolators](@ref)
 """
 abstract type BackgroundInterpolator end
 
@@ -200,12 +200,12 @@ This will replace values in `x` lower than `center - sigma_low * std` with that 
 julia> x = randn(100_000);
 
 julia> extrema(x)
-(-4.739551385675315, 4.835552658703196)
+(-4.387579729097121, 4.518192547139076)
 
 julia> x_clip = sigma_clip(x,1);
 
 julia> extrema(x_clip) # should be close to (-1, 1)
-(-1.0038317742592628, 1.0034571855325947)
+(-1.0021043865183705, 1.0011542162690115)
 ```
 """
 sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)

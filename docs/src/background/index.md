@@ -4,10 +4,9 @@ The module provides tools and algorithms for estimating the background of astron
 
 ## Usage
 
-
 ## Interpolators
 
-Background interpolators provide a method for converting low-resolution meshes into low-order high-resolution images. 
+Background interpolators provide a method for converting low-resolution meshes into low-order high-resolution images.
 
 ```@docs
 Background.BackgroundInterpolator
