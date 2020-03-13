@@ -14,6 +14,6 @@ Random.seed!(8462852)
 end
 
 @testset "Background Estimation" begin
+    include("background/background.jl")
     include("background/estimators.jl")
-    # include("background/")
 end
