@@ -30,5 +30,6 @@ makedocs(
         ]
     ])
 
-deploydocs(;
-    repo = "github.com/JuliaAstro/Photometry.jl",)
+deploydocs(
+    repo = "github.com/JuliaAstro/Photometry.jl",
+    push_preview = true)
