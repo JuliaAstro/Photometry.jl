@@ -2,12 +2,10 @@ module Background
 
 using Statistics
 using Images: padarray, Fill
-using Interpolations: CubicSplineInterpolation
 
 export estimate_background,
        sigma_clip,
        sigma_clip!,
-       zoom_interpolate,
        # Estimators
        Mean,
        Median,
@@ -18,16 +16,24 @@ export estimate_background,
        # RMS Estimators
        StdRMS,
        MADStdRMS,
-       BiweightScaleRMS
+       BiweightScaleRMS,
+       # Interpolators
+       ZoomInterpolator
 
 
+###############################################################################
 # Abstract types
+
+# Estimators
 """
     Background.BackgroundEstimator
 
 This abstract type embodies the possible background estimation algorithms for dispatch with [`estimate_background`](@ref).
 
 To implement a new estimator, you must define the struct and define a method like `(::MyEstimator)(data::AbstractArray; dims=:)`.
+
+# See Also
+[`Location Estimators`](@ref)
 """
 abstract type BackgroundEstimator end
 
@@ -37,13 +43,34 @@ abstract type BackgroundEstimator end
 This abstract type embodies the possible background RMS estimation algorithms for dispatch with [`estimate_background`](@ref).
 
 To implement a new estimator, you must define the struct and define a method like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
+
+# See Also
+[`RMS Estimators`](@ref)
 """
 abstract type BackgroundRMSEstimator end
 
-# Estimators
+
 include("estimators.jl")
 
+# Interpolators
+
+"""
+    Background.BackgroundInterpolator
+
+This abstract type embodies the different ways of converting a low-resolution mesh into a high-resolution image, especially for dispatch with [`estimate_background`](@ref)
+
+To implement a new interpolation scheme, you must define the struct and define a method like `(::MyInterpolator)(mesh)`
+
+# See Also
+[`Interpolators`](@ref)
+"""
+abstract type BackgroundInterpolator end
+
+include("interpolators.jl")
+
+
 ###############################################################################
+# Core functions
 
 """
     estimate_background(data, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; dims=:)
@@ -54,28 +81,37 @@ The value returned will be two values corresponding to the estimated background 
 
 If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
 
-# See Also
-[Background Estimators](@ref)
-[Background RMS Estimators](@ref)
-
 # Examples
 ```jldoctest
 julia> data = ones(3, 5);
 
 julia> bkg, bkg_rms = estimate_background(data)
-1.0, 0.0
+(1.0, 0.0)
 
-julia> bkg, bkg_rms = estimate_background(data, MAD, MADStdRMS)
-1.0, 0.0
+julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScaleRMS)
+(1.0, 0.0)
 ```
+
+# See Also
+* [Location Estimators](@ref)
+* [RMS Estimators](@ref)
 """
-function estimate_background(data, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); dims = :)
+function estimate_background(data, 
+        bkg::BackgroundEstimator = SourceExtractor(), 
+        bkg_rms::BackgroundRMSEstimator = StdRMS(); 
+        dims = :)
     return bkg(data, dims = dims), bkg_rms(data, dims = dims)
 end
 estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
 
 """
-    estimate_background(data, mesh_size, ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; edge_method=:pad)
+    estimate_background(
+        data, 
+        mesh_size, 
+        ::BackgroundEstimator=SourceExtractor, 
+        ::BackgroundRMSEstimator=StdRMS,
+        ::BackgroundInterpolator=ZoomInterpolator(mesh_size); 
+        edge_method=:pad)
 
 Perform 2D background estimation using the given estimators using meshes.
 
@@ -85,16 +121,19 @@ If either size is an integer, the implicit shape will be square (eg. `box_size=4
 
 If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
 
+Once the meshes are created they will be passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
+
 # See Also
-[Background Estimators](@ref)
-[Background RMS Estimators](@ref)
+* [Location Estimators](@ref)
+* [RMS Estimators](@ref)
+* [Interpolators](@ref)
 """
 function estimate_background(data, 
-    mesh_size::NTuple{2,<:Integer}, 
-    BKG::BackgroundEstimator = SourceExtractor(), 
-    BKG_RMS::BackgroundRMSEstimator = StdRMS(),
-    ITP = zoom_interpolate; 
-    edge_method = :pad)
+        mesh_size::NTuple{2,<:Integer}, 
+        BKG::BackgroundEstimator = SourceExtractor(), 
+        BKG_RMS::BackgroundRMSEstimator = StdRMS(),
+        ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size); 
+        edge_method = :pad)
 
     if edge_method === :pad
         nextra = size(data) .% mesh_size
@@ -121,15 +160,15 @@ function estimate_background(data,
     end
 
     # Now interpolate back to original size
-    bkg = ITP(bkg, mesh_size)
-    bkg_rms = ITP(bkg, mesh_size)
+    bkg = ITP(bkg)
+    bkg_rms = ITP(bkg)
 
     return bkg, bkg_rms
 end
 
 estimate_background(data, mesh_size::Int, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms; edge_method = edge_method)
 
-estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; edge_method = :pad) = estimate_background(data, T(), R(); edge_method = edge_method)
+estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}, S::Type{<:BackgroundInterpolator}; edge_method = :pad) = estimate_background(data, T(), R(), S(); edge_method = edge_method)
 
 
 """
@@ -161,25 +200,15 @@ This will replace values in `x` lower than `center - sigma_low * std` with that 
 julia> x = randn(100_000);
 
 julia> extrema(x)
-(-4.387579729097121, 4.518192547139076)
+(-4.739551385675315, 4.835552658703196)
 
 julia> x_clip = sigma_clip(x,1);
 
 julia> extrema(x_clip) # should be close to (-1, 1)
-(-1.0021043865183705, 1.0011542162690115)
+(-1.0038317742592628, 1.0034571855325947)
 ```
 """
 sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)
-
-
-
-
-
-function zoom_interpolate(mesh, factors::NTuple{2,<:Integer})
-    out_axes = [range(1, n, length = n * f) for (n, f) in zip(size(mesh), factors)]
-    itp = CubicSplineInterpolation(axes(mesh), mesh)
-    return [itp(i, j) for i in out_axes[1], j in out_axes[2]]
-end
 
 
 end # Background

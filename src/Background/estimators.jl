@@ -2,7 +2,7 @@ using Statistics
 using StatsBase
 
 ########################################################################
-# Background Estimators
+# Location estimators
 
 """
     Mean
@@ -118,7 +118,7 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 ```jldoctest
 julia> x = ones(3, 5);
 
-julia>MMM()(x)
+julia> MMM()(x)
 1.0
 
 julia> MMM(4, 3)(x, dims = 1)
@@ -144,11 +144,12 @@ MMM() = MMM(3, 2)
 Estimate the background using the robust biweight location statistic.
 
 ``\\xi_{biloc}=M + \\frac{\\sum_{|u_i|<1}{(x_i - M)(1 - u_i^2)^2}}{\\sum_{|u_i|<1}{(1-u_i^2)^2}}``
-with
-``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
-here ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 
-# Example
+``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
+
+Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
+
+# Examples
 ```jldoctest
 julia> x = ones(3,5);
 
@@ -158,7 +159,7 @@ julia> BiweightLocation()(x)
 julia> BiweightLocation(5.5)(x; dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
- ```
+```
 """
 struct BiweightLocation{T <: Number} <: BackgroundEstimator
     c::T
@@ -190,7 +191,8 @@ function biweight_location(data::AbstractArray, c = 6.0, M = median(data))
     return M + (c * MAD * num) / den
 end
 
-(alg::BiweightLocation)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) : mapslices(X->biweight_location(X, alg.c, alg.M), data, dims = dims)
+(alg::BiweightLocation)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) : 
+                                          mapslices(X->biweight_location(X, alg.c, alg.M), data, dims = dims)
 
 
 ########################################################################
@@ -240,7 +242,8 @@ julia> MADStdRMS()(data, dims=1)
 """
 struct MADStdRMS <: BackgroundRMSEstimator end
 
-(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) : mapslices(x->mad(x, normalize = true), data; dims = dims)
+(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) : 
+                                mapslices(x->mad(x, normalize = true), data; dims = dims)
 
 
 """
@@ -286,4 +289,5 @@ function biweight_scale(x, c, M)
     return sqrt(length(x) * num) / abs(den)
 end
 
-(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) : mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)
+(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) : 
+                                          mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)
