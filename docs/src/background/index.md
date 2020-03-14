@@ -4,7 +4,7 @@ The module provides tools and algorithms for estimating the background of astron
 
 ## Usage
 
-Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely deconvolve the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo.
+Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo.
 
 Let's show an example
 
@@ -37,9 +37,9 @@ bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
 plot(layout=(2, 2), size=(800, 800), link=:all)
-heatmap!(image, title="Original", subplot=1)
-heatmap!(clipped, title="Sigma-Clipped", subplot=2)
-heatmap!(bkg, title="Background", subplot=3)
+heatmap!(image,   title="Original",       subplot=1)
+heatmap!(clipped, title="Sigma-Clipped",  subplot=2)
+heatmap!(bkg,     title="Background",     subplot=3)
 heatmap!(bkg_rms, title="Background RMS", subplot=4)
 
 savefig("bkg.png"); nothing # hide
@@ -52,8 +52,8 @@ and now we can see our image with the background subtracted and ready for [Apert
 ```@example bkg
 subt = image .- bkg[:1059, :1059]
 plot(layout=(1, 2), link=:all, size=(800, 350), xlims=(400, 800), ylims=(400, 800))
-heatmap!(image, title="Original", subplot=1)
-heatmap!(subt, title="Subtracted", subplot=2)
+heatmap!(image, title="Original",   subplot=1)
+heatmap!(subt,  title="Subtracted", subplot=2)
 
 savefig("bkg_final.png"); nothing # hide
 ```

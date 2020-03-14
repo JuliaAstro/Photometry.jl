@@ -148,7 +148,6 @@ Estimate the background using the robust biweight location statistic.
 ``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
 
 Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
-' 
 
 # Examples
 ```jldoctest
@@ -192,7 +191,7 @@ function biweight_location(data::AbstractArray, c = 6.0, M = median(data))
     return M + (c * MAD * num) / den
 end
 
-(alg::BiweightLocation)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) : 
+(alg::BiweightLocation)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) :
                                           mapslices(X->biweight_location(X, alg.c, alg.M), data, dims = dims)
 
 
@@ -225,7 +224,7 @@ struct StdRMS <: BackgroundRMSEstimator end
 
 Uses the standard median absolute deviation (MAD) statistic for background RMS estimation.
 
-This is typically given as 
+This is typically given as
 
 ``\\sigma \\approx 1.4826 \\cdot \\text{MAD}``
 
@@ -243,7 +242,7 @@ julia> MADStdRMS()(data, dims=1)
 """
 struct MADStdRMS <: BackgroundRMSEstimator end
 
-(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) : 
+(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) :
                                 mapslices(x->mad(x, normalize = true), data; dims = dims)
 
 
@@ -252,7 +251,13 @@ struct MADStdRMS <: BackgroundRMSEstimator end
 
 Uses the robust biweight scale statistic for background RMS estimation.
 
-The biweight scale is the square root of the biweight midvariance. The biweight midvariance uses a tuning constant, `c`, and an optional initial guess of the central value `M`. 
+The biweight scale is the square root of the biweight midvariance. The biweight midvariance uses a tuning constant, `c`, and an optional initial guess of the central value `M`.
+
+``\\xi^2_{biloc}= \\frac{n\\sum_{|u_i|<1}{(x_i - M)^2(1 - u_i^2)^4}}{\\left[\\sum_{|u_i|<1}{(1-u_i^2)(1-5u_i^2)}\\right]^2}``
+
+``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
+
+Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 
 # Examples
 ```jldoctest
@@ -266,9 +271,9 @@ julia> BiweightScaleRMS(3.0)(data, dims=1)
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct BiweightScaleRMS <: BackgroundRMSEstimator 
+struct BiweightScaleRMS <: BackgroundRMSEstimator
     c::Number
-    M::Union{Nothing,Number}
+M::Union{Nothing,Number}
 end
 
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
@@ -280,16 +285,16 @@ function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     # avoid divide by zero error
     _mad = _mad ≈ 0 ? 1 : _mad
     u = @. (x - M) / (c * _mad)
-    
+
     num = den = zero(eltype(u))
         for ui in u
         abs(ui) < 1 || continue
         num += (c * _mad * ui)^2 * (1 - ui^2)^4
         den += (1 - ui^2) * (1 - 5ui^2)
     end
-    
+
     return sqrt(length(x) * num) / abs(den)
 end
 
-(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) : 
+(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) :
                                           mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)

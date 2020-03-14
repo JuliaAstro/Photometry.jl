@@ -75,7 +75,7 @@ include("interpolators.jl")
 """
     estimate_background(data,
         ::BackgroundEstimator=SourceExtractor,
-        ::BackgroundRMSEstimator=StdRMS; 
+        ::BackgroundRMSEstimator=StdRMS;
         dims=:)
 
 Perform scalar background estimation using the given estimators.
@@ -99,20 +99,22 @@ julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScaleR
 * [Location Estimators](@ref)
 * [RMS Estimators](@ref)
 """
-function estimate_background(data, 
-        bkg::BackgroundEstimator = SourceExtractor(), 
-        bkg_rms::BackgroundRMSEstimator = StdRMS(); 
+function estimate_background(data,
+        bkg::BackgroundEstimator = SourceExtractor(),
+        bkg_rms::BackgroundRMSEstimator = StdRMS();
         dims = :)
     return bkg(data, dims = dims), bkg_rms(data, dims = dims)
 end
 estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
+estimate_background(d::AbstractArray, b::BackgroundEstimator, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, b, R(); dims = dims)
+estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::BackgroundRMSEstimator; dims = :) = estimate_background(d, T(), r; dims = dims)
 
 """
-    estimate_background(data, 
-        mesh_size, 
-        ::BackgroundEstimator=SourceExtractor, 
+    estimate_background(data,
+        mesh_size,
+        ::BackgroundEstimator=SourceExtractor,
         ::BackgroundRMSEstimator=StdRMS,
-        ::BackgroundInterpolator=ZoomInterpolator(mesh_size); 
+        ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
         edge_method=:pad)
 
 Perform 2D background estimation using the given estimators using meshes.
@@ -121,8 +123,6 @@ This function will estimate backgrounds in meshes of size `mesh_size`. When `siz
 
 If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
-If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
-
 Once the meshes are created they will be passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
 
 # See Also
@@ -130,11 +130,11 @@ Once the meshes are created they will be passed to the `BackgroundInterpolator` 
 * [RMS Estimators](@ref)
 * [Interpolators](@ref)
 """
-function estimate_background(data, 
-        mesh_size::NTuple{2,<:Integer}, 
-        BKG::BackgroundEstimator = SourceExtractor(), 
+function estimate_background(data,
+        mesh_size::NTuple{2,<:Integer},
+        BKG::BackgroundEstimator = SourceExtractor(),
         BKG_RMS::BackgroundRMSEstimator = StdRMS(),
-        ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size); 
+        ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
         edge_method = :pad)
 
     if edge_method === :pad
@@ -169,10 +169,12 @@ function estimate_background(data,
     return bkg, bkg_rms
 end
 
-estimate_background(data, mesh_size::Int, bkg::BackgroundEstimator = SourceExtractor(), bkg_rms::BackgroundRMSEstimator = StdRMS(); edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms; edge_method = edge_method)
-
-estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}, S::Type{<:BackgroundInterpolator}; edge_method = :pad) = estimate_background(data, T(), R(), S(); edge_method = edge_method)
-
+estimate_background(data,
+    mesh_size::Int,
+    bkg::BackgroundEstimator = SourceExtractor(),
+    bkg_rms::BackgroundRMSEstimator = StdRMS(),
+    itp::BackgroundInterpolator = ZoomInterpolator(mesh_size);
+    edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method)
 
 """
     sigma_clip!(x, sigma; fill=:clamp, center=median(x), std=std(x))
@@ -186,11 +188,11 @@ In-place version of [`sigma_clip`](@ref)
 
     To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.
 """
-function sigma_clip!(x::AbstractArray{T}, 
-    sigma_low::Real, 
+function sigma_clip!(x::AbstractArray{T},
+    sigma_low::Real,
     sigma_high::Real = sigma_low;
-    fill = :clamp, 
-    center = median(x), 
+    fill = :clamp,
+    center = median(x),
     std = std(x, corrected = false)) where {T}
     # clamp
     fill === :clamp && return clamp!(x, center - sigma_low * std, center + sigma_high * std)

@@ -23,6 +23,8 @@ end
     @test size(estimate_background(data, 19, edge_method = :pad)[1]) == (114, 114)
     @test size(estimate_background(data, 19, edge_method = :crop)[1]) == (95, 95)
 
+    @test estimate_background(data, Mean, StdRMS) == estimate_background(data, Mean(), StdRMS) == estimate_background(data, Mean, StdRMS())
+
     @test_throws ErrorException estimate_background(data, (4, 4), edge_method = :yeet)
     @test_throws MethodError estimate_background(data, (4, 4, 4))
 end

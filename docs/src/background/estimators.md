@@ -7,6 +7,7 @@ All of these estimators are subtypes of [`Background.BackgroundEstimator`](@ref)
 These estimators are used for estimating the background using some form of a central statistic.
 
 ```@docs
+Background.BackgroundEstimator
 Mean
 Median
 Mode
@@ -20,14 +21,8 @@ BiweightLocation
 These estimators are used for estimating the root-mean-square (RMS) of the background using some form of a deviation statistic.
 
 ```@docs
+Background.BackgroundRMSEstimator
 StdRMS
 MADStdRMS
 BiweightScaleRMS
-```
-
-## Abstract Types
-
-```@docs
-Background.BackgroundEstimator
-Background.BackgroundRMSEstimator
 ```
