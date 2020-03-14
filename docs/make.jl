@@ -26,7 +26,8 @@ makedocs(
         ],
         "Background Estimation" => [
             "Getting Started" => "background/index.md",
-            "Background Estimators" => "background/estimators.md"
+            "Background Estimators" => "background/estimators.md",
+            "Background Interpolators" => "background/interpolators.md"
         ]
     ])
 

@@ -74,7 +74,8 @@ include("interpolators.jl")
 
 """
     estimate_background(data,
-        ::BackgroundEstimator=SourceExtractor, ::BackgroundRMSEstimator=StdRMS; 
+        ::BackgroundEstimator=SourceExtractor,
+        ::BackgroundRMSEstimator=StdRMS; 
         dims=:)
 
 Perform scalar background estimation using the given estimators.
@@ -174,8 +175,8 @@ estimate_background(data, mesh_size, T::Type{<:BackgroundEstimator}, R::Type{<:B
 
 
 """
-    sigma_clip!(x, sigma; center=median(x), std=std(x))
-    sigma_clip!(x, sigma_low, sigma_high; center=median(x), std=std(x))
+    sigma_clip!(x, sigma; fill=:clamp, center=median(x), std=std(x))
+    sigma_clip!(x, sigma_low, sigma_high; fill=:clamp, center=median(x), std=std(x))
 
 In-place version of [`sigma_clip`](@ref)
 
@@ -185,17 +186,29 @@ In-place version of [`sigma_clip`](@ref)
 
     To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.
 """
-sigma_clip!(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = clamp!(x, center - sigma_low * std, center + sigma_high * std)
+function sigma_clip!(x::AbstractArray{T}, 
+    sigma_low::Real, 
+    sigma_high::Real = sigma_low;
+    fill = :clamp, 
+    center = median(x), 
+    std = std(x, corrected = false)) where {T}
+    # clamp
+    fill === :clamp && return clamp!(x, center - sigma_low * std, center + sigma_high * std)
+    # fill
+    mask = center - sigma_low * std .< x .< center + sigma_high * std
+    x[.!mask] .= T(fill)
+    return x
+end
 
 """
-    sigma_clip(x, sigma; center=median(x), std=std(x))
-    sigma_clip(x, sigma_low, sigma_high; center=median(x), std=std(x))
+    sigma_clip(x, sigma; fill=:clamp, center=median(x), std=std(x, corrected=false))
+    sigma_clip(x, sigma_low, sigma_high; fill=:clamp, center=median(x), std=std(x, corrected=false))
 
 This function returns sigma-clipped values of the input `x`.
 
 Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise assume they are equal. `center` and `std` are optional keyword arguments which are functions for finding central element and standard deviation.
 
-This will replace values in `x` lower than `center - sigma_low * std` with that value, and values higher than `center + sigma_high * std` with that value.
+If `fill === :clamp`, this will clamp values in `x` lower than `center - sigma_low * std` and values higher than `center + sigma_high * std`. Otherwise, they will be replaced with `fill`.
 
 # Examples
 ```jldoctest
@@ -204,13 +217,13 @@ julia> x = randn(100_000);
 julia> extrema(x)
 (-4.387579729097121, 4.518192547139076)
 
-julia> x_clip = sigma_clip(x,1);
+julia> x_clip = sigma_clip(x, 1);
 
 julia> extrema(x_clip) # should be close to (-1, 1)
 (-1.0021043865183705, 1.0011542162690115)
 ```
 """
-sigma_clip(x::AbstractArray, sigma_low::Real, sigma_high::Real = sigma_low; center = median(x), std = std(x)) = sigma_clip!(float(x), sigma_low, sigma_high; center = center, std = std)
+sigma_clip(x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low; fill = :clamp, center = median(x), std = std(x)) where {T} = sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)
 
 
 end # Background
