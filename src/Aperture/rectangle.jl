@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -9,7 +9,7 @@ are considered under a BSD 3-clause license. =#
 
 A rectangular aperture.
 
-A rectangular aperture with width `w`, height `h`, and position angle `θ` in degrees.    
+A rectangular aperture with width `w`, height `h`, and position angle `θ` in degrees.
 
 # Examples
 ```jldoctest
@@ -40,19 +40,19 @@ function Base.show(io::IO, ap::RectangularAperture)
 end
 
 function bbox(ap::RectangularAperture{T}) where T
-    
+
     w2 = ap.w / 2
     h2 = ap.h / 2
     sint, cost = sincos(deg2rad(ap.theta))
-    
+
     dx1 = abs(w2 * cost - h2 * sint)
     dy1 = abs(w2 * sint + h2 * cost)
     dx2 = abs(w2 * cost + h2 * sint)
     dy2 = abs(w2 * sint - h2 * cost)
-    
+
     dx = max(dx1, dx2)
     dy = max(dy1, dy2)
-    
+
     xmin = ceil(Int, ap.x - dx - 0.5)
     ymin = ceil(Int, ap.y - dy - 0.5)
     xmax = ceil(Int, ap.x + dx - 0.5)
@@ -111,15 +111,15 @@ function bbox(ap::RectangularAnnulus)
     w2 = ap.w_out / 2
     h2 = ap.h_out / 2
     sint, cost = sincos(deg2rad(ap.theta))
-    
+
     dx1 = abs(w2 * cost - h2 * sint)
     dy1 = abs(w2 * sint + h2 * cost)
     dx2 = abs(w2 * cost + h2 * sint)
     dy2 = abs(w2 * sint - h2 * cost)
-    
+
     dx = max(dx1, dx2)
     dy = max(dy1, dy2)
-    
+
     xmin = ceil(Int, ap.x - dx - 0.5)
     ymin = ceil(Int, ap.y - dy - 0.5)
     xmax = ceil(Int, ap.x + dx - 0.5)

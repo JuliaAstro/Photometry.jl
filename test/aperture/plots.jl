@@ -18,7 +18,7 @@ APERTURES = [
             :label => "",
             :seriestype => :path,
             :aspect_ratio => :equal)
-        
+
         # test to make sure our position is correct (should be +0.5 the given (x,y))
         x, y = rec[i].args
         @test mean(x[1:end - 1]) ≈ 3.5

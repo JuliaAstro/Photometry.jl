@@ -51,5 +51,5 @@ end
 
     c = CircularAnnulus(0, 0, 5, 10)
     @test mask(c, method = :center) == mask(c, method = (:subpixel, 1))
-    
+
 end

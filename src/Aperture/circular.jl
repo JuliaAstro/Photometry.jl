@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -8,7 +8,7 @@ are considered under a BSD 3-clause license. =#
 
 A circular aperture.
 
-A circular aperture with radius `r`. `r` must be greater than or equal to 0. 
+A circular aperture with radius `r`. `r` must be greater than or equal to 0.
 
 # Examples
 ```jldoctest

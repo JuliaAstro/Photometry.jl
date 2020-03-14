@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -307,7 +307,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
 
             return (area_triangle(x1, y1, x2, y2, point1...) +
                     area_triangle(x2, y2, point1..., point2...) +
-                    area_arc(point1..., point2..., 1)) 
+                    area_arc(point1..., point2..., 1))
         elseif intersect13
             point1 = circle_segment_single2(x1, y1, x3, y3)
 
@@ -335,19 +335,19 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
                 return area_triangle(x1, y1, point3..., point4...) + area_arc(point3..., point4..., 1)
             end
         else
-            
+
               # ensure that point1 is the point closest to (x2, y2)
               if (((point2[1] - x2) * (point2[1] - x2) + (point2[2] - y2) * (point2[2] - y2)) <
                   ((point1[1] - x2) * (point1[1] - x2) + (point1[2] - y2) * (point1[2] - y2)))
                 point1, point2 = point2, point1
               end
-        
+
               return (area_triangle(x1, y1, point3..., point1...) +
                       area_triangle(x1, y1, point1..., point2...) +
                       area_triangle(x1, y1, point2..., point4...) +
                       area_arc(point1..., point3..., 1) +
                       area_arc(point2..., point4..., 1))
-            
+
         end
     else
         point1, point2 = circle_segment(x1, y1, x2, y2)
@@ -456,7 +456,7 @@ function elliptical_overlap_exact(xmin, ymin, xmax, ymax, a, b, θ)
 
     scale = a * b
 
-    # reproject ellipse 
+    # reproject ellipse
     x1 = (xmin * cost - ymin * sint) / a
     y1 = (xmin * sint + ymin * cost) / b
     x2 = (xmax * cost - ymin * sint) / a
@@ -548,16 +548,16 @@ function intersects_rectangle(x, y, w, h, θ)
 
     return abs(u) < w / 2 && abs(v) < h / 2
 end
-#= 
+#=
 
-This code was previously used for trying to implement exact overlap of rectangular apertures. For now, it will sit in this comment block for posterity. 
+This code was previously used for trying to implement exact overlap of rectangular apertures. For now, it will sit in this comment block for posterity.
 
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     sint, cost = sincos(deg2rad(-θ))
     scale = w * h
 
-    #= 
+    #=
     If we take our rectangle centered at (0, 0) and construct
     the transformation required to turn it into a unit-square
     from (0, 0) to (1, 1), we can turn the pixel into
@@ -577,7 +577,7 @@ function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
     return scale * (triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3) +
                     triangle_unitsquare_overlap(x1, y1, x4, y4, x3, y3))
 end
-    
+
 
 function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     # distances
@@ -609,14 +609,14 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
     elseif inside[2] || on[2]
         intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
         intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
-        
+
         if intersect13 && intersect23
             point1 = square_segment_single2(x1, y1, x3, y3)
             point2 = square_segment_single2(x2, y2, x3, y3)
 
             return (area_triangle(x1, y1, x2, y2, point1...) +
                     area_triangle(x2, y2, point1..., point2...) +
-                    area_triangle(point1..., point2..., 1, 1)) 
+                    area_triangle(point1..., point2..., 1, 1))
         elseif intersect13
             point1 = square_segment_single2(x1, y1, x3, y3)
 
@@ -644,13 +644,13 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
                 return area_triangle(x1, y1, point3..., point4...) + area_triangle(point3..., point4..., 1, 1)
             end
         else
-            
+
               # ensure that point1 is the point closest to (x2, y2)
               if (((point2[1] - x2) * (point2[1] - x2) + (point2[2] - y2) * (point2[2] - y2)) <
                   ((point1[1] - x2) * (point1[1] - x2) + (point1[2] - y2) * (point1[2] - y2)))
                 point1, point2 = point2, point1
               end
-        
+
               return (area_triangle(x1, y1, point3..., point1...) +
                       area_triangle(x1, y1, point1..., point2...) +
                       area_triangle(x1, y1, point2..., point4...) +
@@ -682,7 +682,7 @@ function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
         end
     end
     end
-    
+
 # intersection of a segment with the unit square
 function square_segment(x1, y1, x2, y2)
     point1, point2 = square_line(x1, y1, x2, y2)
@@ -691,15 +691,15 @@ function square_segment(x1, y1, x2, y2)
         (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
         point1 = (2, 2)
     end
-    
+
     if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
         (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
         point2 = (2, 2)
     end
-    
+
     return sort!([point1, point2])
 end
-    
+
 # closest intersection of a line with the unit square
 function square_segment_single2(x1, y1, x2, y2)
     point1, point2 = square_line(x1, y1, x2, y2)
@@ -714,7 +714,7 @@ function square_segment_single2(x1, y1, x2, y2)
         return dy1 > dy2 ? point2 : point1
     end
     end
-    
+
 # intersection of a line defined by two points with a unit square
 function square_line(x1, y1, x2, y2)
     dx = x2 - x1
@@ -730,24 +730,24 @@ function square_line(x1, y1, x2, y2)
     if isinf(m)
         return 0 ≤ x1 ≤ 1 ? ((x1, 1.0), (x2, 0.0)) : ((2.0, 2.0), (2.0, 2.0))
     end
-    
+
     points = []
     if 0 ≤ b ≤ 1 # intersects x=0
         push!(points, (0.0, float(b)))
     end
-    
+
     if 0 ≤ (1 - b) / m ≤ 1 # intersects y=1
         push!(points, ((1 - b) / m, 1.0))
     end
-    
+
     if 0 ≤ m + b ≤ 1 # intersects x=1
         push!(points, (1.0, float(m + b)))
     end
-    
+
     if 0 ≤ -b / m ≤ 1 # intersects y=0
         push!(points, (-b / m, 0.0))
     end
-    
+
     # no intersection
     length(points) == 0 && return (2.0, 2.0), (2.0, 2.0)
 
