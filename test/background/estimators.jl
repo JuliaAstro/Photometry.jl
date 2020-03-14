@@ -1,3 +1,5 @@
+using StatsBase: mad
+
 ###############################################################################
 # Location Estimators
 
@@ -48,6 +50,10 @@ end
     @test SourceExtractor()(data) ≈ median(data)
 end
 
+@testset "BiweightLocation" begin
+    b = BiweightLocation()
+    @test b([1, 3, 5, 500, 2]) ≈ 2.745 atol = 1e-3
+end
 
 ###############################################################################
 # RMS Estimators
@@ -66,4 +72,21 @@ end
 
     data = randn(100, 100)
     @test estimator(data) ≈ 1 atol = 2e-2
+end
+
+@testset "Std" begin
+    s = StdRMS()
+    data = randn(100)
+    @test s(data) == std(data, corrected = false)
+end
+
+@testset "MADStd" begin
+    s = MADStdRMS()
+    data = randn(100)
+    @test s(data) == mad(data, normalize = true)
+end
+
+@testset "BiweightScale" begin
+    s = BiweightScaleRMS()
+    @test s([1, 3, 5, 500, 2]) ≈ 1.70992562072
 end

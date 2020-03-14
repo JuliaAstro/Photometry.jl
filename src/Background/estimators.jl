@@ -273,7 +273,7 @@ end
 
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
 
-function biweight_scale(x::AbstractArray{T}, c, M) where {T}
+function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     length(x) == 1 && return zero(T)
     M = M === nothing ? median(x) : M
     _mad = mad(x, normalize = false)
