@@ -1,5 +1,3 @@
-using Statistics
-
 ###############################################################################
 # Location Estimators
 
@@ -23,6 +21,16 @@ const LOC_EST = [Mean, Median, Mode, MMM, SourceExtractor, BiweightLocation]
     data = randn(100, 100)
 
     E <: Mode || @test estimator(data) ≈ 0.0 atol = 1e-2
+end
+
+@testset "Mean" begin
+    data = rand(100, 100)
+    @test Mean()(data) == mean(data)
+end
+
+@testset "Median" begin
+    data = rand(100, 100)
+    @test Median()(data) == median(data)
 end
 
 @testset "Mode" begin

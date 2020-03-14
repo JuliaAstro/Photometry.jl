@@ -151,18 +151,19 @@ function estimate_background(data,
         error("Invalid edge method: $edge_method")
     end
 
-    bkg = bkg_rms = similar(data, nmesh)
-    
-    @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
-        rows = i * nmesh[1]:i * nmesh[1] + mesh_size[1]
-        cols = j * nmesh[2]:j * nmesh[2] + mesh_size[2]
-        bkg[i, j] = BKG(X[rows, cols])
-        bkg_rms[i, j] = BKG_RMS(X[rows, cols])
+    bkg = similar(data, nmesh)
+    bkg_rms = similar(data, nmesh)
+    for i in 1:nmesh[1], j in 1:nmesh[2]
+        rows = (i - 1) * mesh_size[1] + 1:i * mesh_size[1]
+        cols = (j - 1) * mesh_size[2] + 1:j * mesh_size[2]
+        d = @view X[rows, cols]
+        d_ = @view d[d .!== NaN]
+        bkg[i, j] = BKG(d_)
+        bkg_rms[i, j] = BKG_RMS(d_)
     end
-
     # Now interpolate back to original size
     bkg = ITP(bkg)
-    bkg_rms = ITP(bkg)
+    bkg_rms = ITP(bkg_rms)
 
     return bkg, bkg_rms
 end

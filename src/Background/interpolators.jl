@@ -17,7 +17,7 @@ julia> ZoomInterpolator(2)([1 0; 0 1])
   0.25         0.375  0.625   0.75       
  -5.55112e-17  0.25   0.75    1.0        
 
-julia> ZoomInterpolator(2, 3)([1 0; 0 1])
+julia> ZoomInterpolator(3, 1)([1 0; 0 1])
 6×2 Array{Float64,2}:
   1.0          -2.77556e-17
   1.0          -2.77556e-17

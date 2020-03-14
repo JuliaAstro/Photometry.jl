@@ -218,7 +218,7 @@ julia> StdRMS()(data, dims=1)
 """
 struct StdRMS <: BackgroundRMSEstimator end
 
-(::StdRMS)(data; dims = :) = std(data; dims = dims)
+(::StdRMS)(data; dims = :) = std(data; corrected = false, dims = dims)
 
 """
     MADStdRMS
@@ -274,6 +274,7 @@ end
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
 
 function biweight_scale(x, c, M)
+    length(x) == 1 && return zero(x)
     M = M === nothing ? median(x) : M
     _mad = mad(x, normalize = false)
     # avoid divide by zero error
