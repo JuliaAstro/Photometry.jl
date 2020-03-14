@@ -6,6 +6,8 @@ const LOC_EST = [Mean, Median, Mode, MMM, SourceExtractor, BiweightLocation]
 @testset "Trivial $E"  for E in LOC_EST
     estimator = E()
 
+    @test estimator(ones(1)) == 1
+
     data = ones(10, 10)
 
     @test estimator(data) ≈ 1.0
@@ -52,8 +54,10 @@ end
 
 
 @testset "Trivial $E"  for E in [StdRMS, MADStdRMS, BiweightScaleRMS]
-
     estimator = E()
+
+    @test estimator(ones(1)) == 0
+
     data = ones(10, 10)
     @test estimator(data) ≈ 0.0
     @test estimator(data, dims = 1) ≈ zeros(1, 10)

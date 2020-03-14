@@ -40,7 +40,9 @@ end
 
     @testset "zoom interface" begin
         @test ZoomInterpolator(3) == ZoomInterpolator(3, 3) == ZoomInterpolator((3, 3))
+    end
 
+    @testset "trivial ones" begin
         z = ZoomInterpolator(4, 3)
         @test z(ones(3, 3)) ≈ ones(12, 9)
     end

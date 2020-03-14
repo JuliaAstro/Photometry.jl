@@ -273,8 +273,8 @@ end
 
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
 
-function biweight_scale(x, c, M)
-    length(x) == 1 && return zero(x)
+function biweight_scale(x::AbstractArray{T}, c, M) where {T}
+    length(x) == 1 && return zero(T)
     M = M === nothing ? median(x) : M
     _mad = mad(x, normalize = false)
     # avoid divide by zero error
