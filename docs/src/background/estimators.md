@@ -22,7 +22,7 @@ These estimators are used for estimating the root-mean-square (RMS) of the backg
 
 ```@docs
 Background.BackgroundRMSEstimator
-StdRMS
-MADStdRMS
-BiweightScaleRMS
+Std
+MADStd
+BiweightScale
 ```

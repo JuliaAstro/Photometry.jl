@@ -14,9 +14,9 @@ export estimate_background,
        SourceExtractor,
        BiweightLocation,
        # RMS Estimators
-       StdRMS,
-       MADStdRMS,
-       BiweightScaleRMS,
+       Std,
+       MADStd,
+       BiweightScale,
        # Interpolators
        ZoomInterpolator
 
@@ -75,7 +75,7 @@ include("interpolators.jl")
 """
     estimate_background(data,
         ::BackgroundEstimator=SourceExtractor,
-        ::BackgroundRMSEstimator=StdRMS;
+        ::BackgroundRMSEstimator=Std;
         dims=:)
 
 Perform scalar background estimation using the given estimators.
@@ -91,7 +91,7 @@ julia> data = ones(3, 5);
 julia> bkg, bkg_rms = estimate_background(data)
 (1.0, 0.0)
 
-julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScaleRMS)
+julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScale)
 (1.0, 0.0)
 ```
 
@@ -101,7 +101,7 @@ julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScaleR
 """
 function estimate_background(data,
         bkg::BackgroundEstimator = SourceExtractor(),
-        bkg_rms::BackgroundRMSEstimator = StdRMS();
+        bkg_rms::BackgroundRMSEstimator = Std();
         dims = :)
     return bkg(data, dims = dims), bkg_rms(data, dims = dims)
 end
@@ -112,8 +112,8 @@ estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::Backgro
 """
     estimate_background(data,
         mesh_size,
-        ::BackgroundEstimator=SourceExtractor,
-        ::BackgroundRMSEstimator=StdRMS,
+        ::BackgroundEstimator=SourceExtractor(),
+        ::BackgroundRMSEstimator=Std(),
         ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
         edge_method=:pad)
 
@@ -133,7 +133,7 @@ Once the meshes are created they will be passed to the `BackgroundInterpolator` 
 function estimate_background(data,
         mesh_size::NTuple{2,<:Integer},
         BKG::BackgroundEstimator = SourceExtractor(),
-        BKG_RMS::BackgroundRMSEstimator = StdRMS(),
+        BKG_RMS::BackgroundRMSEstimator = Std(),
         ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
         edge_method = :pad)
 
@@ -172,7 +172,7 @@ end
 estimate_background(data,
     mesh_size::Int,
     bkg::BackgroundEstimator = SourceExtractor(),
-    bkg_rms::BackgroundRMSEstimator = StdRMS(),
+    bkg_rms::BackgroundRMSEstimator = Std(),
     itp::BackgroundInterpolator = ZoomInterpolator(mesh_size);
     edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method)
 

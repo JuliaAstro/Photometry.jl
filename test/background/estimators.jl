@@ -59,7 +59,7 @@ end
 # RMS Estimators
 
 
-@testset "Trivial $E"  for E in [StdRMS, MADStdRMS, BiweightScaleRMS]
+@testset "Trivial $E"  for E in [Std, MADStd, BiweightScale]
     estimator = E()
 
     @test estimator(ones(1)) == 0
@@ -75,18 +75,18 @@ end
 end
 
 @testset "Std" begin
-    s = StdRMS()
+    s = Std()
     data = randn(100)
     @test s(data) == std(data, corrected = false)
 end
 
 @testset "MADStd" begin
-    s = MADStdRMS()
+    s = MADStd()
     data = randn(100)
     @test s(data) == mad(data, normalize = true)
 end
 
 @testset "BiweightScale" begin
-    s = BiweightScaleRMS()
+    s = BiweightScale()
     @test s([1, 3, 5, 500, 2]) ≈ 1.70992562072
 end

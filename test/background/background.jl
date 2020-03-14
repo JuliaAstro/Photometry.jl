@@ -23,13 +23,13 @@ end
     @test size(estimate_background(data, 19, edge_method = :pad)[1]) == (114, 114)
     @test size(estimate_background(data, 19, edge_method = :crop)[1]) == (95, 95)
 
-    @test estimate_background(data, Mean, StdRMS) == estimate_background(data, Mean(), StdRMS) == estimate_background(data, Mean, StdRMS())
+    @test estimate_background(data, Mean, Std) == estimate_background(data, Mean(), Std) == estimate_background(data, Mean, Std())
 
     @test_throws ErrorException estimate_background(data, (4, 4), edge_method = :yeet)
     @test_throws MethodError estimate_background(data, (4, 4, 4))
 end
 
-@testset "flat background - $B, $S" for B in [Mean, Median, MMM, BiweightLocation, SourceExtractor], S in [StdRMS, MADStdRMS, BiweightScaleRMS]
+@testset "flat background - $B, $S" for B in [Mean, Median, MMM, BiweightLocation, SourceExtractor], S in [Std, MADStd, BiweightScale]
     data = ones(100, 100)
 
     bk, rms = estimate_background(data, B(), S())

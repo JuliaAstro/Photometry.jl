@@ -199,7 +199,7 @@ end
 # RMS Estimators
 
 """
-    StdRMS
+    Std
 
 Uses the standard deviation statistic for background RMS estimation.
 
@@ -207,20 +207,20 @@ Uses the standard deviation statistic for background RMS estimation.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> StdRMS()(data)
+julia> Std()(data)
 0.0
 
-julia> StdRMS()(data, dims=1)
+julia> Std()(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct StdRMS <: BackgroundRMSEstimator end
+struct Std <: BackgroundRMSEstimator end
 
-(::StdRMS)(data; dims = :) = std(data; corrected = false, dims = dims)
+(::Std)(data; dims = :) = std(data; corrected = false, dims = dims)
 
 """
-    MADStdRMS
+    MADStd
 
 Uses the standard median absolute deviation (MAD) statistic for background RMS estimation.
 
@@ -232,28 +232,28 @@ This is typically given as
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> MADStdRMS()(data)
+julia> MADStd()(data)
 0.0
 
-julia> MADStdRMS()(data, dims=1)
+julia> MADStd()(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct MADStdRMS <: BackgroundRMSEstimator end
+struct MADStd <: BackgroundRMSEstimator end
 
-(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) :
+(::MADStd)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) :
                                 mapslices(x->mad(x, normalize = true), data; dims = dims)
 
 
 """
-    BiweightScaleRMS(c=9.0, M=nothing)
+    BiweightScale(c=9.0, M=nothing)
 
 Uses the robust biweight scale statistic for background RMS estimation.
 
 The biweight scale is the square root of the biweight midvariance. The biweight midvariance uses a tuning constant, `c`, and an optional initial guess of the central value `M`.
 
-``\\xi^2_{biloc}= \\frac{n\\sum_{|u_i|<1}{(x_i - M)^2(1 - u_i^2)^4}}{\\left[\\sum_{|u_i|<1}{(1-u_i^2)(1-5u_i^2)}\\right]^2}``
+``\\zeta^2_{biscl}= \\frac{n\\sum_{|u_i|<1}{(x_i - M)^2(1 - u_i^2)^4}}{\\left[\\sum_{|u_i|<1}{(1-u_i^2)(1-5u_i^2)}\\right]^2}``
 
 ``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
 
@@ -263,20 +263,20 @@ Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> BiweightScaleRMS()(data)
+julia> BiweightScale()(data)
 0.0
 
-julia> BiweightScaleRMS(3.0)(data, dims=1)
+julia> BiweightScale(3.0)(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct BiweightScaleRMS <: BackgroundRMSEstimator
+struct BiweightScale <: BackgroundRMSEstimator
     c::Number
 M::Union{Nothing,Number}
 end
 
-BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
+BiweightScale(c = 9.0) = BiweightScale(c, nothing)
 
 function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     length(x) == 1 && return zero(T)
@@ -296,5 +296,5 @@ function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     return sqrt(length(x) * num) / abs(den)
 end
 
-(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) :
+(alg::BiweightScale)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) :
                                           mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)
