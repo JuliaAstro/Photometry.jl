@@ -59,7 +59,7 @@ The interpolator can be called with some additional parameter being, `n_neighbor
 `conf_dist` is the distance below which two points would be considered as the same point.
 
 !!! warning
-    0 < `n_neighbors` < number of elements in tree
+    0 < `n_neighbor` <= number of elements in tree
 
 # Examples
 ```jldoctest

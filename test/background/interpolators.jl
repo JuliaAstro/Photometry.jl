@@ -9,4 +9,6 @@
     positions = [9.9 1.0; 10.0 1.0]
 
     @test alg(positions) == IDWInterpolator(coordinates, value)(positions)
+    @test_throws ArgumentError alg(positions, n_neighbors = 11)
+    @test_throws ErrorException IDWInterpolator(coordinates, value, nothing, -5)
 end
