@@ -10,20 +10,6 @@ This is a package for performing astronomical photometry using modern and effici
 
 Inspired by [photutils](https://github.com/astropy/photutils), [SEP](https://github.com/kbarbary/sep), and [AperturePhotometry.jl](https://github.com/kbarbary/AperturePhotometry.jl).
 
-## To-do list
-
-Here are features planned
-- [x] Circular Aperture, Circular Annulus
-- [x] Edge handling
-- [x] Elliptical Aperture, Elliptical Annulus
-- [ ] Rectangular Aperture, Rectangular Annulus
-- [x] Plotting for aperture types
-- [ ] Using SkyCoords/WCS for positions
-  - Needs some work done in WCS
-- [ ] background modelling
-- [ ] star extraction
-- [ ] filtering
-
 In addition, the funcitonality needs documented, tested, and benchmarked.
 
 ## Usage
