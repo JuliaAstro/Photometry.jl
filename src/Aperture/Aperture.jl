@@ -118,6 +118,9 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 * `:center` - Will only consider full-pixel overlap (equivalent to subpixel method with 1 subpixel)
 * `(:subpixel, n)` - Use `n^2` subpixels to calculate overlap
 
+!!! note Runtime
+    The `:exact` method is slower than the subpixel methods by at least an order of magnitude, so if you are dealing with large images and many apertures, we recommend using `:subpixel` with some reasonable `n`, like 10.
+
 """
 function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
     data_weighted = apply(a, data, method = method)

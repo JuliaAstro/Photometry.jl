@@ -559,7 +559,7 @@ end
 
 # contrib: https://nbviewer.jupyter.org/github/mforets/escritoire/blob/master/2020/Week11/2D_intersection.ipynb
 # the idea is to use the intersection for HPolygon, which is faster than the fallback because the
-# normal vectors to the half-spaces are sorted in counter--clockwise fashion 
+# normal vectors to the half-spaces are sorted in counter--clockwise fashion
 function intersection_area(X::AbstractHyperrectangle{N},
     Y::LinearMap{N,<:AbstractHyperrectangle{N}}) where {N}
     X_clist = X |> constraints_list
