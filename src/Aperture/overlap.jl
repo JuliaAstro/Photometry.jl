@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
 using LazySets

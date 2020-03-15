@@ -30,12 +30,15 @@ using Photometry
 using Plots
 using FITSIO
 
+# Load data in
 hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
 chunk = @view image[71:150, 81:155]
 
-heatmap(chunk, aspect_ratio=1, c=:inferno,
-    xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
+# Plot
+default(aspect_ratio=1, c=:inferno, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
+
+heatmap(chunk)
 savefig("m67.png"); nothing # hide
 ```
 
@@ -61,8 +64,7 @@ aps = CircularAperture.(positions, radii)
 now let's plot them up
 
 ```@example stars
-heatmap(chunk, aspect_ratio=1, c=:inferno,
-    xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
+heatmap(chunk)
 plot!.(aps, c=:white)
 savefig("m67_aps.png"); nothing # hide
 ```
@@ -73,4 +75,37 @@ and finally let's get our output table for the photometry
 
 ```@example stars
 table = aperture_photometry(aps, chunk)
+```
+
+## Stars with Background Subtraction
+
+This example will be the same as [Simple Stars](@ref) but will add background estimation using the tools in [Background Estimation](@ref)
+
+
+```@example stars
+clipped = sigma_clip(chunk, 1, fill=NaN)
+bkg, bkg_rms = estimate_background(clipped, 10)
+
+plot(layout=(2, 2), size=(800, 800), link=:all)
+heatmap!(chunk, title="Original", subplot=1)
+heatmap!(chunk .- bkg, title="Original - Background", subplot=2)
+heatmap!(bkg, title="Background", subplot=3)
+heatmap!(bkg_rms, title="Background RMS", subplot=4)
+savefig("bkg_m67.png"); nothing # hide
+```
+
+![](bkg_m67.png)
+
+Now, using the same apertures, let's find the output using the background-subtracted image
+
+```@example stars
+heatmap(chunk .- bkg)
+plot!.(aps, c=:white)
+savefig("m67_aps_bkg.png"); nothing # hide
+```
+
+![](m67_aps_bkg.png)
+
+```@example stars
+table = aperture_photometry(aps, chunk .- bkg, bkg_rms)
 ```
