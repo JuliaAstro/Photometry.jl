@@ -10,8 +10,6 @@ This is a package for performing astronomical photometry using modern and effici
 
 Inspired by [photutils](https://github.com/astropy/photutils), [SEP](https://github.com/kbarbary/sep), and [AperturePhotometry.jl](https://github.com/kbarbary/AperturePhotometry.jl).
 
-In addition, the funcitonality needs documented, tested, and benchmarked.
-
 ## Usage
 
 Please see [the documentation](https://JuliaAstro.github.io/Photometry.jl/dev) for examples and reference material.
