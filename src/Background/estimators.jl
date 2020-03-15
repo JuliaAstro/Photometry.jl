@@ -1,3 +1,7 @@
+#= 
+Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
+are considered under a BSD 3-clause license. =#
+
 using Statistics
 using StatsBase
 
