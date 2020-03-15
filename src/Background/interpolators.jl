@@ -104,6 +104,8 @@ function idw_util(alg::IDWInterpolator, idxs::AbstractArray, dist::AbstractArray
         num += w_i * alg.values[idxs[i]] * (alg.weights === nothing ? 1 : alg.weights[idxs[i]])
         den += w_i
     end
+
+    den ≈ 0 && return NaN
     return num / den
 end
 
