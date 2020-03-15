@@ -33,7 +33,7 @@ using FITSIO
 # Load data in
 hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
-chunk = @view image[71:150, 81:155]
+chunk = image[71:150, 81:155]
 
 # Plot
 default(aspect_ratio=1, c=:inferno, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
@@ -77,18 +77,19 @@ and finally let's get our output table for the photometry
 table = aperture_photometry(aps, chunk)
 ```
 
-## Stars with Background Subtraction
+## Stars with Spatial Background Subtraction
 
 This example will be the same as [Simple Stars](@ref) but will add background estimation using the tools in [Background Estimation](@ref)
 
 
 ```@example stars
 clipped = sigma_clip(chunk, 1, fill=NaN)
-bkg, bkg_rms = estimate_background(clipped, 10)
+# Estimate 2D spatial background using meshes of size (5, 5)
+bkg, bkg_rms = estimate_background(clipped, 5)
 
 plot(layout=(2, 2), size=(800, 800), link=:all)
 heatmap!(chunk, title="Original", subplot=1)
-heatmap!(chunk .- bkg, title="Original - Background", subplot=2)
+heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
 heatmap!(bkg_rms, title="Background RMS", subplot=4)
 savefig("bkg_m67.png"); nothing # hide
