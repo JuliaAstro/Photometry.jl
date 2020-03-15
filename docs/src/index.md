@@ -3,7 +3,7 @@ CurrentModule = Photometry
 DocTestSetup = :(using Photometry)
 ```
 
-# Photometry
+# Photometry.jl
 
 [![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?brnach=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
