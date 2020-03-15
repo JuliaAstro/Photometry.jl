@@ -3,6 +3,8 @@ APERTURES = [
     CircularAnnulus,
     EllipticalAperture,
     EllipticalAnnulus,
+    RectangularAperture,
+    RectangularAnnulus
 ]
 
 PARAMS = [
@@ -10,6 +12,8 @@ PARAMS = [
     (3, 5),
     (3, 3, 0),
     (3, 5, 4, 0),
+    (3, 5, 0),
+    (3, 5, 4, 0)
 ]
 
 ###########################
@@ -55,7 +59,7 @@ end
 
     @test table_ex.aperture_sum ≈ true_flux
     @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
-    @test table_cent.aperture_sum < table_ex.aperture_sum
+    @test table_cent.aperture_sum ≤ table_ex.aperture_sum
 
 end
 
