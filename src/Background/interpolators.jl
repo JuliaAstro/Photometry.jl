@@ -54,8 +54,12 @@ This performs Inverse Distance Weighted Interpolation
 `coordinates` represent the sample points filled column wise and `values` is the value at those sample points, `weight` are an additional multiplicative factor in the standard
 inverse distance weight and `leafsize` determines at what number of points to stop splitting the KDTree further.
 
+The interpolator can be called with some additional parameter being, `n_neighbors` which is the number of nearest neighbors to be considered,
+`power` is the exponent for distance in the weighing factor, `reg` is the offset for the weighing factor in denominator,
+`conf_dist` is the distance below which two points would be considered as the same point.
+
 !!! warning
-    0 < `leafsize` < number of elements in tree
+    0 < `n_neighbors` < number of elements in tree
 
 # Examples
 ```jldoctest
