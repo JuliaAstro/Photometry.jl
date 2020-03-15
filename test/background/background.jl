@@ -27,6 +27,10 @@ end
 
     @test_throws ErrorException estimate_background(data, (4, 4), edge_method = :yeet)
     @test_throws MethodError estimate_background(data, (4, 4, 4))
+
+    nan_bkg, nan_rms = estimate_background(fill(NaN, 100, 100), 20)
+    @test nan_bkg ≈ zeros(100, 100)
+    @test nan_rms ≈ zeros(100, 100)
 end
 
 @testset "flat background - $B, $S" for B in [MeanBackground, MedianBackground, MMMBackground, BiweightLocationBackground, SourceExtractorBackground], S in [StdRMS, MADStdRMS, BiweightScaleRMS]

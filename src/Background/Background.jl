@@ -130,18 +130,18 @@ Once the meshes are created they will be passed to the `BackgroundInterpolator` 
 * [RMS Estimators](@ref)
 * [Interpolators](@ref)
 """
-function estimate_background(data,
+function estimate_background(data::AbstractArray{T},
         mesh_size::NTuple{2,<:Integer},
         BKG::BackgroundEstimator = SourceExtractorBackground(),
         BKG_RMS::BackgroundRMSEstimator = StdRMS(),
         ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
-        edge_method = :pad)
+        edge_method = :pad) where T
 
     if edge_method === :pad
         nextra = size(data) .% mesh_size
         # have to make sure to avoid padding an extra mesh_size if nextra is 0
         npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(mesh_size, nextra)])
-        X = padarray(data, Fill(NaN, (0, 0), npad))
+        X = padarray(float(data), Fill(NaN, (0, 0), npad))
         nmesh = size(X) .÷ mesh_size
     elseif edge_method === :crop
         nmesh = size(data) .÷ mesh_size
@@ -152,16 +152,18 @@ function estimate_background(data,
         error("Invalid edge method: $edge_method")
     end
 
-    bkg = similar(data, nmesh)
-    bkg_rms = similar(data, nmesh)
-    for i in 1:nmesh[1], j in 1:nmesh[2]
+    bkg = zeros(float(T), nmesh)
+    bkg_rms = zeros(float(T), nmesh)
+    @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
         rows = (i - 1) * mesh_size[1] + 1:i * mesh_size[1]
         cols = (j - 1) * mesh_size[2] + 1:j * mesh_size[2]
         d = @view X[rows, cols]
         d_ = @view d[d .!== NaN]
+        length(d_) == 0 && continue
         bkg[i, j] = BKG(d_)
         bkg_rms[i, j] = BKG_RMS(d_)
     end
+
     # Now interpolate back to original size
     bkg = ITP(bkg)
     bkg_rms = ITP(bkg_rms)
