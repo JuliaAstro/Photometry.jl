@@ -26,7 +26,7 @@ savefig("m67_full.png"); nothing # hide
 ![](m67_full.png)
 
 Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
-gma-clip to try and remove the signals from the stars. Then, the background is broken down into meshes, in this case of size `(50, 50)`. Within each mesh, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractor`](@ref) and [`Std`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
+gma-clip to try and remove the signals from the stars. Then, the background is broken down into meshes, in this case of size `(50, 50)`. Within each mesh, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
 
 ```@example bkg
 # sigma-clip

@@ -8,12 +8,12 @@ These estimators are used for estimating the background using some form of a cen
 
 ```@docs
 Background.BackgroundEstimator
-Mean
-Median
-Mode
-MMM
-SourceExtractor
-BiweightLocation
+MeanBackground
+MedianBackground
+ModeBackground
+MMMBackground
+SourceExtractorBackground
+BiweightLocationBackground
 ```
 
 ## RMS Estimators
@@ -22,7 +22,7 @@ These estimators are used for estimating the root-mean-square (RMS) of the backg
 
 ```@docs
 Background.BackgroundRMSEstimator
-Std
-MADStd
-BiweightScale
+StdRMS
+MADStdRMS
+BiweightScaleRMS
 ```

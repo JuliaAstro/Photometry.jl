@@ -7,16 +7,16 @@ export estimate_background,
        sigma_clip,
        sigma_clip!,
        # Estimators
-       Mean,
-       Median,
-       Mode,
-       MMM,
-       SourceExtractor,
-       BiweightLocation,
+       MeanBackground,
+       MedianBackground,
+       ModeBackground,
+       MMMBackground,
+       SourceExtractorBackground,
+       BiweightLocationBackground,
        # RMS Estimators
-       Std,
-       MADStd,
-       BiweightScale,
+       StdRMS,
+       MADStdRMS,
+       BiweightScaleRMS,
        # Interpolators
        ZoomInterpolator
 
@@ -74,15 +74,15 @@ include("interpolators.jl")
 
 """
     estimate_background(data,
-        ::BackgroundEstimator=SourceExtractor,
-        ::BackgroundRMSEstimator=Std;
+        ::BackgroundEstimator=SourceExtractorBackground,
+        ::BackgroundRMSEstimator=StdRMS;
         dims=:)
 
 Perform scalar background estimation using the given estimators.
 
 The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
-If the background estimator has no parameters (like [`Mean`](@ref)), you can just specify the type without construction.
+If the background estimator has no parameters (like [`MeanBackground`](@ref)), you can just specify the type without construction.
 
 # Examples
 ```jldoctest
@@ -91,7 +91,7 @@ julia> data = ones(3, 5);
 julia> bkg, bkg_rms = estimate_background(data)
 (1.0, 0.0)
 
-julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScale)
+julia> bkg, bkg_rms = estimate_background(data, BiweightLocationBackground, BiweightScaleRMS)
 (1.0, 0.0)
 ```
 
@@ -100,8 +100,8 @@ julia> bkg, bkg_rms = estimate_background(data, BiweightLocation, BiweightScale)
 * [RMS Estimators](@ref)
 """
 function estimate_background(data,
-        bkg::BackgroundEstimator = SourceExtractor(),
-        bkg_rms::BackgroundRMSEstimator = Std();
+        bkg::BackgroundEstimator = SourceExtractorBackground(),
+        bkg_rms::BackgroundRMSEstimator = StdRMS();
         dims = :)
     return bkg(data, dims = dims), bkg_rms(data, dims = dims)
 end
@@ -112,8 +112,8 @@ estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::Backgro
 """
     estimate_background(data,
         mesh_size,
-        ::BackgroundEstimator=SourceExtractor(),
-        ::BackgroundRMSEstimator=Std(),
+        ::BackgroundEstimator=SourceExtractorBackground(),
+        ::BackgroundRMSEstimator=StdRMS(),
         ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
         edge_method=:pad)
 
@@ -132,8 +132,8 @@ Once the meshes are created they will be passed to the `BackgroundInterpolator` 
 """
 function estimate_background(data,
         mesh_size::NTuple{2,<:Integer},
-        BKG::BackgroundEstimator = SourceExtractor(),
-        BKG_RMS::BackgroundRMSEstimator = Std(),
+        BKG::BackgroundEstimator = SourceExtractorBackground(),
+        BKG_RMS::BackgroundRMSEstimator = StdRMS(),
         ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
         edge_method = :pad)
 
@@ -171,8 +171,8 @@ end
 
 estimate_background(data,
     mesh_size::Int,
-    bkg::BackgroundEstimator = SourceExtractor(),
-    bkg_rms::BackgroundRMSEstimator = Std(),
+    bkg::BackgroundEstimator = SourceExtractorBackground(),
+    bkg_rms::BackgroundRMSEstimator = StdRMS(),
     itp::BackgroundInterpolator = ZoomInterpolator(mesh_size);
     edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method)
 

@@ -5,7 +5,7 @@ using StatsBase
 # Location estimators
 
 """
-    Mean
+    MeanBackground
 
 This estimator returns the mean of the input.
 
@@ -13,20 +13,20 @@ This estimator returns the mean of the input.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> Mean()(data)
+julia> MeanBackground()(data)
 1.0
 
-julia> Mean()(data, dims=1)
+julia> MeanBackground()(data, dims=1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-struct Mean <: BackgroundEstimator end
+struct MeanBackground <: BackgroundEstimator end
 
-(::Mean)(data; dims = :) = mean(data, dims = dims)
+(::MeanBackground)(data; dims = :) = mean(data, dims = dims)
 
 """
-    Median
+    MedianBackground
 
 This estimator returns the median of the input.
 
@@ -34,20 +34,20 @@ This estimator returns the median of the input.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> Median()(data)
+julia> MedianBackground()(data)
 1.0
 
-julia> Median()(data, dims=1)
+julia> MedianBackground()(data, dims=1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-struct Median <: BackgroundEstimator end
+struct MedianBackground <: BackgroundEstimator end
 
-(::Median)(data; dims = :) = median(data, dims = dims)
+(::MedianBackground)(data; dims = :) = median(data, dims = dims)
 
 """
-    Mode
+    ModeBackground
 
 This estimator returns the mode of the input.
 
@@ -55,22 +55,22 @@ This estimator returns the mode of the input.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> Mode()(data)
+julia> ModeBackground()(data)
 1.0
 
-julia> Mode()(data, dims=1)
+julia> ModeBackground()(data, dims=1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-struct Mode <: BackgroundEstimator end
+struct ModeBackground <: BackgroundEstimator end
 
-(::Mode)(data; dims = :) = dims isa Colon ? mode(data) : mapslices(mode, data; dims = dims)
+(::ModeBackground)(data; dims = :) = dims isa Colon ? mode(data) : mapslices(mode, data; dims = dims)
 
 """
-    SourceExtractor
+    SourceExtractorBackground
 
-This estimator returns the background of the input using the SourceExtractor algorithm.
+This estimator returns the background of the input using the SourceExtractorBackground algorithm.
 
 The background is calculated using a mode estimator of the form `(2.5 * median) - (1.5 * mean)`.
 
@@ -80,24 +80,24 @@ If `(mean - median) / std > 0.3` then the median is used and if `std = 0` then t
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> SourceExtractor()(data)
+julia> SourceExtractorBackground()(data)
 1.0
 
-julia> SourceExtractor()(data, dims=1)
+julia> SourceExtractorBackground()(data, dims=1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-struct SourceExtractor <: BackgroundEstimator end
+struct SourceExtractorBackground <: BackgroundEstimator end
 
-""" Utility function for SourceExtractor algorithm"""
+""" Utility function for SourceExtractorBackground algorithm"""
 function validate_SE(background::Number, _mean::Number, _median::Number, _std::Number)
     _std ≈ 0 && return _mean
     abs(_mean - _median) / _std > 0.3 && return _median
     return background
 end
 
-function (::SourceExtractor)(data; dims = :)
+function (::SourceExtractorBackground)(data; dims = :)
     _mean = mean(data, dims = dims)
     _median = median(data, dims = dims)
     _std = std(data, dims = dims)
@@ -107,10 +107,10 @@ function (::SourceExtractor)(data; dims = :)
 end
 
 """
-    MMM(median_factor=3, mean_factor=2)
+    MMMBackground(median_factor=3, mean_factor=2)
 
 Estimate the background using a mode estimator of the form `median_factor * median - mean_factor * mean`.
-This algorithm is based on the `MMM` routine originally implemented in DAOPHOT. `MMM` uses factors of `median_factor=3` and `mean_factor=2` by default.
+This algorithm is based on the `MMMBackground` routine originally implemented in DAOPHOT. `MMMBackground` uses factors of `median_factor=3` and `mean_factor=2` by default.
 This estimator assumes that contaminated sky pixel values overwhelmingly display positive departures from the true value.
 
 
@@ -118,28 +118,28 @@ This estimator assumes that contaminated sky pixel values overwhelmingly display
 ```jldoctest
 julia> x = ones(3, 5);
 
-julia> MMM()(x)
+julia> MMMBackground()(x)
 1.0
 
-julia> MMM(4, 3)(x, dims = 1)
+julia> MMMBackground(4, 3)(x, dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 
 # See Also
-[`SourceExtractor`](@ref)
+[`SourceExtractorBackground`](@ref)
 """
-struct MMM{T <: Number} <: BackgroundEstimator
+struct MMMBackground{T <: Number} <: BackgroundEstimator
     median_factor::T
     mean_factor::T
 end
 
-MMM() = MMM(3, 2)
+MMMBackground() = MMMBackground(3, 2)
 
-(alg::MMM)(data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
+(alg::MMMBackground)(data; dims = :) = alg.median_factor * median(data, dims = dims) - alg.mean_factor * mean(data, dims = dims)
 
 """
-    BiweightLocation(c = 6.0, M = nothing)
+    BiweightLocationBackground(c = 6.0, M = nothing)
 
 Estimate the background using the robust biweight location statistic.
 
@@ -153,21 +153,22 @@ Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 ```jldoctest
 julia> x = ones(3,5);
 
-julia> BiweightLocation()(x)
+julia> BiweightLocationBackground()(x)
 1.0
 
-julia> BiweightLocation(5.5)(x; dims = 1)
+julia> BiweightLocationBackground(5.5)(x; dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-struct BiweightLocation{T <: Number} <: BackgroundEstimator
+struct BiweightLocationBackground{T <: Number} <: BackgroundEstimator
     c::T
     M::Union{Nothing,T}
 end
 
-BiweightLocation(c = 6.0) = BiweightLocation(c, nothing)
+BiweightLocationBackground(c = 6.0) = BiweightLocationBackground(c, nothing)
 
+# Consider PR in StatsBase.jl for biweight statistics
 function biweight_location(data::AbstractArray, c = 6.0, M = median(data))
 
     M = M === nothing ? median(data) : M
@@ -191,7 +192,7 @@ function biweight_location(data::AbstractArray, c = 6.0, M = median(data))
     return M + (c * MAD * num) / den
 end
 
-(alg::BiweightLocation)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) :
+(alg::BiweightLocationBackground)(data; dims = :) = dims isa Colon ? biweight_location(data, alg.c, alg.M) :
                                           mapslices(X->biweight_location(X, alg.c, alg.M), data, dims = dims)
 
 
@@ -199,7 +200,7 @@ end
 # RMS Estimators
 
 """
-    Std
+    StdRMS
 
 Uses the standard deviation statistic for background RMS estimation.
 
@@ -207,20 +208,20 @@ Uses the standard deviation statistic for background RMS estimation.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> Std()(data)
+julia> StdRMS()(data)
 0.0
 
-julia> Std()(data, dims=1)
+julia> StdRMS()(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct Std <: BackgroundRMSEstimator end
+struct StdRMS <: BackgroundRMSEstimator end
 
-(::Std)(data; dims = :) = std(data; corrected = false, dims = dims)
+(::StdRMS)(data; dims = :) = std(data; corrected = false, dims = dims)
 
 """
-    MADStd
+    MADStdRMS
 
 Uses the standard median absolute deviation (MAD) statistic for background RMS estimation.
 
@@ -232,22 +233,22 @@ This is typically given as
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> MADStd()(data)
+julia> MADStdRMS()(data)
 0.0
 
-julia> MADStd()(data, dims=1)
+julia> MADStdRMS()(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct MADStd <: BackgroundRMSEstimator end
+struct MADStdRMS <: BackgroundRMSEstimator end
 
-(::MADStd)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) :
+(::MADStdRMS)(data; dims = :) = dims isa Colon ? mad(data, normalize = true) :
                                 mapslices(x->mad(x, normalize = true), data; dims = dims)
 
 
 """
-    BiweightScale(c=9.0, M=nothing)
+    BiweightScaleRMS(c=9.0, M=nothing)
 
 Uses the robust biweight scale statistic for background RMS estimation.
 
@@ -263,20 +264,20 @@ Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
 ```jldoctest
 julia> data = ones(3, 5);
 
-julia> BiweightScale()(data)
+julia> BiweightScaleRMS()(data)
 0.0
 
-julia> BiweightScale(3.0)(data, dims=1)
+julia> BiweightScaleRMS(3.0)(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-struct BiweightScale <: BackgroundRMSEstimator
+struct BiweightScaleRMS <: BackgroundRMSEstimator
     c::Number
 M::Union{Nothing,Number}
 end
 
-BiweightScale(c = 9.0) = BiweightScale(c, nothing)
+BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
 
 function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     length(x) == 1 && return zero(T)
@@ -296,5 +297,5 @@ function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
     return sqrt(length(x) * num) / abs(den)
 end
 
-(alg::BiweightScale)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) :
+(alg::BiweightScaleRMS)(data; dims = :) = dims isa Colon ? biweight_scale(data, alg.c, alg.M) :
                                           mapslices(x->biweight_scale(x, alg.c, alg.M), data, dims = dims)
