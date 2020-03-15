@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -129,7 +129,7 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture
 end
 
 EllipticalAnnulus(x, y, a_in, a_out, b_out, theta) = EllipticalAnnulus(promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...)
-EllipticalAnnulus(center::AbstractVector, a_in, a_out, b_out, theta) = EllipticalAnnulus(center..., a_in, a_in / a_out * b_out, a_out, b_out, theta)
+EllipticalAnnulus(center::AbstractVector, a_in, a_out, b_out, theta) = EllipticalAnnulus(center..., a_in, a_out, b_out, theta)
 
 function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")

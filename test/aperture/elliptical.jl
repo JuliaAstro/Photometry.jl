@@ -40,12 +40,12 @@ end
     e0 = EllipticalAnnulus(0, 0, 8, 16, 4, 45)
     @test sprint(show, e0) == "EllipticalAnnulus(0.0, 0.0, a_in=8.0, a_out=16.0, b_in=2.0, b_out=4.0, θ=45.0°)"
 
-    e = EllipticalAnnulus(0, 0, 10, 10, 10, 45)
+    e = EllipticalAnnulus(0, 0, 8, 16, 4, 45)
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
 
     @test EllipticalAnnulus(0, 0, 2, 4, 3, 380).theta == 20
 
-    @test EllipticalAnnulus([0, 0], 10, 10, 10, 45) == e
+    @test EllipticalAnnulus([0, 0], 8, 16, 4, 45) == e
 
     @test_throws ErrorException EllipticalAnnulus(0, 0, -2, 4, 0, 2)
     @test_throws ErrorException EllipticalAnnulus(0, 0, 2, -3, 0, 2)
