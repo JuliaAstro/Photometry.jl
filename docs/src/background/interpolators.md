@@ -10,4 +10,5 @@ Background.BackgroundInterpolator
 
 ```@docs
 ZoomInterpolator
+IDWInterpolator
 ```

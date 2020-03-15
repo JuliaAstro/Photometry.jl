@@ -19,6 +19,7 @@ export estimate_background,
        BiweightScaleRMS,
        # Interpolators
        ZoomInterpolator
+       IDWInterpolator
 
 
 ###############################################################################
