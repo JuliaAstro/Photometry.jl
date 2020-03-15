@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -16,9 +16,6 @@ A rectangular aperture with width `w`, height `h`, and position angle `θ` in de
 julia> ap = RectangularAperture(0, 0, 10, 4, 0)
 RectangularAperture(0, 0, w=10, h=4, θ=0°)
 ```
-
-!!! warning
-    The `:exact` method is not implemented for `RectangularAperture`
 """
 struct RectangularAperture{T <: Number} <: AbstractAperture
     x::T
@@ -40,24 +37,23 @@ function Base.show(io::IO, ap::RectangularAperture)
 end
 
 function bbox(ap::RectangularAperture{T}) where T
-
     w2 = ap.w / 2
     h2 = ap.h / 2
     sint, cost = sincos(deg2rad(ap.theta))
-
+    
     dx1 = abs(w2 * cost - h2 * sint)
     dy1 = abs(w2 * sint + h2 * cost)
     dx2 = abs(w2 * cost + h2 * sint)
     dy2 = abs(w2 * sint - h2 * cost)
-
+    
     dx = max(dx1, dx2)
     dy = max(dy1, dy2)
-
+    
     xmin = ceil(Int, ap.x - dx - 0.5)
     ymin = ceil(Int, ap.y - dy - 0.5)
     xmax = ceil(Int, ap.x + dx - 0.5)
     ymax = ceil(Int, ap.y + dy - 0.5)
-    return (xmin, xmax, ymin, ymax)
+    return xmin, xmax, ymin, ymax
 end
 
 function mask(ap::RectangularAperture; method = :exact)

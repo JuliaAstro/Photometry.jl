@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -78,7 +78,7 @@ end
 
 Get the cutout of the aperture from the `data`. This will handle partial overlap by padding the data with zeros.
 """
-function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where {T}
+function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where T
     box = bbox(c)
     maxy, maxx = size(data)
     ny, nx = size(c)

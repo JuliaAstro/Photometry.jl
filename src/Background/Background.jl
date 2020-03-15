@@ -193,7 +193,7 @@ function sigma_clip!(x::AbstractArray{T},
     sigma_high::Real = sigma_low;
     fill = :clamp,
     center = median(x),
-    std = std(x, corrected = false)) where {T}
+    std = std(x, corrected = false)) where T
     # clamp
     fill === :clamp && return clamp!(x, center - sigma_low * std, center + sigma_high * std)
     # fill
@@ -225,7 +225,7 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 (-1.0021043865183705, 1.0011542162690115)
 ```
 """
-sigma_clip(x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low; fill = :clamp, center = median(x), std = std(x)) where {T} = sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)
+sigma_clip(x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low; fill = :clamp, center = median(x), std = std(x)) where T = sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)
 
 
 end # Background
