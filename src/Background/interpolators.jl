@@ -49,27 +49,55 @@ end
 """
     IDWInterpolator(coordinates, values, weights = nothing, leafsize = 8.0)
 
+This performs Inverse Distance Weighted Interpolation
 
+`coordinates` represent the sample points filled column wise and `values` is the value at those sample points, `weight` are an additional multiplicative factor in the standard
+inverse distance weight and `leafsize` determines at what number of points to stop splitting the KDTree further.
+
+!!! warning
+    0 < `leafsize` < number of elements in tree
+
+# Examples
+```jldoctest
+julia> coordinates = [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0; 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0];
+
+julia> weights = [1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0];
+
+julia> value = [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0];
+
+julia> positions = [9.9 1.0; 10.0 1.0];
+
+julia> alg = IDWInterpolator(coordinates,value, weights, 8);
+
+julia> alg(positions)
+1×2 Array{Float64,2}:
+ 9.57581  2.75894
+
+julia> IDWInterpolator(coordinates, value)(positions)
+1×2 Array{Float64,2}:
+ 9.57581  2.75894
+
+```
 """
 struct IDWInterpolator <: BackgroundInterpolator
     coordinates::AbstractArray
     values::AbstractArray
     weights::Union{AbstractArray, Nothing}
-    leafsize::Number
+    leafsize::Real
 
-    function IDWInterpolator(coordinates::AbstractArray, values::AbstractArray, weights::Union{AbstractArray, Nothing}, leafsize)
+    function IDWInterpolator(coordinates::AbstractArray, values::AbstractArray, weights::Union{AbstractArray, Nothing}, leafsize::Real)
         leafsize <= 0 && error("Invalid leafsize=$leafsize. leafsize must be greater than 0")
         new(coordinates, values, weights, leafsize)
     end
 end
 
+IDWInterpolator(coordinates, value; weight = nothing, leafsize = 8) = IDWInterpolator(coordinates, value, weight, leafsize)
 
-function idw_util(alg::IDWInterpolator, idxs::AbstractArray, dist::AbstractArray, power::Number, reg::Number, conf_dist::Number)
+function idw_util(alg::IDWInterpolator, idxs::AbstractArray, dist::AbstractArray, power::Real, reg::Real, conf_dist::Real)
 
     dist[1] <= conf_dist && return alg.values[idxs[1]]
 
-    num = zero(eltype(dist))
-    den = zero(eltype(dist))
+    num = den = zero(eltype(dist))
 
     for (i,j) = zip(1:length(idxs), 1:length(dist))
         w_i = 1 / (reg + dist[i])^power
@@ -80,12 +108,12 @@ function idw_util(alg::IDWInterpolator, idxs::AbstractArray, dist::AbstractArray
 end
 
 
-function idw_interpolator(alg::IDWInterpolator, positions::AbstractArray, n_neighbors::Number, power::Number, reg::Number, conf_dist::Number)
+function idw_interpolator(alg::IDWInterpolator, positions::AbstractArray, n_neighbors::Real, power::Real, reg::Real, conf_dist::Real)
     tree = KDTree(alg.coordinates, leafsize = alg.leafsize)
 
     idxs, dist = knn(tree, positions, n_neighbors, true)
 
-    _out = zeros(1, size(positions, 2))
+    _out = zeros(eltype(dist[1]), 1, size(positions, 2))
     for i = 1:length(_out)
         _out[i] = idw_util(alg, idxs[i], dist[i], power, reg, conf_dist)
     end
@@ -97,20 +125,3 @@ end
                                   power = 1.0,
                                   reg = 0.0,
                                   conf_dist = 1e-12) = idw_interpolator(alg, positions, n_neighbors, power, reg, conf_dist)
-
-
-
-# x = [1 2.0 3 4 5 6 7 8 9 10; 1 2 3 4 5 6 7 8 9 10]
-# weights = [1.0 1 1 1 1 1 1 1 1 1]
-# value = [1 2.0 3 4 5 6 7 8 9 10]
-# pos = [9.9 1; 10 3]
-# alg = IDWInterpolator(x,value,weights,8)
-# z = alg(pos)
-#
-# print("************ $z")
-#
-# y = KDTree(x, leafsize = 1)
-# #
-# data = rand(2, 10)
-# size(data,1)
-# tree = KDTree(data, leafsize = 10)
