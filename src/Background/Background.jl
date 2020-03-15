@@ -18,7 +18,7 @@ export estimate_background,
        MADStdRMS,
        BiweightScaleRMS,
        # Interpolators
-       ZoomInterpolator
+       ZoomInterpolator,
        IDWInterpolator
 
 
