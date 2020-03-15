@@ -4,17 +4,13 @@ using Photometry.Aperture: edges,
 
 @testset "Apertures" begin
 
-    ap_elipse = EllipticalAperture(0, 0, 20, 10, 0)
-    @test bbox(ap_elipse) == (-20, 20, -10, 10)
+    ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
+    @test bbox(ap_ellipse) == (-20, 20, -10, 10)
 
-    ap_elipse = EllipticalAperture(0, 0, 2, 1, 45)
-    xmin, xmax, ymin, ymax = bbox(ap_elipse)
+    @test EllipticalAperture([0, 0], 20, 10, 0) == ap_ellipse
 
-    @test xmin == -2
-    @test xmax == 2
-    @test ymax == 2
-    @test ymin == -2
-
+    ap_ellipse = EllipticalAperture(0, 0, 2, 1, 45)
+    @test bbox(ap_ellipse) == (-2, 2, -2, 2)
 end
 
 @testset "Elliptical Aperture" begin
@@ -48,6 +44,8 @@ end
     @test mask(e, method = :center) == mask(e, method = (:subpixel, 1))
 
     @test EllipticalAnnulus(0, 0, 2, 4, 3, 380).theta == 20
+
+    @test EllipticalAnnulus([0, 0], 10, 10, 10, 45) == e
 
     @test_throws ErrorException EllipticalAnnulus(0, 0, -2, 4, 0, 2)
     @test_throws ErrorException EllipticalAnnulus(0, 0, 2, -3, 0, 2)
