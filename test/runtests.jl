@@ -1,5 +1,9 @@
 using Photometry
 using Test
+using Random
+using Statistics
+
+Random.seed!(8462852)
 
 @testset "Aperture Photometry" begin
     include("aperture/overlap.jl")
@@ -11,7 +15,6 @@ using Test
 end
 
 @testset "Background Estimation" begin
-    # mesh fitting not supported yet
-    @test_throws ErrorException estimate_background(Mean, ones(1, 1), (1, 1), (1, 1))
+    include("background/background.jl")
     include("background/estimators.jl")
 end

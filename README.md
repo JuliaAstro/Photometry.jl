@@ -24,7 +24,7 @@ Here are features planned
 - [ ] star extraction
 - [ ] filtering
 
-In addition, the funcitonality needs documented, tested, and benchmarked. 
+In addition, the funcitonality needs documented, tested, and benchmarked.
 
 ## Usage
 

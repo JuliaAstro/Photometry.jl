@@ -84,7 +84,7 @@ end
     t = range(0, 2π, length = npoints)
     w2 = ap.w / 2
     h2 = ap.h / 2
-    
+
     x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
     y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
 
@@ -107,10 +107,10 @@ end
     @series begin
         w2 = ap.w_out / 2
         h2 = ap.h_out / 2
-        
+
         x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
         y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
-    
+
         sinth, costh = sincos(deg2rad(ap.theta))
         u = @. ap.x + x * costh - y * sinth + 0.5
         v = @. ap.y + x * sinth + y * costh + 0.5
@@ -122,10 +122,10 @@ end
     @series begin
         w2 = ap.w_in / 2
         h2 = ap.h_in / 2
-        
+
         x = @. w2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t))
         y = @. h2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t))
-    
+
         sinth, costh = sincos(deg2rad(ap.theta))
         u = @. ap.x + x * costh - y * sinth + 0.5
         v = @. ap.y + x * sinth + y * costh + 0.5

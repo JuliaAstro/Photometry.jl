@@ -14,7 +14,7 @@ The position can be pixels or sky coordinates. The sky coordinate positions util
     Sky coordinates are not supported yet.
 
 !!! note
-    See [Pixel Convention](@ref) - The origin is the bottom-left with `(1, 1)` being the center of the pixel. 
+    See [Pixel Convention](@ref) - The origin is the bottom-left with `(1, 1)` being the center of the pixel.
 
 ## Circular Apertures
 

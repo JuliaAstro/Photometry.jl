@@ -19,7 +19,7 @@ pkg> add Photometry
 
 ## Getting Started
 
-Here is a basic example to do some aperture photometry using [`CircularAperture`](@ref) and [`CircularAnnulus`](@ref). The [`aperture_photometry`](@ref) function performs the photometry using a given method. 
+Here is a basic example to do some aperture photometry using [`CircularAperture`](@ref) and [`CircularAnnulus`](@ref). The [`aperture_photometry`](@ref) function performs the photometry using a given method.
 
 ```jldoctest
 data = ones(100, 100)
@@ -38,9 +38,9 @@ results
 # output
 2×4 DataFrames.DataFrame
 │ Row │ xcenter │ ycenter │ aperture_sum │ aperture_sum_err │
-│     │ Float64 │ Float64 │ Float64      │ Float64          │
+│     │ Any     │ Any     │ Any          │ Any              │
 ├─────┼─────────┼─────────┼──────────────┼──────────────────┤
-│ 1   │ 50.0    │ 50.0    │ 28.2743      │ 5.31736          │
+│ 1   │ 50      │ 50      │ 28.2743      │ 5.31736          │
 │ 2   │ 0.5     │ 0.5     │ 19.635       │ 4.43113          │
 ```
 

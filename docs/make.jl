@@ -6,9 +6,9 @@ setup = quote
     using Random
     Random.seed!(123456)
 end
-DocMeta.setdocmeta!(Photometry, :DocTestSetup, :(using Photometry); recursive = true)
+DocMeta.setdocmeta!(Photometry, :DocTestSetup, setup; recursive = true)
 
-makedocs(;
+makedocs(
     modules = [Photometry],
     authors = "Miles Lucas <mdlucas@hawaii.edu>",
     repo = "https://github.com/JuliaAstro/Photometry.jl/blob/{commit}{path}#L{line}",
@@ -26,9 +26,11 @@ makedocs(;
         ],
         "Background Estimation" => [
             "Getting Started" => "background/index.md",
-            "Background Estimators" => "background/estimators.md"
+            "Background Estimators" => "background/estimators.md",
+            "Background Interpolators" => "background/interpolators.md"
         ]
     ])
 
-deploydocs(;
-    repo = "github.com/JuliaAstro/Photometry.jl",)
+deploydocs(
+    repo = "github.com/JuliaAstro/Photometry.jl",
+    push_preview = true)

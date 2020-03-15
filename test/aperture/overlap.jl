@@ -139,7 +139,7 @@ end # circles
 
 end # overlap elliptical
 
-# @testset "overlap - rectangular" begin 
+# @testset "overlap - rectangular" begin
 #     INPUTS = [
 #         [(0, 0.2, 1, 0.8), (0, 0.2, 1, 0.8)],
 #         [(0, 0.9, 1, 0.2), (0, 0.9, 1, 0.2)],
@@ -170,7 +170,7 @@ end # overlap elliptical
 #         @test triangle_unitsquare_overlap(0, 0, 0, 2, 0.5, 0) ≈ 3 / 8
 #         @test triangle_unitsquare_overlap(0.2, 0.2, 0.2, 0.4, 0.4, 0.2) ≈ 0.2
 #     end
-# end # overlap rectangular 
+# end # overlap rectangular
 
 @testset "overlap - utils" begin
 
