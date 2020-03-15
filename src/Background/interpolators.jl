@@ -1,3 +1,7 @@
+#=
+Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
+are considered under a BSD 3-clause license. =#
+
 using Interpolations: CubicSplineInterpolation
 using ImageTransformations: imresize!
 
@@ -35,7 +39,7 @@ end
 ZoomInterpolator(factor::Integer) = ZoomInterpolator((factor, factor))
 ZoomInterpolator(f1::Integer, args...) = ZoomInterpolator((f1, args...))
 
-function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where {T}
+function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
     itp = CubicSplineInterpolation(axes(mesh), mesh)
     out = similar(mesh, float(T), size(mesh) .* z.factors)
     return imresize!(out, itp)

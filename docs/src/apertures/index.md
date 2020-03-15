@@ -26,7 +26,7 @@ then the result of our aperture photometry looks like
  0 1 1 1 0      9 7 3 4 1      0 7 3 4 0
  0 0 0 0 0]     7 8 0 9 8]     0 0 0 0 0]
 
- sum(result) = 44
+sum(result) = 44
 ```
 
 This module uses the above principal with common aperture shapes in a fast and precise manner, including exact overlaps between apertures and pixels.
@@ -38,7 +38,6 @@ The majority of the lifting is done with the [`aperture_photometry`](@ref) funct
 `Photometry.jl` follows the same convention as FITS, WCS, IRAF, ds9, and SourceExtractorBackground with `(1, 1)` being the _center_ on the bottom-left pixel. This means the exact bottom-left corner is at `(0.5, 0.5)`. Pixels increase up and to the right until `axis_length + 0.5`.
 
 This is mostly in line with Julia's indexing, although it is important to remember that arrays are layed out in `(y, x)` due to the row-column interface. So the pixel at `(34, 56)` is at `image[56, end-34]`.
-
 
 ## API/Reference
 

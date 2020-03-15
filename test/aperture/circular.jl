@@ -7,10 +7,14 @@ using Photometry.Aperture: edges,
     @test bbox(ap_circ) == (40, 60, 30, 50)
     @test size(ap_circ) == (21, 21)
 
+    @test CircularAperture([50, 40], 10) == ap_circ
+
     ap_ann = CircularAnnulus(50, 40, 5, 10)
     @test edges(ap_ann) == (-10.5, 10.5, -10.5, 10.5)
     @test bbox(ap_ann) == (40, 60, 30, 50)
     @test size(ap_ann) == (21, 21)
+
+    @test CircularAnnulus([50, 40], 5, 10) == ap_ann
 end
 
 @testset "Circle Aperture" begin

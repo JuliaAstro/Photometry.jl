@@ -16,9 +16,6 @@ A rectangular aperture with width `w`, height `h`, and position angle `θ` in de
 julia> ap = RectangularAperture(0, 0, 10, 4, 0)
 RectangularAperture(0, 0, w=10, h=4, θ=0°)
 ```
-
-!!! warning
-    The `:exact` method is not implemented for `RectangularAperture`
 """
 struct RectangularAperture{T <: Number} <: AbstractAperture
     x::T
@@ -40,7 +37,6 @@ function Base.show(io::IO, ap::RectangularAperture)
 end
 
 function bbox(ap::RectangularAperture{T}) where T
-
     w2 = ap.w / 2
     h2 = ap.h / 2
     sint, cost = sincos(deg2rad(ap.theta))
@@ -57,7 +53,7 @@ function bbox(ap::RectangularAperture{T}) where T
     ymin = ceil(Int, ap.y - dy - 0.5)
     xmax = ceil(Int, ap.x + dx - 0.5)
     ymax = ceil(Int, ap.y + dy - 0.5)
-    return (xmin, xmax, ymin, ymax)
+    return xmin, xmax, ymin, ymax
 end
 
 function mask(ap::RectangularAperture; method = :exact)
@@ -79,9 +75,6 @@ A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
 RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, θ=45.0°)
 ```
-
-!!! warning
-    The `:exact` method is not implemented for `RectangularAnnulus`
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture
     x::T

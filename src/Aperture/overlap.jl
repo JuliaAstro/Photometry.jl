@@ -1,6 +1,7 @@
 #=
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
+using LazySets
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     out = fill(0.0, ny, nx)
@@ -14,9 +15,9 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
 
     # bounding box
     bxmin = -r - 0.5dx
-    bxmax = r + 0.5dx
+    bxmax =  r + 0.5dx
     bymin = -r - 0.5dy
-    bymax = r + 0.5dy
+    bymax =  r + 0.5dy
 
     @inbounds for i in 1:nx
         # lower end of pixel
@@ -183,7 +184,7 @@ General equation of ellipse:
 """
 inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
-function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :center)
+function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
     out = fill(0.0, ny, nx)
 
     # width of each element
@@ -473,8 +474,6 @@ end
 ####################################
 # Rectangular routines
 
-
-
 function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
     out = fill(0.0, ny, nx)
 
@@ -502,8 +501,7 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
 
                 if bymin < pymax && pymin < bymax
                     if method === :exact
-                        # out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
-                        error("Exact overlap for rectangular apertures is not implemented, yet. See https://github.com/JuliaAstro/Photometry.jl/issues/22")
+                        out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
                     elseif method === :center
                         out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, 1)
                     elseif method[1] === :subpixel
@@ -548,216 +546,27 @@ function intersects_rectangle(x, y, w, h, θ)
 
     return abs(u) < w / 2 && abs(v) < h / 2
 end
-#=
-
-This code was previously used for trying to implement exact overlap of rectangular apertures. For now, it will sit in this comment block for posterity.
-
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
-    sint, cost = sincos(deg2rad(-θ))
-    scale = w * h
-
-    #=
-    If we take our rectangle centered at (0, 0) and construct
-    the transformation required to turn it into a unit-square
-    from (0, 0) to (1, 1), we can turn the pixel into
-    the corresponding parallelogram, divide it into two
-    triangles and find their cross-section =#
-
-    # derotate, rescale, and translate
-    x1 = (xmin * cost - ymin * sint) / w + 0.5
-    y1 = (xmin * sint + ymin * cost) / h + 0.5
-    x2 = (xmax * cost - ymin * sint) / w + 0.5
-    y2 = (xmax * sint + ymin * cost) / h + 0.5
-    x3 = (xmax * cost - ymax * sint) / w + 0.5
-    y3 = (xmax * sint + ymax * cost) / h + 0.5
-    x4 = (xmin * cost - ymax * sint) / w + 0.5
-    y4 = (xmin * sint + ymax * cost) / h + 0.5
-
-    return scale * (triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3) +
-                    triangle_unitsquare_overlap(x1, y1, x4, y4, x3, y3))
+    sint, cost = sincos(deg2rad(θ))
+    R = [cost -sint; sint cost]
+    aper = R * Hyperrectangle(zeros(2), [w / 2, h / 2])
+    dy = ymax - ymin
+    dx = xmax - xmin
+    pix = Hyperrectangle([dx / 2 + xmin, dy / 2 + ymin], [dx / 2, dy / 2])
+    return intersection_area(pix, aper)
 end
 
+# contrib: https://nbviewer.jupyter.org/github/mforets/escritoire/blob/master/2020/Week11/2D_intersection.ipynb
+# the idea is to use the intersection for HPolygon, which is faster than the fallback because the
+# normal vectors to the half-spaces are sorted in counter--clockwise fashion
+function intersection_area(X::AbstractHyperrectangle{N},
+    Y::LinearMap{N,<:AbstractHyperrectangle{N}}) where {N}
+    X_clist = X |> constraints_list
+    X_poly = HPolygon(X_clist, sort_constraints = true, prune = false, check_boundedness = false)
 
-function triangle_unitsquare_overlap(x1, y1, x2, y2, x3, y3)
-    # distances
-    d1 = (x1 - 0.5)^2 + (y1 - 0.5)^2
-    d2 = (x2 - 0.5)^2 + (y2 - 0.5)^2
-    d3 = (x3 - 0.5)^2 + (y3 - 0.5)^2
+    Y_clist = linear_map(matrix(Y), set(Y)) |> constraints_list
+    Y_poly = HPolygon(Y_clist, sort_constraints = true, prune = false, check_boundedness = false)
 
-    # order by distances
-    ds = [d1, d2, d3]
-    order = sortperm(ds)
-    ds = ds[order]
-    x1, x2, x3 = [x1, x2, x3][order]
-    y1, y2, y3 = [y1, y2, y3][order]
-
-    points = zip((x1, x2, x3), (y1, y2, y3))
-    # which are inside
-    inside = [0 < x < 1 && 0 < y < 1 for (x, y) in points]
-
-    # which are on
-    on = [(x ≈ 0 && 0 ≤ y ≤ 1 ||
-           x ≈ 1 && 0 ≤ y ≤ 1 ||
-           y ≈ 0 && 0 ≤ x ≤ 1 ||
-           y ≈ 1 && 0 ≤ x ≤ 1) for (x, y) in points]
-
-    # completely inside circle
-    if inside[3] || on[3]
-        return area_triangle(x1, y1, x2, y2, x3, y3)
-    # if vertex 1 or 2 are on the edge, then dot product with 3 to  determine intersection
-    elseif inside[2] || on[2]
-        intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
-        intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
-
-        if intersect13 && intersect23
-            point1 = square_segment_single2(x1, y1, x3, y3)
-            point2 = square_segment_single2(x2, y2, x3, y3)
-
-            return (area_triangle(x1, y1, x2, y2, point1...) +
-                    area_triangle(x2, y2, point1..., point2...) +
-                    area_triangle(point1..., point2..., 1, 1))
-        elseif intersect13
-            point1 = square_segment_single2(x1, y1, x3, y3)
-
-            return (area_triangle(x1, y1, x2, y2, point1...) +
-                    area_triangle(x2, y2, point1..., 1, 1))
-        elseif intersect23
-            point2 = square_segment_single2(x2, y2, x3, y3)
-
-            return (area_triangle(x1, y1, x2, y2, point2...) +
-                    area_triangle(x2, y2, point2..., 0, 1))
-        else
-            return area_triangle(x1, y1, x2, y2, 1, 1)
-        end
-    elseif inside[1]
-        point1, point2 = square_segment(x2, y2, x3, y3)
-        point3 = square_segment_single2(x1, y1, x2, y2)
-        point4 = square_segment_single2(x1, y1, x3, y3)
-
-        if point1[1] > 1 # no intersection
-            # check if (x1, y2) and origin are on opposite sides of segment
-            if (((0 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (0 - point3[1])) !=
-                ((y1 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (x1 - point3[1])))
-                return (area_triangle(x1, y1, point3..., point4...) + π - area_triangle(point3..., point4..., 1, 1))
-            else
-                return area_triangle(x1, y1, point3..., point4...) + area_triangle(point3..., point4..., 1, 1)
-            end
-        else
-
-              # ensure that point1 is the point closest to (x2, y2)
-              if (((point2[1] - x2) * (point2[1] - x2) + (point2[2] - y2) * (point2[2] - y2)) <
-                  ((point1[1] - x2) * (point1[1] - x2) + (point1[2] - y2) * (point1[2] - y2)))
-                point1, point2 = point2, point1
-              end
-
-              return (area_triangle(x1, y1, point3..., point1...) +
-                      area_triangle(x1, y1, point1..., point2...) +
-                      area_triangle(x1, y1, point2..., point4...) +
-                      area_triangle(point1..., point3..., 1, 1) +
-                      area_triangle(point2..., point4..., 1, 1))
-        end
-    else
-        point1, point2 = square_segment(x1, y1, x2, y2)
-        point3, point4 = square_segment(x2, y2, x3, y3)
-        point5, point6 = square_segment(x3, y3, x1, y1)
-
-        if 0 < point1[1] < 1
-            xp = (point1[1] + point2[1]) / 2
-            yp = (point1[2] + point2[2]) / 2
-            return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
-                    triangle_unitsquare_overlap(x2, y2, x3, y3, xp, yp))
-        elseif 0 < point3[1] < 1
-            xp = (point3[1] + point4[1]) / 2
-            yp = (point3[2] + point4[2]) / 2
-            return (triangle_unitsquare_overlap(x3, y3, x1, y1, xp, yp) +
-                    triangle_unitsquare_overlap(x2, y2, x1, y1, xp, yp))
-        elseif 0 < point5[1] < 1
-            xp = (point5[1] + point6[1]) / 2
-            yp = (point5[2] + point6[2]) / 2
-            return (triangle_unitsquare_overlap(x1, y1, x3, y3, xp, yp) +
-                    triangle_unitsquare_overlap(x3, y3, x2, y2, xp, yp))
-        else
-            return inside_triangle(0.5, 0.5, x1, y1, x2, y2, x3, y3) ? 1 : 0
-        end
-    end
-    end
-
-# intersection of a segment with the unit square
-function square_segment(x1, y1, x2, y2)
-    point1, point2 = square_line(x1, y1, x2, y2)
-
-    if ((point1[1] > x1 && point1[1] > x2) || (point1[1] < x1 && point1[1] < x2) ||
-        (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
-        point1 = (2, 2)
-    end
-
-    if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
-        (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
-        point2 = (2, 2)
-    end
-
-    return sort!([point1, point2])
+    return intersection(X_poly, Y_poly) |> area
 end
-
-# closest intersection of a line with the unit square
-function square_segment_single2(x1, y1, x2, y2)
-    point1, point2 = square_line(x1, y1, x2, y2)
-    dx1 = abs(point1[1] - x2)
-    dy1 = abs(point1[2] - y2)
-    dx2 = abs(point2[1] - x2)
-    dy2 = abs(point2[2] - y2)
-
-    if dx1 > dy1
-        return dx1 > dx2 ? point2 : point1
-    else
-        return dy1 > dy2 ? point2 : point1
-    end
-    end
-
-# intersection of a line defined by two points with a unit square
-function square_line(x1, y1, x2, y2)
-    dx = x2 - x1
-    dy = y2 - y1
-
-    dx ≈ dy ≈ 0 && return (2.0, 2.0), (2.0, 2.0)
-
-    # find y = mx + b
-    m = dy / dx
-    b = y1 - m * x1
-
-    # if vertical line
-    if isinf(m)
-        return 0 ≤ x1 ≤ 1 ? ((x1, 1.0), (x2, 0.0)) : ((2.0, 2.0), (2.0, 2.0))
-    end
-
-    points = []
-    if 0 ≤ b ≤ 1 # intersects x=0
-        push!(points, (0.0, float(b)))
-    end
-
-    if 0 ≤ (1 - b) / m ≤ 1 # intersects y=1
-        push!(points, ((1 - b) / m, 1.0))
-    end
-
-    if 0 ≤ m + b ≤ 1 # intersects x=1
-        push!(points, (1.0, float(m + b)))
-    end
-
-    if 0 ≤ -b / m ≤ 1 # intersects y=0
-        push!(points, (-b / m, 0.0))
-    end
-
-    # no intersection
-    length(points) == 0 && return (2.0, 2.0), (2.0, 2.0)
-
-    # need to get the unique points, taking care that if it only has one point to repeat it
-    function process(point)
-        x, y = point
-        x = iszero(x) ? zero(x) : x
-        y = iszero(y) ? zero(y) : y
-        return x, y
-    end
-    out = unique(process, points)
-    return length(out) == 1 ? Tuple(repeat(out, 2)) : Tuple(out)
-end =#

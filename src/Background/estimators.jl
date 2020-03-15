@@ -1,3 +1,7 @@
+#=
+Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
+are considered under a BSD 3-clause license. =#
+
 using Statistics
 using StatsBase
 
@@ -279,7 +283,7 @@ end
 
 BiweightScaleRMS(c = 9.0) = BiweightScaleRMS(c, nothing)
 
-function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where {T}
+function biweight_scale(x::AbstractArray{T}, c = 9.0, M = median(x)) where T
     length(x) == 1 && return zero(T)
     M = M === nothing ? median(x) : M
     _mad = mad(x, normalize = false)

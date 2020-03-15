@@ -78,7 +78,7 @@ end
 
 Get the cutout of the aperture from the `data`. This will handle partial overlap by padding the data with zeros.
 """
-function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where {T}
+function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where T
     box = bbox(c)
     maxy, maxx = size(data)
     ny, nx = size(c)
@@ -117,6 +117,9 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 * `:exact` - Will calculate the exact geometric overlap
 * `:center` - Will only consider full-pixel overlap (equivalent to subpixel method with 1 subpixel)
 * `(:subpixel, n)` - Use `n^2` subpixels to calculate overlap
+
+!!! note
+    The `:exact` method is slower than the subpixel methods by at least an order of magnitude, so if you are dealing with large images and many apertures, we recommend using `:subpixel` with some reasonable `n`, like 10.
 
 """
 function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
