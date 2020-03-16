@@ -83,51 +83,111 @@ julia> IDWInterpolator(coordinates, value)(positions)
 
 ```
 """
-struct IDWInterpolator <: BackgroundInterpolator
-    coordinates::AbstractArray
-    values::AbstractArray
-    weights::Union{AbstractArray, Nothing}
-    leafsize::Real
+function shepherd_util(idxs, dist, values, weights, power, reg, conf_dist)
 
-    function IDWInterpolator(coordinates::AbstractArray, values::AbstractArray, weights::Union{AbstractArray, Nothing}, leafsize::Real)
-        leafsize <= 0 && error("Invalid leafsize=$leafsize. leafsize must be greater than 0")
-        new(coordinates, values, weights, leafsize)
-    end
-end
-
-IDWInterpolator(coordinates, value; weight = nothing, leafsize = 8) = IDWInterpolator(coordinates, value, weight, leafsize)
-
-function idw_util(alg::IDWInterpolator, idxs::AbstractArray, dist::AbstractArray, power::Real, reg::Real, conf_dist::Real)
-
-    dist[1] <= conf_dist && return alg.values[idxs[1]]
+    dist[1] <= conf_dist && return values[idxs[1]]
 
     num = den = zero(eltype(dist))
 
-    for (i,j) = zip(1:length(idxs), 1:length(dist))
-        w_i = 1 / (reg + dist[i])^power
-        num += w_i * alg.values[idxs[i]] * (alg.weights === nothing ? 1 : alg.weights[idxs[i]])
+    for i in eachindex(idxs)
+        w_i = 1 / (reg + (dist[i])^power)
+        num += w_i * values[idxs[i]] * (weights === nothing ? 1 : weights[idxs[i]])
         den += w_i
     end
-
-    den ≈ 0 && return NaN
     return num / den
 end
 
+function ShepherdInterpolator(coordinates, values, points, weights, leafsize, n_neighbors, power, reg, conf_dist)
+    # generating the KDTree
+    tree = KDTree(coordinates, leafsize = leafsize)
 
-function idw_interpolator(alg::IDWInterpolator, positions::AbstractArray, n_neighbors::Real, power::Real, reg::Real, conf_dist::Real)
-    tree = KDTree(alg.coordinates, leafsize = alg.leafsize)
+    # querying the n-closest indexes and distances
+    idxs, dist = knn(tree, points, n_neighbors, true)
 
-    idxs, dist = knn(tree, positions, n_neighbors, true)
-
-    _out = zeros(eltype(dist[1]), 1, size(positions, 2))
-    for i = 1:length(_out)
-        _out[i] = idw_util(alg, idxs[i], dist[i], power, reg, conf_dist)
+    # calculate values at every desired point, can be done by some broadcasting trick
+    out = Array{Float64}(undef, size(points,2))
+    for i in eachindex(out)
+        out[i] = shepherd_util(idxs[i], dist[i], values, weights, power, reg, conf_dist)
     end
 
-    return _out
+    return out
 end
 
-(alg::IDWInterpolator)(positions; n_neighbors = 8,
-                                  power = 1.0,
-                                  reg = 0.0,
-                                  conf_dist = 1e-12) = idw_interpolator(alg, positions, n_neighbors, power, reg, conf_dist)
+ShepherdInterpolator(coordinates, values, points; weights = nothing, leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) =
+        ShepherdInterpolator(coordinates, values, points, weights, leafsize, n_neighbors, power, reg, conf_dist)
+
+
+#
+# # supports IDWInterpolation on 2-D images only
+# # leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12
+# struct IDWInterpolator <: BackgroundInterpolator
+#     factors::NTuple{2,<:Integer}
+#     leafsize::Real
+#     n_neighbors::Real
+#     power::Real
+#     reg::Real
+#     conf_dist::Real
+# end
+#
+# IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+
+
+# function (IDW::IDWInterpolator)(mesh::AbstractArray{T,2}) where T
+#     # this is for the final output
+#     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
+#     display(out)
+#     # generate the coefficients for the known meshpoints points where the values are known to form the KDTree
+#     # current implementation only considers a 2-D mesh
+#     coordinates = Array{Union{Missing, Int}}(missing, 2, length(mesh))
+#     for i=1:size(mesh,1), j=1:size(mesh,2)
+#         coordinates[1,(i - 1)*size(mesh,2) + j] = i * IDW.factor[1]
+#         coordinates[2,(i - 1)*size(mesh,2) + j] = j *
+#
+#         if i == 1 ||  j == 1
+#
+#     end
+#
+#     # scale up coordinates before passing into tree creation
+#     coordinates = coordinates .* IDW.factors
+#
+#     # declaring _coordinates because KDTree requires floating point input
+#     _coordinates = 1.0 * coordinates
+#
+#     # filling the known points of array out
+#     for i=1:size(coordinates,2)
+#         out[coordinates[1,i], coordinates[2,i]] = mesh[convert(Int,coordinates[1,i] / IDW.factors[1]), convert(Int,coordinates[2,i] / IDW.factors[2])]
+#     end
+#
+#     display(out)
+#     # generate the KDTree
+#     tree = KDTree(_coordinates, leafsize = IDW.leafsize)
+#
+#     # generate points to be queried on the tree for interpolation
+#     positions = Array{Number}(undef, 2, length(out))
+#     for i=1:size(out,1), j=1:size(out,2)
+#         positions[1,(i - 1)*size(out,2) + j] = i * 1.0
+#         positions[2,(i - 1)*size(out,2) + j] = j * 1.0
+#     end
+#
+#
+#     # query on tree and get distances returned in sorted manner
+#     idxs, dist = knn(tree, positions, IDW.n_neighbors, true)
+#
+#     # filling the out array with interpolated values
+#     for i in eachindex(out)
+#         out[i] = idw_util(IDW, idxs[i], dist[i], out)
+#     end
+#
+#     # returning the desired array
+#     return out
+# end
+
+
+# alg = IDWInterpolator((2,2), n_neighbors = 3)([1 0; 0 1])
+#
+# display([1 0; 0 1])
+#
+#
+# # I need to change the spacing in fabric
+#
+# x = range(0, 10, length=11)
