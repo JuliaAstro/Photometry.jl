@@ -117,6 +117,38 @@ ShepherdInterpolator(coordinates, values, points; weights = nothing, leafsize = 
         ShepherdInterpolator(coordinates, values, points, weights, leafsize, n_neighbors, power, reg, conf_dist)
 
 
+struct IDWInterpolator <: BackgroundInterpolator
+    factors::NTuple{2,<:Integer}
+    leafsize
+    n_neighbors
+    power
+    reg
+    conf_dist
+end
+
+IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+
+function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::AbstractArray{T}) where T
+    # factors have to be integer tupules only
+    # initialising the output array
+    out = similar(mesh, float(T), size(mesh) .* IDW.factors)
+
+    # Resizing the mesh and getting the know points
+
+    # Creating an array of all points in modified mesh for query
+
+    # Call the ShepherdInterpolator on the corresponding data generated above
+
+    # Fill out the final output array
+
+    # return the output array
+end
+
+# finally make a constructor which takes weights as an optional argument
+
+
+
+#####################################################################################
 #
 # # supports IDWInterpolation on 2-D images only
 # # leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12
