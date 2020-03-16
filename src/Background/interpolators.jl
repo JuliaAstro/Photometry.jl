@@ -137,6 +137,8 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::AbstractArray{T
 
     # Creating an array of all points in modified mesh for query
 
+    # Think something for the weights, as in how to access them
+
     # Call the ShepherdInterpolator on the corresponding data generated above
 
     # Fill out the final output array
