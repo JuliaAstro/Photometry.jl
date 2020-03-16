@@ -128,7 +128,7 @@ end
 
 IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
 
-function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::AbstractArray{T}) where T
+function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::Union{Nothing,AbstractArray{T}}) where T
     # factors have to be integer tupules only
     # initialising the output array
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
@@ -137,7 +137,9 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::AbstractArray{T
 
     # Creating an array of all points in modified mesh for query
 
-    # Think something for the weights, as in how to access them
+    # Think something for the weights, as in how to access them(flatten it and send in ShepherdInterpolator)
+
+    # for values(again flatten the mesh itself and then use it as parameter for ShepherdInterpolator)
 
     # Call the ShepherdInterpolator on the corresponding data generated above
 
