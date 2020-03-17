@@ -17,7 +17,7 @@ using Plots
 hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
 
-default(aspect_ratio=1, xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
+default(aspect_ratio=1, xlims=(1, size(image, 2)), ylims=(1, size(image, 1)), ticks=false)
 
 heatmap(image)
 savefig("m67_full.png"); nothing # hide
@@ -37,9 +37,9 @@ bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
 plot(layout=(2, 2), size=(800, 800), link=:all)
-heatmap!(image,   title="Original",       subplot=1)
-heatmap!(clipped, title="Sigma-Clipped",  subplot=2)
-heatmap!(bkg,     title="Background",     subplot=3)
+heatmap!(image, title="Original", subplot=1)
+heatmap!(clipped, title="Sigma-Clipped", subplot=2)
+heatmap!(bkg, title="Background", subplot=3)
 heatmap!(bkg_rms, title="Background RMS", subplot=4)
 
 savefig("bkg.png"); nothing # hide
@@ -47,13 +47,31 @@ savefig("bkg.png"); nothing # hide
 
 ![](bkg.png)
 
-and now we can see our image with the background subtracted and ready for [Aperture Photometry](@ref)!
+We could apply a median filter, too, by specifying `filter_size`
 
 ```@example bkg
-subt = image .- bkg[:1059, :1059]
+# get background and background rms with mesh-size (50, 50) and filter_size (5, 5)
+bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
+
+# plot
+plot(layout=(2, 2), size=(800, 800), link=:all)
+heatmap!(bkg, title="Background", ylabel="Unfiltered", subplot=1)
+heatmap!(bkg_rms, title="Background RMS", subplot=2)
+heatmap!(bkg_f, title="Background", ylabel="Filtered", subplot=3)
+heatmap!(bkg_rms_f, title="Background RMS", subplot=4)
+
+savefig("bkg_filtered.png"); nothing # hide
+```
+
+![](bkg_filtered.png)
+
+Now we can see our image after subtracting the filtered background and ready for [Aperture Photometry](@ref)!
+
+```@example bkg
+subt = image .- bkg_f[:1059, :1059]
 plot(layout=(1, 2), link=:all, size=(800, 350), xlims=(400, 800), ylims=(400, 800))
-heatmap!(image, title="Original",   subplot=1)
-heatmap!(subt,  title="Subtracted", subplot=2)
+heatmap!(image, title="Original", subplot=1)
+heatmap!(subt, title="Subtracted", subplot=2)
 
 savefig("bkg_final.png"); nothing # hide
 ```

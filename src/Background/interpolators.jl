@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -47,7 +47,7 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
 end
 
 """
-    IDWInterpolator(factors, leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
+    IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
 
 Use Shepard Inverse Distance Weighing interpolation scheme to increase resolution of a mesh.
 
@@ -60,23 +60,24 @@ The interpolator can be called with some additional parameter being, `leaf_size`
 
 # Examples
 ```jldoctest
-julia> IDWInterpolator(2, n_neighbors = 4)(ones(3, 2))
-6×4 Array{Float64,2}:
- 1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0
+julia> IDWInterpolator(2, n_neighbors = 2)([1 0; 0 1])
+4×4 Array{Float64,2}:
+ 1.0  1.0  0.0  0.0
+ 1.0  1.0  0.0  0.0
+ 0.0  0.0  1.0  1.0
+ 0.0  0.0  1.0  1.0
 
-julia> IDWInterpolator((2,3), n_neighbors = 5, power=4)(ones(3, 2))
-6×6 Array{Float64,2}:
- 1.0  1.0  1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0  1.0  1.0
- 1.0  1.0  1.0  1.0  1.0  1.0
+julia> IDWInterpolator(3, 1; n_neighbors = 5, power=4)(randn(3, 2))
+9×2 Array{Float64,2}:
+ -1.15024   -1.00342 
+ -1.15024   -1.00342 
+ -1.15024   -1.00342 
+  0.310464  -0.375849
+  0.310464  -0.375849
+  0.310464  -0.375849
+  0.289404  -0.16589 
+  0.289404  -0.16589 
+  0.289404  -0.16589 
 ```
 """
 struct IDWInterpolator <: BackgroundInterpolator
@@ -111,7 +112,7 @@ end
 
 struct IDW <: InterpolationType end
 
-struct ShepardIDWInterpolator{T<:AbstractFloat,N} <: AbstractInterpolation{T,N,IDW}
+struct ShepardIDWInterpolator{T <: AbstractFloat,N} <: AbstractInterpolation{T,N,IDW}
     tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
     values::Array{T,N}
     n_neighbors::Integer

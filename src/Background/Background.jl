@@ -1,7 +1,7 @@
 module Background
 
 using Statistics
-using ImageFiltering: padarray, Fill
+using ImageFiltering: padarray, Fill, mapwindow
 
 export estimate_background,
        sigma_clip,
@@ -116,7 +116,8 @@ estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::Backgro
         ::BackgroundEstimator=SourceExtractorBackground(),
         ::BackgroundRMSEstimator=StdRMS(),
         ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
-        edge_method=:pad)
+        edge_method=:pad,
+        [filter_size, filter_threshold])
 
 Perform 2D background estimation using the given estimators using meshes.
 
@@ -124,7 +125,12 @@ This function will estimate backgrounds in meshes of size `mesh_size`. When `siz
 
 If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
-Once the meshes are created they will be passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). If `filter_threshold` is passed it will only filter meshes above this threshold.
+
+After filtering (if applicable), the meshes are passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
+
+!!! note
+    If your `mesh_size` is not an integer multiple of the input size, the output background and rms arrays will not have the same size.
 
 # See Also
 * [Location Estimators](@ref)
@@ -136,7 +142,8 @@ function estimate_background(data::AbstractArray{T},
         BKG::BackgroundEstimator = SourceExtractorBackground(),
         BKG_RMS::BackgroundRMSEstimator = StdRMS(),
         ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
-        edge_method = :pad) where T
+        edge_method = :pad,
+        kwargs...) where T
 
     if edge_method === :pad
         nextra = size(data) .% mesh_size
@@ -156,13 +163,21 @@ function estimate_background(data::AbstractArray{T},
     bkg = zeros(float(T), nmesh)
     bkg_rms = zeros(float(T), nmesh)
     @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
+        # get view of data where mesh is and filter out NaN
         rows = (i - 1) * mesh_size[1] + 1:i * mesh_size[1]
         cols = (j - 1) * mesh_size[2] + 1:j * mesh_size[2]
         d = @view X[rows, cols]
         d_ = @view d[d .!== NaN]
+        # skip if only NaN
         length(d_) == 0 && continue
+        # calculate background and rms via estimators
         bkg[i, j] = BKG(d_)
         bkg_rms[i, j] = BKG_RMS(d_)
+    end
+
+    # filtering
+    if haskey(kwargs, :filter_size)
+        bkg, bkg_rms = _filter(bkg, bkg_rms, kwargs[:filter_size], get(kwargs, :filter_threshold, -Inf))
     end
 
     # Now interpolate back to original size
@@ -177,7 +192,21 @@ estimate_background(data,
     bkg::BackgroundEstimator = SourceExtractorBackground(),
     bkg_rms::BackgroundRMSEstimator = StdRMS(),
     itp::BackgroundInterpolator = ZoomInterpolator(mesh_size);
-    edge_method = :pad) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method)
+    edge_method = :pad, kwargs...) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method, kwargs...)
+
+
+function _filter(bkg, bkg_rms, filter_size::NTuple{2,<:Integer}, filter_threshold)
+    # skip trivial
+    filter_size == (1, 1) && return bkg, bkg_rms
+    # get threshold
+    indices = findall(m->m > filter_threshold, bkg)
+    # perform median filter
+    bkg = mapwindow(median!, bkg, filter_size)# , indices = indices)
+    bkg_rms = mapwindow(median!, bkg_rms, filter_size)# , indices = indices)
+    return bkg, bkg_rms
+end
+
+_filter(bkg, bkg_rms, f::Integer, thresh) = _filter(bkg, bkg_rms, (f, f), thresh)
 
 """
     sigma_clip!(x, sigma; fill=:clamp, center=median(x), std=std(x))
