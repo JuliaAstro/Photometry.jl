@@ -117,7 +117,7 @@ estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::Backgro
         ::BackgroundRMSEstimator=StdRMS(),
         ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
         edge_method=:pad,
-        [filter_size, filter_threshold])
+        [filter_size])
 
 Perform 2D background estimation using the given estimators using meshes.
 
@@ -125,7 +125,7 @@ This function will estimate backgrounds in meshes of size `mesh_size`. When `siz
 
 If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). If `filter_threshold` is passed it will only filter meshes above this threshold. `filter_size` must be odd.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). `filter_size` must be odd.
 
 After filtering (if applicable), the meshes are passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
 
@@ -177,7 +177,7 @@ function estimate_background(data::AbstractArray{T},
 
     # filtering
     if haskey(kwargs, :filter_size)
-        bkg, bkg_rms = _filter(bkg, bkg_rms, kwargs[:filter_size], get(kwargs, :filter_threshold, -Inf))
+        bkg, bkg_rms = _filter(bkg, bkg_rms, kwargs[:filter_size])
     end
 
     # Now interpolate back to original size
@@ -195,18 +195,17 @@ estimate_background(data,
     edge_method = :pad, kwargs...) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method, kwargs...)
 
 
-function _filter(bkg, bkg_rms, filter_size::NTuple{2,<:Integer}, filter_threshold)
+function _filter(bkg, bkg_rms, filter_size::NTuple{2,<:Integer})
     # skip trivial
     filter_size == (1, 1) && return bkg, bkg_rms
-    # get threshold
-    indices = findall(m->m > filter_threshold, bkg)
+
     # perform median filter
-    bkg = mapwindow(median!, bkg, filter_size)# , indices = indices)
-    bkg_rms = mapwindow(median!, bkg_rms, filter_size)# , indices = indices)
+    bkg = mapwindow(median!, bkg, filter_size, border = "replicate")
+    bkg_rms = mapwindow(median!, bkg_rms, filter_size, border = "replicate")
     return bkg, bkg_rms
 end
 
-_filter(bkg, bkg_rms, f::Integer, thresh) = _filter(bkg, bkg_rms, (f, f), thresh)
+_filter(bkg, bkg_rms, f::Integer) = _filter(bkg, bkg_rms, (f, f))
 
 """
     sigma_clip!(x, sigma; fill=:clamp, center=median(x), std=std(x))

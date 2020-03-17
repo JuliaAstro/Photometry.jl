@@ -20,13 +20,15 @@ end
     data = ones(100, 100)
 
     @test all(estimate_background(data, 20) .== estimate_background(data, (20, 20)))
+    @test all(estimate_background(data, 20, filter_size = 3) .== estimate_background(data, (20, 20), filter_size = (3, 3)))
     @test size(estimate_background(data, 19, edge_method = :pad)[1]) == (114, 114)
     @test size(estimate_background(data, 19, edge_method = :crop)[1]) == (95, 95)
-
+    X = rand(100, 100)
     @test estimate_background(data, MeanBackground, StdRMS) == estimate_background(data, MeanBackground(), StdRMS) == estimate_background(data, MeanBackground, StdRMS())
 
     @test_throws ErrorException estimate_background(data, (4, 4), edge_method = :yeet)
     @test_throws MethodError estimate_background(data, (4, 4, 4))
+    @test_throws ErrorException estimate_background(data, 4, filter_size = 2)
 
     nan_bkg, nan_rms = estimate_background(fill(NaN, 100, 100), 20)
     @test nan_bkg ≈ zeros(100, 100)
