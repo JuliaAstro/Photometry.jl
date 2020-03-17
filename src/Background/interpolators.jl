@@ -2,9 +2,12 @@
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
-using Interpolations: CubicSplineInterpolation
+using Interpolations: InterpolationType, CubicSplineInterpolation, AbstractInterpolation
 using ImageTransformations: imresize!
 using NearestNeighbors
+using Distances
+
+const MinkowskiMetric = Union{Euclidean,Chebyshev,Cityblock,Minkowski}
 
 """
     ZoomInterpolator(factors)
@@ -45,6 +48,7 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
     out = similar(mesh, float(T), size(mesh) .* z.factors)
     return imresize!(out, itp)
 end
+​
 
 """
     IDWInterpolator(coordinates, values, weights = nothing, leafsize = 8.0)
@@ -63,19 +67,7 @@ The interpolator can be called with some additional parameter being, `n_neighbor
 
 # Examples
 ```jldoctest
-julia> coordinates = [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0; 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0];
 
-julia> weights = [1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0];
-
-julia> value = [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0];
-
-julia> positions = [9.9 1.0; 10.0 1.0];
-
-julia> alg = IDWInterpolator(coordinates,value, weights, 8);
-
-julia> alg(positions)
-1×2 Array{Float64,2}:
- 9.57581  2.75894
 
 julia> IDWInterpolator(coordinates, value)(positions)
 1×2 Array{Float64,2}:
@@ -83,147 +75,78 @@ julia> IDWInterpolator(coordinates, value)(positions)
 
 ```
 """
-function shepherd_util(idxs, dist, values, weights, power, reg, conf_dist)
-
-    dist[1] <= conf_dist && return values[idxs[1]]
-
-    num = den = zero(eltype(dist))
-
-    for i in eachindex(idxs)
-        w_i = 1 / (reg + (dist[i])^power)
-        num += w_i * values[idxs[i]] * (weights === nothing ? 1 : weights[idxs[i]])
-        den += w_i
-    end
-    return num / den
-end
-
-function ShepherdInterpolator(coordinates, values, points, weights, leafsize, n_neighbors, power, reg, conf_dist)
-    # generating the KDTree
-    tree = KDTree(coordinates, leafsize = leafsize)
-
-    # querying the n-closest indexes and distances
-    idxs, dist = knn(tree, points, n_neighbors, true)
-
-    # calculate values at every desired point, can be done by some broadcasting trick
-    out = Array{Float64}(undef, size(points,2))
-    for i in eachindex(out)
-        out[i] = shepherd_util(idxs[i], dist[i], values, weights, power, reg, conf_dist)
-    end
-
-    return out
-end
-
-ShepherdInterpolator(coordinates, values, points; weights = nothing, leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) =
-        ShepherdInterpolator(coordinates, values, points, weights, leafsize, n_neighbors, power, reg, conf_dist)
-
-
 struct IDWInterpolator <: BackgroundInterpolator
     factors::NTuple{2,<:Integer}
-    leafsize
-    n_neighbors
-    power
-    reg
-    conf_dist
+    leafsize::Integer
+    n_neighbors::Integer
+    power::Real
+    reg::Real
+    conf_dist::Real
 end
 
 IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+# convenience constructors
+IDWInterpolator(factor::Integer; kwargs...) = IDWInterpolator((factor, factor); kwargs...)
+IDWInterpolator(factor::Integer, args...; kwargs...) = IDWInterpolator((factor, args...); kwargs...)
 
-function (IDW::IDWInterpolator)(mesh::AbstractArray{T}, weights::Union{Nothing,AbstractArray{T}}) where T
-    # factors have to be integer tupules only
-    # initialising the output array
+function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
+    knots = Array{Float64}(undef, 2, length(mesh))
+    idxs = CartesianIndices(mesh)
+    for (i, idx) in enumerate(CartesianIndices(mesh))
+        @inbounds knots[:, i] .= Tuple(idx)
+    end
+
+    itp = ShepardIDWInterpolator(knots, mesh, IDW.leafsize, IDW.n_neighbors, IDW.power, IDW.reg, IDW.conf_dist)
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
-
-    # Resizing the mesh and getting the know points
-
-    # Creating an array of all points in modified mesh for query
-
-    # Think something for the weights, as in how to access them(flatten it and send in ShepherdInterpolator)
-
-    # for values(again flatten the mesh itself and then use it as parameter for ShepherdInterpolator)
-
-    # Call the ShepherdInterpolator on the corresponding data generated above
-
-    # Fill out the final output array
-
-    # return the output array
+    return imresize!(out, itp)
 end
 
-# finally make a constructor which takes weights as an optional argument
 
+###############################################################################
+# Interface with Interpolations.jl
 
+struct IDW <: InterpolationType end
 
-#####################################################################################
-#
-# # supports IDWInterpolation on 2-D images only
-# # leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12
-# struct IDWInterpolator <: BackgroundInterpolator
-#     factors::NTuple{2,<:Integer}
-#     leafsize::Real
-#     n_neighbors::Real
-#     power::Real
-#     reg::Real
-#     conf_dist::Real
-# end
-#
-# IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+struct ShepardIDWInterpolator{T,N} <: AbstractInterpolation{T,N,IDW}
+    tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
+    values::Array{T,N}
+    n_neighbors::Integer
+    power::Real
+    reg::Real
+    conf_dist::Real
+end
 
+Base.axes(itp::ShepardIDWInterpolator) = axes(itp.values)
 
-# function (IDW::IDWInterpolator)(mesh::AbstractArray{T,2}) where T
-#     # this is for the final output
-#     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
-#     display(out)
-#     # generate the coefficients for the known meshpoints points where the values are known to form the KDTree
-#     # current implementation only considers a 2-D mesh
-#     coordinates = Array{Union{Missing, Int}}(missing, 2, length(mesh))
-#     for i=1:size(mesh,1), j=1:size(mesh,2)
-#         coordinates[1,(i - 1)*size(mesh,2) + j] = i * IDW.factor[1]
-#         coordinates[2,(i - 1)*size(mesh,2) + j] = j *
-#
-#         if i == 1 ||  j == 1
-#
-#     end
-#
-#     # scale up coordinates before passing into tree creation
-#     coordinates = coordinates .* IDW.factors
-#
-#     # declaring _coordinates because KDTree requires floating point input
-#     _coordinates = 1.0 * coordinates
-#
-#     # filling the known points of array out
-#     for i=1:size(coordinates,2)
-#         out[coordinates[1,i], coordinates[2,i]] = mesh[convert(Int,coordinates[1,i] / IDW.factors[1]), convert(Int,coordinates[2,i] / IDW.factors[2])]
-#     end
-#
-#     display(out)
-#     # generate the KDTree
-#     tree = KDTree(_coordinates, leafsize = IDW.leafsize)
-#
-#     # generate points to be queried on the tree for interpolation
-#     positions = Array{Number}(undef, 2, length(out))
-#     for i=1:size(out,1), j=1:size(out,2)
-#         positions[1,(i - 1)*size(out,2) + j] = i * 1.0
-#         positions[2,(i - 1)*size(out,2) + j] = j * 1.0
-#     end
-#
-#
-#     # query on tree and get distances returned in sorted manner
-#     idxs, dist = knn(tree, positions, IDW.n_neighbors, true)
-#
-#     # filling the out array with interpolated values
-#     for i in eachindex(out)
-#         out[i] = idw_util(IDW, idxs[i], dist[i], out)
-#     end
-#
-#     # returning the desired array
-#     return out
-# end
+function ShepardIDWInterpolator(knots,
+    values::AbstractArray{T},
+    leafsize = 8,
+    n_neighbors = 8,
+    power = 1,
+    reg = 0,
+    conf_dist = 1e-12) where T
 
+    tree = KDTree(knots, leafsize = leafsize)
+    return ShepardIDWInterpolator(tree, values, n_neighbors, power, reg, conf_dist)
+end
 
-# alg = IDWInterpolator((2,2), n_neighbors = 3)([1 0; 0 1])
-#
-# display([1 0; 0 1])
-#
-#
-# # I need to change the spacing in fabric
-#
-# x = range(0, 10, length=11)
+function (itp::ShepardIDWInterpolator{T,N})(points::Vararg{T,N}) where {T,N}
+
+    _points = Array{T}(undef, length(points), 1)
+    _points .= points
+
+    # find the n-closest indices and distances
+    idxs, dist = knn(itp.tree, _points, itp.n_neighbors, true)
+
+    dist[1][1] <= itp.conf_dist && return itp.values[idxs[1][1]]
+
+    # no-allocation loop calculating using Shepard's scheme
+    num = den = zero(T)
+    for (i, d) in zip(idxs[1], dist[1])
+        w = 1 / (itp.reg + d^itp.power)
+        num += w * itp.values[i]
+        den += w
+    end
+
+    return num / den
+end
