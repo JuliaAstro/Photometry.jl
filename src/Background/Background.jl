@@ -125,7 +125,7 @@ This function will estimate backgrounds in meshes of size `mesh_size`. When `siz
 
 If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). If `filter_threshold` is passed it will only filter meshes above this threshold.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). If `filter_threshold` is passed it will only filter meshes above this threshold. `filter_size` must be odd.
 
 After filtering (if applicable), the meshes are passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
 

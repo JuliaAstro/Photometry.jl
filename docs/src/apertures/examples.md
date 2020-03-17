@@ -36,7 +36,7 @@ image = read(hdu[1])'
 chunk = image[71:150, 81:155]
 
 # Plot
-default(aspect_ratio=1, c=:inferno, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
+default(aspect_ratio=1, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 
 heatmap(chunk)
 savefig("m67.png"); nothing # hide
@@ -48,12 +48,12 @@ Now let's add some apertures!
 
 ```@example stars
 positions = [
-    [47.5, 67.5],
-    [29.5, 62.5],
-    [23.5, 48.5],
-    [17.5, 29.5],
-    [13.5, 10.5],
-    [65.5, 14.0]
+    [47.5 , 67.5],
+    [29.5 , 62.5],
+    [23.5 , 48.5],
+    [17.5 , 29.5],
+    [13.25, 10.5],
+    [65.5 , 14.0]
 ]
 
 radii = [3, 3, 2.7, 2, 2.7, 3]
@@ -81,13 +81,12 @@ table = aperture_photometry(aps, chunk)
 
 This example will be the same as [Simple Stars](@ref) but will add background estimation using the tools in [Background Estimation](@ref)
 
-
 ```@example stars
 clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using meshes of size (5, 5)
-bkg, bkg_rms = estimate_background(clipped, 5)
+bkg, bkg_rms = estimate_background(clipped, 5, filter_size=3)
 
-plot(layout=(2, 2), size=(800, 800), link=:all)
+plot(layout=(2, 2), size=(800, 800), ticks=false, link=:all)
 heatmap!(chunk, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
@@ -100,8 +99,16 @@ savefig("bkg_m67.png"); nothing # hide
 Now, using the same apertures, let's find the output using the background-subtracted image
 
 ```@example stars
-heatmap(chunk .- bkg)
-plot!.(aps, c=:white)
+plot(layout=(1, 2),
+    clims=(minimum(chunk .- bkg),
+    maximum(chunk)),
+    size=(800, 350),
+    ticks=false,
+    link=:all)
+heatmap!(chunk, title="Original", colorbar=false, subplot=1)
+heatmap!(chunk .- bkg, title="Subtracted", subplot=2)
+plot!.(aps, c=:white, subplot=1)
+plot!.(aps, c=:white, subplot=2)
 savefig("m67_aps_bkg.png"); nothing # hide
 ```
 

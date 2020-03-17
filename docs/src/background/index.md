@@ -36,7 +36,7 @@ clipped = sigma_clip(image, 1, fill=NaN)
 bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
-plot(layout=(2, 2), size=(800, 800), link=:all)
+plot(layout=(2, 2), size=(800, 800), link=:all, ticks=false)
 heatmap!(image, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
@@ -54,11 +54,11 @@ We could apply a median filter, too, by specifying `filter_size`
 bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
 
 # plot
-plot(layout=(2, 2), size=(800, 800), link=:all)
-heatmap!(bkg, title="Background", ylabel="Unfiltered", subplot=1)
-heatmap!(bkg_rms, title="Background RMS", subplot=2)
-heatmap!(bkg_f, title="Background", ylabel="Filtered", subplot=3)
-heatmap!(bkg_rms_f, title="Background RMS", subplot=4)
+plot(layout=(2, 2), size=(800, 800), link=:all, ticks=false)
+heatmap!(bkg, title="Unfiltered", ylabel="Background", subplot=1)
+heatmap!(bkg_f, title="Filtered", subplot=2)
+heatmap!(bkg_rms, ylabel="RMS", subplot=3)
+heatmap!(bkg_rms_f, subplot=4)
 
 savefig("bkg_filtered.png"); nothing # hide
 ```
@@ -68,16 +68,21 @@ savefig("bkg_filtered.png"); nothing # hide
 Now we can see our image after subtracting the filtered background and ready for [Aperture Photometry](@ref)!
 
 ```@example bkg
-subt = image .- bkg_f[:1059, :1059]
-plot(layout=(1, 2), link=:all, size=(800, 350), xlims=(400, 800), ylims=(400, 800))
-heatmap!(image, title="Original", subplot=1)
+subt = image .- bkg_f[axes(image)...]
+plot(layout=(1, 2),
+    link=:all,
+    size=(800, 350),
+    xlims=(400, 800),
+    ylims=(400, 800),
+    clims=(minimum(subt), maximum(image)),
+    ticks=false)
+heatmap!(image, title="Original", colorbar=false, subplot=1)
 heatmap!(subt, title="Subtracted", subplot=2)
 
 savefig("bkg_final.png"); nothing # hide
 ```
 
 ![](bkg_final.png)
-
 
 ## API/Reference
 

@@ -5,7 +5,7 @@ DocTestSetup = :(using Photometry)
 
 # Photometry.jl
 
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?brnach=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
@@ -38,9 +38,9 @@ results
 # output
 2×4 DataFrames.DataFrame
 │ Row │ xcenter │ ycenter │ aperture_sum │ aperture_sum_err │
-│     │ Float64 │ Float64 │ Float64      │ Float64          │
+│     │ Any     │ Any     │ Any          │ Any              │
 ├─────┼─────────┼─────────┼──────────────┼──────────────────┤
-│ 1   │ 50.0    │ 50.0    │ 28.2743      │ 5.31736          │
+│ 1   │ 50      │ 50      │ 28.2743      │ 5.31736          │
 │ 2   │ 0.5     │ 0.5     │ 19.635       │ 4.43113          │
 ```
 
