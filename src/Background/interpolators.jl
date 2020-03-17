@@ -97,7 +97,7 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
     knots = Array{Float64}(undef, 2, length(mesh))
     idxs = CartesianIndices(mesh)
     for (i, idx) in enumerate(CartesianIndices(mesh))
-        @inbounds knots[:, i] .= Tuple(idx)
+        @inbounds knots[:, i] .= idx.I
     end
 
     itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.n_neighbors, IDW.power, IDW.reg, IDW.conf_dist)
@@ -144,7 +144,7 @@ function (itp::ShepardIDWInterpolator{T,N})(points::Vararg{T,N}) where {T,N}
 
     # no-allocation loop calculating using Shepard's scheme
     num = den = zero(T)
-    for (i, d) in zip(idxs[1], dist[1])
+    @inbounds for (i, d) in zip(idxs[1], dist[1])
         w = 1 / (itp.reg + d^itp.power)
         num += w * itp.values[i]
         den += w
