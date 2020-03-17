@@ -17,4 +17,5 @@ end
 @testset "Background Estimation" begin
     include("background/background.jl")
     include("background/estimators.jl")
+    include("background/interpolators.jl")
 end
