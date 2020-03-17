@@ -4,10 +4,7 @@ are considered under a BSD 3-clause license. =#
 
 using Interpolations: InterpolationType, CubicSplineInterpolation, AbstractInterpolation
 using ImageTransformations: imresize!
-using NearestNeighbors
-using Distances
-
-const MinkowskiMetric = Union{Euclidean,Chebyshev,Cityblock,Minkowski}
+using NearestNeighbors: knn, KDTree, MinkowskiMetric
 
 """
     ZoomInterpolator(factors)
@@ -50,28 +47,36 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
 end
 
 """
-    IDWInterpolator(coordinates, values, weights = nothing, leafsize = 8.0)
+    IDWInterpolator(factors, leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
 
-This performs Inverse Distance Weighted Interpolation
+Use Shepard Inverse Distance Weighing interpolation scheme to increase resolution of a mesh.
 
-`coordinates` represent the sample points filled column wise and `values` is the value at those sample points, `weight` are an additional multiplicative factor in the standard
-inverse distance weight and `leafsize` determines at what number of points to stop splitting the KDTree further.
+`factors` represents the level of "zoom", so an input mesh of size `(10, 10)` with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer is provided, it will be used as the factor for every axis.
 
-The interpolator can be called with some additional parameter being, `n_neighbors` which is the number of nearest neighbors to be considered,
-`power` is the exponent for distance in the weighing factor, `reg` is the offset for the weighing factor in denominator,
-`conf_dist` is the distance below which two points would be considered as the same point.
+The interpolator can be called with some additional parameter being, `leaf_size` determines at what number of points to stop splitting the tree further,
+`n_neighbors` which is the number of nearest neighbors to be considered, `power` is the exponent for distance in the weighing factor,
+`reg` is the offset for the weighing factor in denominator, `conf_dist` is the distance below which two points would be considered as the same point.
 
-!!! warning
-    0 < `n_neighbor` <= number of elements in tree
 
 # Examples
 ```jldoctest
+julia> IDWInterpolator(2, n_neighbors = 4)(ones(3, 2))
+6×4 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0
 
-
-julia> IDWInterpolator(coordinates, value)(positions)
-1×2 Array{Float64,2}:
- 9.57581  2.75894
-
+julia> IDWInterpolator((2,3), n_neighbors = 5, power=4)(ones(3, 2))
+6×6 Array{Float64,2}:
+ 1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0
 ```
 """
 struct IDWInterpolator <: BackgroundInterpolator
@@ -95,7 +100,7 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
         @inbounds knots[:, i] .= Tuple(idx)
     end
 
-    itp = ShepardIDWInterpolator(knots, mesh, IDW.leafsize, IDW.n_neighbors, IDW.power, IDW.reg, IDW.conf_dist)
+    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.n_neighbors, IDW.power, IDW.reg, IDW.conf_dist)
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
     return imresize!(out, itp)
 end
@@ -106,7 +111,7 @@ end
 
 struct IDW <: InterpolationType end
 
-struct ShepardIDWInterpolator{T,N} <: AbstractInterpolation{T,N,IDW}
+struct ShepardIDWInterpolator{T<:AbstractFloat,N} <: AbstractInterpolation{T,N,IDW}
     tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
     values::Array{T,N}
     n_neighbors::Integer
@@ -125,17 +130,15 @@ function ShepardIDWInterpolator(knots,
     reg = 0,
     conf_dist = 1e-12) where T
 
+    length(values) < n_neighbors && error("n_neighbors ($n_neighbors) must be less than or equal to the number of points ($(length(values))).")
     tree = KDTree(knots, leafsize = leafsize)
     return ShepardIDWInterpolator(tree, values, n_neighbors, power, reg, conf_dist)
 end
 
 function (itp::ShepardIDWInterpolator{T,N})(points::Vararg{T,N}) where {T,N}
 
-    _points = Array{T}(undef, length(points), 1)
-    _points .= points
-
     # find the n-closest indices and distances
-    idxs, dist = knn(itp.tree, _points, itp.n_neighbors, true)
+    idxs, dist = knn(itp.tree, vcat(points...), itp.n_neighbors, true)
 
     dist[1][1] <= itp.conf_dist && return itp.values[idxs[1][1]]
 
