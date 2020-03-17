@@ -48,7 +48,6 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
     out = similar(mesh, float(T), size(mesh) .* z.factors)
     return imresize!(out, itp)
 end
-​
 
 """
     IDWInterpolator(coordinates, values, weights = nothing, leafsize = 8.0)
