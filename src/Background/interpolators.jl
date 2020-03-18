@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -47,27 +47,27 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
 end
 
 """
-    IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
+    IDWInterpolator(factors; leafsize = 10,  k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
 
 Use Shepard Inverse Distance Weighing interpolation scheme to increase resolution of a mesh.
 
 `factors` represents the level of "zoom", so an input mesh of size `(10, 10)` with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer is provided, it will be used as the factor for every axis.
 
 The interpolator can be called with some additional parameter being, `leaf_size` determines at what number of points to stop splitting the tree further,
-`n_neighbors` which is the number of nearest neighbors to be considered, `power` is the exponent for distance in the weighing factor,
+` k` which is the number of nearest neighbors to be considered, `power` is the exponent for distance in the weighing factor,
 `reg` is the offset for the weighing factor in denominator, `conf_dist` is the distance below which two points would be considered as the same point.
 
 
 # Examples
 ```jldoctest
-julia> IDWInterpolator(2, n_neighbors = 2)([1 0; 0 1])
+julia> IDWInterpolator(2,  k = 2)([1 0; 0 1])
 4×4 Array{Float64,2}:
  1.0   0.75      0.25      0.0
  0.75  0.690983  0.309017  0.25
  0.25  0.309017  0.690983  0.75
  0.0   0.25      0.75      1.0
 
-julia> IDWInterpolator(3, 1; n_neighbors = 5, power=4)(randn(3, 2))
+julia> IDWInterpolator(3, 1;  k = 5, power=4)(randn(3, 2))
 9×2 Array{Float64,2}:
  -0.620399  0.54373
  -0.620399  0.54373
@@ -77,19 +77,19 @@ julia> IDWInterpolator(3, 1; n_neighbors = 5, power=4)(randn(3, 2))
   1.75032   0.218209
   1.09724   0.98178
   1.06094   1.029
-  1.06094   1.029 
+  1.06094   1.029
 ```
 """
 struct IDWInterpolator <: BackgroundInterpolator
     factors::NTuple{2,<:Integer}
     leafsize::Integer
-    n_neighbors::Integer
+     k::Integer
     power::Real
     reg::Real
     conf_dist::Real
 end
 
-IDWInterpolator(factors; leafsize = 10, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+IDWInterpolator(factors; leafsize = 10,  k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
 # convenience constructors
 IDWInterpolator(factor::Integer; kwargs...) = IDWInterpolator((factor, factor); kwargs...)
 IDWInterpolator(factor::Integer, args...; kwargs...) = IDWInterpolator((factor, args...); kwargs...)
@@ -101,7 +101,7 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
         @inbounds knots[:, i] .= idx.I
     end
 
-    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.n_neighbors, IDW.power, IDW.reg, IDW.conf_dist)
+    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW. k, IDW.power, IDW.reg, IDW.conf_dist)
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
     return imresize!(out, itp)
 end
@@ -115,7 +115,7 @@ struct IDW <: InterpolationType end
 struct ShepardIDWInterpolator{T <: AbstractFloat,N} <: AbstractInterpolation{T,N,IDW}
     tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
     values::Array{T,N}
-    n_neighbors::Integer
+     k::Integer
     power::Real
     reg::Real
     conf_dist::Real
@@ -127,20 +127,20 @@ Base.size(itp::ShepardIDWInterpolator) = size(itp.values)
 function ShepardIDWInterpolator(knots,
     values::AbstractArray{T},
     leafsize = 10,
-    n_neighbors = 8,
+     k = 8,
     power = 1,
     reg = 0,
     conf_dist = 1e-12) where T
 
-    length(values) < n_neighbors && error("n_neighbors ($n_neighbors) must be less than or equal to the number of points ($(length(values))).")
+    length(values) <  k && error(" k ($ k) must be less than or equal to the number of points ($(length(values))).")
     tree = KDTree(knots, leafsize = leafsize)
-    return ShepardIDWInterpolator(tree, values, n_neighbors, power, reg, conf_dist)
+    return ShepardIDWInterpolator(tree, values,  k, power, reg, conf_dist)
 end
 
 function (itp::ShepardIDWInterpolator{T})(points...) where T
 
     # find the n-closest indices and distances
-    idxs, dist = knn(itp.tree, vcat(points...), itp.n_neighbors, true)
+    idxs, dist = knn(itp.tree, vcat(points...), itp. k, true)
 
     dist[1] ≤ itp.conf_dist && return itp.values[idxs[1]]
 
