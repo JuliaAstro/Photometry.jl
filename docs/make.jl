@@ -19,16 +19,16 @@ makedocs(
         assets = String[],),
     pages = [
         "Home" => "index.md",
+        "Background Estimation" => [
+            "Getting Started" => "background/index.md",
+            "Background Estimators" => "background/estimators.md",
+            "Background Interpolators" => "background/interpolators.md"
+        ],
         "Aperture Photometry" => [
             "Getting Started" => "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
         ],
-        "Background Estimation" => [
-            "Getting Started" => "background/index.md",
-            "Background Estimators" => "background/estimators.md",
-            "Background Interpolators" => "background/interpolators.md"
-        ]
     ])
 
 deploydocs(

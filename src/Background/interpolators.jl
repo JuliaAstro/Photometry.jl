@@ -62,20 +62,20 @@ The interpolator can be called with some additional parameter being, `leaf_size`
 ```jldoctest
 julia> IDWInterpolator(2, n_neighbors = 2)([1 0; 0 1])
 4×4 Array{Float64,2}:
- 1.0  1.0  0.0  0.0
- 1.0  1.0  0.0  0.0
- 0.0  0.0  1.0  1.0
- 0.0  0.0  1.0  1.0
+ 1.0   0.75      0.25      0.0
+ 0.75  0.690983  0.309017  0.25
+ 0.25  0.309017  0.690983  0.75
+ 0.0   0.25      0.75      1.0
 
 julia> IDWInterpolator(3, 1; n_neighbors = 5, power=4)(randn(3, 2))
 9×2 Array{Float64,2}:
  -0.620399  0.54373
  -0.620399  0.54373
- -0.620399  0.54373
+ -0.461538  0.517618
+  1.65664   0.182746
   1.82299   0.145229
-  1.82299   0.145229
-  1.82299   0.145229
-  1.06094   1.029
+  1.75032   0.218209
+  1.09724   0.98178
   1.06094   1.029
   1.06094   1.029 
 ```
@@ -89,7 +89,7 @@ struct IDWInterpolator <: BackgroundInterpolator
     conf_dist::Real
 end
 
-IDWInterpolator(factors; leafsize = 8, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
+IDWInterpolator(factors; leafsize = 10, n_neighbors = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize, n_neighbors, power, reg, conf_dist)
 # convenience constructors
 IDWInterpolator(factor::Integer; kwargs...) = IDWInterpolator((factor, factor); kwargs...)
 IDWInterpolator(factor::Integer, args...; kwargs...) = IDWInterpolator((factor, args...); kwargs...)
@@ -126,7 +126,7 @@ Base.size(itp::ShepardIDWInterpolator) = size(itp.values)
 
 function ShepardIDWInterpolator(knots,
     values::AbstractArray{T},
-    leafsize = 8,
+    leafsize = 10,
     n_neighbors = 8,
     power = 1,
     reg = 0,
@@ -137,12 +137,12 @@ function ShepardIDWInterpolator(knots,
     return ShepardIDWInterpolator(tree, values, n_neighbors, power, reg, conf_dist)
 end
 
-function (itp::ShepardIDWInterpolator{T,N})(points::Vararg{T,N}) where {T,N}
+function (itp::ShepardIDWInterpolator{T})(points...) where T
 
     # find the n-closest indices and distances
     idxs, dist = knn(itp.tree, vcat(points...), itp.n_neighbors, true)
 
-    dist[1] <= itp.conf_dist && return itp.values[idxs[1]]
+    dist[1] ≤ itp.conf_dist && return itp.values[idxs[1]]
 
     # no-allocation loop calculating using Shepard's scheme
     num = den = zero(T)

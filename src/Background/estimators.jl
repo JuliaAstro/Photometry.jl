@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -9,7 +9,7 @@ using StatsBase
 # Location estimators
 
 """
-    MeanBackground
+    MeanBackground()
 
 This estimator returns the mean of the input.
 
@@ -30,7 +30,7 @@ struct MeanBackground <: BackgroundEstimator end
 (::MeanBackground)(data; dims = :) = mean(data, dims = dims)
 
 """
-    MedianBackground
+    MedianBackground()
 
 This estimator returns the median of the input.
 
@@ -51,7 +51,7 @@ struct MedianBackground <: BackgroundEstimator end
 (::MedianBackground)(data; dims = :) = median(data, dims = dims)
 
 """
-    ModeBackground
+    ModeBackground()
 
 This estimator returns the mode of the input.
 
@@ -72,7 +72,7 @@ struct ModeBackground <: BackgroundEstimator end
 (::ModeBackground)(data; dims = :) = dims isa Colon ? mode(data) : mapslices(mode, data; dims = dims)
 
 """
-    SourceExtractorBackground
+    SourceExtractorBackground()
 
 This estimator returns the background of the input using the SourceExtractorBackground algorithm.
 
@@ -204,7 +204,7 @@ end
 # RMS Estimators
 
 """
-    StdRMS
+    StdRMS()
 
 Uses the standard deviation statistic for background RMS estimation.
 
@@ -225,7 +225,7 @@ struct StdRMS <: BackgroundRMSEstimator end
 (::StdRMS)(data; dims = :) = std(data; corrected = false, dims = dims)
 
 """
-    MADStdRMS
+    MADStdRMS()
 
 Uses the standard median absolute deviation (MAD) statistic for background RMS estimation.
 
