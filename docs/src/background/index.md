@@ -82,6 +82,8 @@ heatmap!(subt, title="Subtracted", subplot=2)
 savefig("bkg_final.png"); nothing # hide
 ```
 
+![](bkg_final.png)
+
 ### IDW Interpolator
 
 Here is a quick example using the [`IDWInterpolator`](@ref)
@@ -95,9 +97,11 @@ heatmap!(b1, title="ZoomInterpolator", ylabel="Background", subplot=1)
 heatmap!(b2, title="IDWInterpolator", subplot=2)
 heatmap!(r1, ylabel="RMS", subplot=3)
 heatmap!(r2, subplot=4)
+
+savefig("bkg_idw_comp.png"); nothing # hide
 ```
 
-![](bkg_final.png)
+![](bkg_idw_comp.png)
 
 ## API/Reference
 
