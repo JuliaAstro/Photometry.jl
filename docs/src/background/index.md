@@ -17,7 +17,7 @@ using Plots
 hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
 
-default(aspect_ratio=1, xlims=(1, size(image, 2)), ylims=(1, size(image, 1)), ticks=false)
+default(aspect_ratio=1, xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
 
 heatmap(image)
 savefig("m67_full.png"); nothing # hide
@@ -80,6 +80,21 @@ heatmap!(image, title="Original", colorbar=false, subplot=1)
 heatmap!(subt, title="Subtracted", subplot=2)
 
 savefig("bkg_final.png"); nothing # hide
+```
+
+### IDW Interpolator
+
+Here is a quick example using the [`IDWInterpolator`](@ref)
+
+```@example bkg
+b1, r1 = estimate_background(clipped, 50, filter_size=5)
+b2, r2 = estimate_background(clipped, 50, SourceExtractorBackground(), StdRMS(), IDWInterpolator(50), filter_size=5)
+
+plot(layout=(2, 2), size=(800, 800), link=:all, ticks=false)
+heatmap!(b1, title="ZoomInterpolator", ylabel="Background", subplot=1)
+heatmap!(b2, title="IDWInterpolator", subplot=2)
+heatmap!(r1, ylabel="RMS", subplot=3)
+heatmap!(r2, subplot=4)
 ```
 
 ![](bkg_final.png)

@@ -122,6 +122,7 @@ struct ShepardIDWInterpolator{T <: AbstractFloat,N} <: AbstractInterpolation{T,N
 end
 
 Base.axes(itp::ShepardIDWInterpolator) = axes(itp.values)
+Base.size(itp::ShepardIDWInterpolator) = size(itp.values)
 
 function ShepardIDWInterpolator(knots,
     values::AbstractArray{T},
@@ -141,11 +142,11 @@ function (itp::ShepardIDWInterpolator{T,N})(points::Vararg{T,N}) where {T,N}
     # find the n-closest indices and distances
     idxs, dist = knn(itp.tree, vcat(points...), itp.n_neighbors, true)
 
-    dist[1][1] <= itp.conf_dist && return itp.values[idxs[1][1]]
+    dist[1] <= itp.conf_dist && return itp.values[idxs[1]]
 
     # no-allocation loop calculating using Shepard's scheme
     num = den = zero(T)
-    @inbounds for (i, d) in zip(idxs[1], dist[1])
+    @inbounds for (i, d) in zip(idxs, dist)
         w = 1 / (itp.reg + d^itp.power)
         num += w * itp.values[i]
         den += w
