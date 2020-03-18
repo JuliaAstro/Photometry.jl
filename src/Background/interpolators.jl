@@ -1,4 +1,4 @@
-#=
+#= 
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -101,7 +101,7 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
         @inbounds knots[:, i] .= idx.I
     end
 
-    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW. k, IDW.power, IDW.reg, IDW.conf_dist)
+    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.k, IDW.power, IDW.reg, IDW.conf_dist)
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
     return imresize!(out, itp)
 end
@@ -132,7 +132,7 @@ function ShepardIDWInterpolator(knots,
     reg = 0,
     conf_dist = 1e-12) where T
 
-    length(values) <  k && error(" k ($ k) must be less than or equal to the number of points ($(length(values))).")
+    length(values) <  k && error("k ($k) must be less than or equal to the number of points ($(length(values))).")
     tree = KDTree(knots, leafsize = leafsize)
     return ShepardIDWInterpolator(tree, values,  k, power, reg, conf_dist)
 end
@@ -140,7 +140,7 @@ end
 function (itp::ShepardIDWInterpolator{T})(points...) where T
 
     # find the n-closest indices and distances
-    idxs, dist = knn(itp.tree, vcat(points...), itp. k, true)
+    idxs, dist = knn(itp.tree, vcat(points...), itp.k, true)
 
     dist[1] ≤ itp.conf_dist && return itp.values[idxs[1]]
 
