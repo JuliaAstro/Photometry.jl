@@ -142,7 +142,7 @@ function (itp::ShepardIDWInterpolator{T})(points...) where T
     # find the n-closest indices and distances
     idxs, dist = knn(itp.tree, vcat(points...), itp.k, true)
 
-    dist[1] ≤ itp.conf_dist && return itp.values[idxs[1]]
+    first(dist) ≤ itp.conf_dist && return itp.values[first(idxs)]
 
     # no-allocation loop calculating using Shepard's scheme
     num = den = zero(T)
