@@ -19,4 +19,11 @@ end
     y = sin.(x[1, :] .+ x[2, :])
     it = ShepardIDWInterpolator(x, y)
     @test it(0.5, 0.6) ≈ sin(0.5 + 0.6) atol = 1e-2
+
+    # interface
+
+    #= Warning! These are not accurate for use as a standard interpolator, 
+       but are what we need for our use with images =#
+    @test size(it) == (10000,)
+    @test axes(it) == axes(y)
 end

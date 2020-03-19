@@ -47,7 +47,7 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
 end
 
 """
-    IDWInterpolator(factors; leafsize = 10,  k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12)
+    IDWInterpolator(factors; leafsize=10,  k=8, power=1, reg=0, conf_dist=1e-12)
 
 Use Shepard Inverse Distance Weighing interpolation scheme to increase resolution of a mesh.
 
@@ -60,24 +60,21 @@ The interpolator can be called with some additional parameter being, `leaf_size`
 
 # Examples
 ```jldoctest
-julia> IDWInterpolator(2,  k = 2)([1 0; 0 1])
+julia> IDWInterpolator(2, k=2)([1 0; 0 1])
 4×4 Array{Float64,2}:
  1.0   0.75      0.25      0.0
  0.75  0.690983  0.309017  0.25
  0.25  0.309017  0.690983  0.75
  0.0   0.25      0.75      1.0
 
-julia> IDWInterpolator(3, 1;  k = 5, power=4)(randn(3, 2))
-9×2 Array{Float64,2}:
- -0.620399  0.54373
- -0.620399  0.54373
- -0.461538  0.517618
-  1.65664   0.182746
-  1.82299   0.145229
-  1.75032   0.218209
-  1.09724   0.98178
-  1.06094   1.029
-  1.06094   1.029
+julia> IDWInterpolator(3, 1; k=2, power=4)([1 0; 0 1])
+6×2 Array{Float64,2}:
+ 1.0        0.0      
+ 1.0        0.0      
+ 0.941176   0.0588235
+ 0.0588235  0.941176 
+ 0.0        1.0      
+ 0.0        1.0
 ```
 """
 struct IDWInterpolator <: BackgroundInterpolator
@@ -89,7 +86,7 @@ struct IDWInterpolator <: BackgroundInterpolator
     conf_dist::Real
 end
 
-IDWInterpolator(factors; leafsize = 10,  k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
+IDWInterpolator(factors; leafsize = 10, k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
 # convenience constructors
 IDWInterpolator(factor::Integer; kwargs...) = IDWInterpolator((factor, factor); kwargs...)
 IDWInterpolator(factor::Integer, args...; kwargs...) = IDWInterpolator((factor, args...); kwargs...)
@@ -113,28 +110,30 @@ end
 struct IDW <: InterpolationType end
 
 struct ShepardIDWInterpolator{T <: AbstractFloat,N} <: AbstractInterpolation{T,N,IDW}
-    tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
     values::Array{T,N}
-     k::Integer
+    tree::KDTree{<:AbstractVector,<:MinkowskiMetric,T}
+    k::Integer
     power::Real
     reg::Real
     conf_dist::Real
 end
 
+#= Warning! These are not accurate for use as a standard interpolator, 
+   but are what we need for our use with images =#
 Base.axes(itp::ShepardIDWInterpolator) = axes(itp.values)
 Base.size(itp::ShepardIDWInterpolator) = size(itp.values)
 
-function ShepardIDWInterpolator(knots,
-    values::AbstractArray{T},
-    leafsize = 10,
-     k = 8,
-    power = 1,
-    reg = 0,
-    conf_dist = 1e-12) where T
+function ShepardIDWInterpolator(knots::AbstractArray,
+    values::AbstractArray,
+    leafsize::Integer = 10,
+    k::Integer = 8,
+    power::Real = 1,
+    reg::Real = 0,
+    conf_dist::Real = 1e-12) where T
 
     length(values) <  k && error("k ($k) must be less than or equal to the number of points ($(length(values))).")
     tree = KDTree(knots, leafsize = leafsize)
-    return ShepardIDWInterpolator(tree, values,  k, power, reg, conf_dist)
+    return ShepardIDWInterpolator(values, tree, k, power, reg, conf_dist)
 end
 
 function (itp::ShepardIDWInterpolator{T})(points...) where T
@@ -142,6 +141,7 @@ function (itp::ShepardIDWInterpolator{T})(points...) where T
     # find the n-closest indices and distances
     idxs, dist = knn(itp.tree, vcat(points...), itp.k, true)
 
+    # If our first point is less than `conf_dist` away from an existing point, use that instead
     first(dist) ≤ itp.conf_dist && return itp.values[first(idxs)]
 
     # no-allocation loop calculating using Shepard's scheme
