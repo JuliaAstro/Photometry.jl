@@ -5,6 +5,7 @@ DocTestSetup = :(using Photometry)
 
 # Photometry.jl
 
+[![GitHub](https://img.shields.io/badge/Code-GitHub-black.svg)](https://github.com/juliaastro/Photometry.jl)
 [![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -13,7 +14,7 @@ DocTestSetup = :(using Photometry)
 
 To install from the REPL, enter Pkg-mode (`]`)
 
-```julia-repl
+```julia
 pkg> add Photometry
 ```
 
