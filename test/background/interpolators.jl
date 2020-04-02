@@ -4,6 +4,10 @@ import Photometry.Background: ShepardIDWInterpolator
     @test IDWInterpolator((2, 3), k = 4)(ones(3, 2)) == ones(6, 6)
     @test IDWInterpolator(2)(ones(3, 4)) == IDWInterpolator((2, 2))(ones(3, 4))
     @test_throws ErrorException IDWInterpolator(2)(ones(3, 2))
+
+    # interface
+    @test IDWInterpolator((2, 3)) == IDWInterpolator(2, 3)
+    @test IDWInterpolator((2, 3), k = 4) == IDWInterpolator(2, 3, k = 4)
 end
 
 @testset "ShepardIDWInterpolator" begin
