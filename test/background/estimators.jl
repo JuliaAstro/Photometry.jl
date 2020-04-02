@@ -3,9 +3,7 @@ using StatsBase: mad
 ###############################################################################
 # Location Estimators
 
-const LOC_EST = [MeanBackground, MedianBackground, ModeBackground, MMMBackground, SourceExtractorBackground, BiweightLocationBackground]
-
-@testset "Trivial $E"  for E in LOC_EST
+@testset "Trivial $E"  for E in [MMMBackground, SourceExtractorBackground, BiweightLocationBackground]
     estimator = E()
 
     @test estimator(ones(1)) == 1
@@ -23,23 +21,6 @@ const LOC_EST = [MeanBackground, MedianBackground, ModeBackground, MMMBackground
     @test estimator(data, dims = 2) ≈ zeros(10)
 
     data = randn(100, 100)
-
-    E <: ModeBackground || @test estimator(data) ≈ 0.0 atol = 1e-2
-end
-
-@testset "MeanBackground" begin
-    data = rand(100, 100)
-    @test MeanBackground()(data) == mean(data)
-end
-
-@testset "MedianBackground" begin
-    data = rand(100, 100)
-    @test MedianBackground()(data) == median(data)
-end
-
-@testset "ModeBackground" begin
-    x = [1,2,3,4,5,6,5,4,3,4,34,3,43,43,3,3,3,3,1]
-    @test ModeBackground()(x) == 3
 end
 
 @testset "SourceExtractorBackground" begin

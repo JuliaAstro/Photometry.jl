@@ -79,7 +79,7 @@ Perform scalar background estimation using the given estimators.
 
 The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
-`location` and `rms` can be anything that is callable, for example [`median!`](@ref), or one of the estimators we provide in [Background Estimators](@ref).
+`location` and `rms` can be anything that is callable, for example [`median`](@ref), or one of the estimators we provide in [Background Estimators](@ref).
 
 # Examples
 ```jldoctest
@@ -88,9 +88,9 @@ julia> data = ones(3, 5);
 julia> bkg, bkg_rms = estimate_background(data)
 (1.0, 0.0)
 
-julia> using Statistics: median!
+julia> using Statistics: median
 
-julia> bkg, bkg_rms = estimate_background(data; location=median!, rms=MADStdRMS())
+julia> bkg, bkg_rms = estimate_background(data; location=median, rms=MADStdRMS())
 (1.0, 0.0)
 ```
 
@@ -99,7 +99,7 @@ julia> bkg, bkg_rms = estimate_background(data; location=median!, rms=MADStdRMS(
 """
 function estimate_background(data;
         location = SourceExtractorBackground(),
-        rms = StdRMS();
+        rms = StdRMS(),
         dims = :)
     return location(data, dims = dims), rms(data, dims = dims)
 end
@@ -117,7 +117,7 @@ Perform 2D background estimation using the given estimators using meshes.
 
 This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `mesh_size` is an integer, the implicit shape will be square (eg. `mesh_size=4` is equivalent to `mesh_size=(4,4)`).
 
-For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like [`median!`](@ref) or one of our [Background Estimators](@ref).
+For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like [`median`](@ref) or one of our [Background Estimators](@ref).
 
 Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](@ref). `filter_size` must be odd.
 

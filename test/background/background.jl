@@ -24,9 +24,8 @@ end
     @test size(estimate_background(data, 19, edge_method = :pad)[1]) == (114, 114)
     @test size(estimate_background(data, 19, edge_method = :crop)[1]) == (95, 95)
     X = rand(100, 100)
-    @test estimate_background(data, MeanBackground, StdRMS) == estimate_background(data, MeanBackground(), StdRMS) == estimate_background(data, MeanBackground, StdRMS())
-
-    @test_throws ErrorException estimate_background(data, (4, 4), edge_method = :yeet)
+    @test estimate_background(data, location = median, rms = mean) == estimate_background(data, location = mean, rms = median)[[2, 1]]
+    @test_throws MethodError estimate_background(data, (4, 4), edge_method = :yeet)
     @test_throws MethodError estimate_background(data, (4, 4, 4))
     @test_throws ErrorException estimate_background(data, 4, filter_size = 2)
 
@@ -35,14 +34,14 @@ end
     @test nan_rms ≈ zeros(100, 100)
 end
 
-@testset "flat background - $B, $S" for B in [MeanBackground, MedianBackground, MMMBackground, BiweightLocationBackground, SourceExtractorBackground], S in [StdRMS, MADStdRMS, BiweightScaleRMS]
+@testset "flat background - $B, $S" for B in [median, mean, MMMBackground(), BiweightLocationBackground(), SourceExtractorBackground()], S in [StdRMS(), MADStdRMS(), BiweightScaleRMS()]
     data = ones(100, 100)
 
-    bk, rms = estimate_background(data, B(), S())
+    bk, rms = estimate_background(data, location = B, rms = S)
     @test bk ≈ 1
     @test rms ≈ 0
 
-    bk, rms = estimate_background(data, (25, 25), B(), S())
+    bk, rms = estimate_background(data, (25, 25), location = B, rms = S)
     @test median(bk) ≈ 1
     @test median(rms) ≈ 0
 end

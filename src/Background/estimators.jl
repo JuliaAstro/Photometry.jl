@@ -105,7 +105,7 @@ Base.@kwdef struct BiweightLocationBackground{T <: Number} <: LocationEstimator
 end
 
 # Consider PR in StatsBase.jl for biweight statistics
-function biweight_location(data::AbstractArray, c , M, ::Colon)
+function biweight_location(data::AbstractArray, c , M)
     M = M === nothing ? median(data) : M
     MAD = mad(data, normalize = false)
     MAD ≈ 0 && return M
@@ -122,9 +122,10 @@ function biweight_location(data::AbstractArray, c , M, ::Colon)
     return M + (c * MAD * num) / den
 end
 
-biweight_location(data::AbstractArray, c, M, dims) = mapslices(X->biweight_location(X, c, M), data, dims = dims)
+_biweight_location(data::AbstractArray, c, M, ::Colon) = biweight_location(data, c, M)
+_biweight_location(data::AbstractArray, c, M, dims) = mapslices(X->biweight_location(X, c, M), data, dims = dims)
 
-(alg::BiweightLocationBackground)(data; dims = :) = biweight_location(data, alg.c, alg.M, dims)
+(alg::BiweightLocationBackground)(data; dims = :) = _biweight_location(data, alg.c, alg.M, dims)
 
 
 ########################################################################
@@ -209,7 +210,7 @@ Base.@kwdef struct BiweightScaleRMS <: RMSEstimator
     M::Union{Nothing,Number} = nothing
 end
 
-function biweight_scale(x::AbstractArray{T}, c, M, ::Colon) where T
+function biweight_scale(x::AbstractArray{T}, c, M) where T
     length(x) == 1 && return zero(T)
     M = M === nothing ? median(x) : M
     _mad = mad(x, normalize = false)
@@ -227,6 +228,6 @@ function biweight_scale(x::AbstractArray{T}, c, M, ::Colon) where T
     return sqrt(length(x) * num) / abs(den)
 end
 
-biweight_scale(x::AbstractArray{T}, c, M, dims) where T = mapslices(x->biweight_scale(x, c, M), x, dims=dims)
-
-(alg::BiweightScaleRMS)(data; dims = :) = biweight_scale(data, alg.c, alg.M, dims)
+_biweight_scale(x::AbstractArray, c, M, ::Colon) = biweight_scale(x, c, M)
+_biweight_scale(x::AbstractArray, c, M, dims) = mapslices(x->biweight_scale(x, c, M), x, dims=dims)
+(alg::BiweightScaleRMS)(data; dims = :) = _biweight_scale(data, alg.c, alg.M, dims)
