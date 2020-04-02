@@ -14,7 +14,7 @@ using FITSIO
 using Plots
 
 # Download our image, courtesy of astropy
-hdu = FITS("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits")
+hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
 image = read(hdu[1])'
 
 default(aspect_ratio=1, size=(600, 600),
