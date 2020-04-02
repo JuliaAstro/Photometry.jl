@@ -7,9 +7,6 @@ export estimate_background,
        sigma_clip,
        sigma_clip!,
        # Estimators
-       MeanBackground,
-       MedianBackground,
-       ModeBackground,
        MMMBackground,
        SourceExtractorBackground,
        BiweightLocationBackground,
@@ -27,7 +24,7 @@ export estimate_background,
 
 # Estimators
 """
-    Background.BackgroundEstimator
+    Background.LocationEstimator
 
 This abstract type embodies the possible background estimation algorithms for dispatch with [`estimate_background`](@ref).
 
@@ -36,10 +33,10 @@ To implement a new estimator, you must define the struct and define a method lik
 # See Also
 [Location Estimators](@ref)
 """
-abstract type BackgroundEstimator end
+abstract type LocationEstimator end
 
 """
-    Background.BackgroundRMSEstimator
+    Background.RMSEstimator
 
 This abstract type embodies the possible background RMS estimation algorithms for dispatch with [`estimate_background`](@ref).
 
@@ -48,7 +45,7 @@ To implement a new estimator, you must define the struct and define a method lik
 # See Also
 [RMS Estimators](@ref)
 """
-abstract type BackgroundRMSEstimator end
+abstract type RMSEstimator end
 
 
 include("estimators.jl")
@@ -69,21 +66,20 @@ abstract type BackgroundInterpolator end
 
 include("interpolators.jl")
 
-
 ###############################################################################
 # Core functions
 
 """
-    estimate_background(data,
-        ::BackgroundEstimator=SourceExtractorBackground,
-        ::BackgroundRMSEstimator=StdRMS;
+    estimate_background(data;
+        location=SourceExtractorBackground(),
+        rms=StdRMS();
         dims=:)
 
 Perform scalar background estimation using the given estimators.
 
 The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
-If the background estimator has no parameters (like [`MeanBackground`](@ref)), you can just specify the type without construction.
+`location` and `rms` can be anything that is callable, for example [`median!`](@ref), or one of the estimators we provide in [Background Estimators](@ref).
 
 # Examples
 ```jldoctest
@@ -92,73 +88,57 @@ julia> data = ones(3, 5);
 julia> bkg, bkg_rms = estimate_background(data)
 (1.0, 0.0)
 
-julia> bkg, bkg_rms = estimate_background(data, BiweightLocationBackground, BiweightScaleRMS)
+julia> using Statistics: median!
+
+julia> bkg, bkg_rms = estimate_background(data; location=median!, rms=MADStdRMS())
 (1.0, 0.0)
 ```
 
 # See Also
-* [Location Estimators](@ref)
-* [RMS Estimators](@ref)
+* [Location Estimators](@ref), [RMS Estimators](@ref)
 """
-function estimate_background(data,
-        bkg::BackgroundEstimator = SourceExtractorBackground(),
-        bkg_rms::BackgroundRMSEstimator = StdRMS();
+function estimate_background(data;
+        location = SourceExtractorBackground(),
+        rms = StdRMS();
         dims = :)
-    return bkg(data, dims = dims), bkg_rms(data, dims = dims)
+    return location(data, dims = dims), rms(data, dims = dims)
 end
-estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, T(), R(); dims = dims)
-estimate_background(d::AbstractArray, b::BackgroundEstimator, R::Type{<:BackgroundRMSEstimator}; dims = :) = estimate_background(d, b, R(); dims = dims)
-estimate_background(d::AbstractArray, T::Type{<:BackgroundEstimator}, r::BackgroundRMSEstimator; dims = :) = estimate_background(d, T(), r; dims = dims)
 
 """
     estimate_background(data,
-        mesh_size,
-        ::BackgroundEstimator=SourceExtractorBackground(),
-        ::BackgroundRMSEstimator=StdRMS(),
-        ::BackgroundInterpolator=ZoomInterpolator(mesh_size);
+        mesh_size;
+        location=SourceExtractorBackground(),
+        rms=StdRMS(),
+        itp=ZoomInterpolator(mesh_size),
         edge_method=:pad,
         [filter_size])
 
 Perform 2D background estimation using the given estimators using meshes.
 
-This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data).
+This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `mesh_size` is an integer, the implicit shape will be square (eg. `mesh_size=4` is equivalent to `mesh_size=(4,4)`).
 
-If either size is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`). Contrast this to a single dimension size, like `box_size=(4,)`.
+For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like [`median!`](@ref) or one of our [Background Estimators](@ref).
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](https://juliaimages.org/latest/function_reference/#ImageFiltering.MapWindow.mapwindow). `filter_size` must be odd.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](@ref). `filter_size` must be odd.
 
-After filtering (if applicable), the meshes are passed to the `BackgroundInterpolator` to recreate a low-order estimate of the background at the same resolution as the input.
+After filtering (if applicable), the meshes are passed to the `itp` to recreate a low-order estimate of the background at the same resolution as the input.
 
 !!! note
     If your `mesh_size` is not an integer multiple of the input size, the output background and rms arrays will not have the same size.
 
 # See Also
-* [Location Estimators](@ref)
-* [RMS Estimators](@ref)
-* [Interpolators](@ref)
+* [Location Estimators](@ref), [RMS Estimators](@ref), [Interpolators](@ref)
 """
 function estimate_background(data::AbstractArray{T},
-        mesh_size::NTuple{2,<:Integer},
-        BKG::BackgroundEstimator = SourceExtractorBackground(),
-        BKG_RMS::BackgroundRMSEstimator = StdRMS(),
-        ITP::BackgroundInterpolator = ZoomInterpolator(mesh_size);
+        mesh_size::NTuple{2,<:Integer};
+        location = SourceExtractorBackground(),
+        rms = StdRMS(),
+        itp = ZoomInterpolator(mesh_size),
         edge_method = :pad,
         kwargs...) where T
 
-    if edge_method === :pad
-        nextra = size(data) .% mesh_size
-        # have to make sure to avoid padding an extra mesh_size if nextra is 0
-        npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(mesh_size, nextra)])
-        X = padarray(float(data), Fill(NaN, (0, 0), npad))
-        nmesh = size(X) .÷ mesh_size
-    elseif edge_method === :crop
-        nmesh = size(data) .÷ mesh_size
-        maxidx = nmesh .* mesh_size
-        idxs = Base.OneTo.(maxidx)
-        X = data[idxs...]
-    else
-        error("Invalid edge method: $edge_method")
-    end
+    # handle border effects
+    X, nmesh = _craft_array(Val(edge_method), data, mesh_size)
 
     bkg = zeros(float(T), nmesh)
     bkg_rms = zeros(float(T), nmesh)
@@ -171,8 +151,8 @@ function estimate_background(data::AbstractArray{T},
         # skip if only NaN
         length(d_) == 0 && continue
         # calculate background and rms via estimators
-        bkg[i, j] = BKG(d_)
-        bkg_rms[i, j] = BKG_RMS(d_)
+        bkg[i, j] = location(d_)
+        bkg_rms[i, j] = rms(d_)
     end
 
     # filtering
@@ -181,20 +161,39 @@ function estimate_background(data::AbstractArray{T},
     end
 
     # Now interpolate back to original size
-    bkg = ITP(bkg)
-    bkg_rms = ITP(bkg_rms)
+    bkg = itp(bkg)
+    bkg_rms = itp(bkg_rms)
 
     return bkg, bkg_rms
 end
 
 estimate_background(data,
-    mesh_size::Int,
-    bkg::BackgroundEstimator = SourceExtractorBackground(),
-    bkg_rms::BackgroundRMSEstimator = StdRMS(),
-    itp::BackgroundInterpolator = ZoomInterpolator(mesh_size);
-    edge_method = :pad, kwargs...) = estimate_background(data, (mesh_size, mesh_size), bkg, bkg_rms, itp; edge_method = edge_method, kwargs...)
+    mesh_size::Int;
+    location = SourceExtractorBackground(),
+    rms = StdRMS(),
+    itp = ZoomInterpolator(mesh_size),
+    edge_method = :pad, kwargs...) = estimate_background(data, (mesh_size, mesh_size); location = location, rms = rms, itp = itp, edge_method = edge_method, kwargs...)
 
+# pad array
+function _craft_array(::Val{:pad}, data, mesh_size)
+    nextra = size(data) .% mesh_size
+    # have to make sure to avoid padding an extra mesh_size if nextra is 0
+    npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(mesh_size, nextra)])
+    X = padarray(float(data), Fill(NaN, (0, 0), npad))
+    nmesh = size(X) .÷ mesh_size
+    return X, nmesh
+end
 
+# crop array
+function _craft_array(::Val{:crop}, data, mesh_size)
+    nmesh = size(data) .÷ mesh_size
+    maxidx = nmesh .* mesh_size
+    idxs = Base.OneTo.(maxidx)
+    X = data[idxs...]
+    return X, nmesh
+end
+
+# filter meshes
 function _filter(bkg, bkg_rms, filter_size::NTuple{2,<:Integer})
     # skip trivial
     filter_size == (1, 1) && return bkg, bkg_rms

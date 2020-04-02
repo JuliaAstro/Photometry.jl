@@ -8,9 +8,6 @@ These estimators are used for estimating the background using some form of a cen
 
 ```@docs
 Background.BackgroundEstimator
-MeanBackground
-MedianBackground
-ModeBackground
 MMMBackground
 SourceExtractorBackground
 BiweightLocationBackground
