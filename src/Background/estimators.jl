@@ -4,6 +4,7 @@ are considered under a BSD 3-clause license. =#
 
 using Statistics
 using StatsBase
+using Parameters
 
 ########################################################################
 # Location estimators
@@ -69,7 +70,7 @@ julia> MMMBackground(median_factor=4, mean_factor=3)(x, dims = 1)
 # See Also
 * [`SourceExtractorBackground`](@ref)
 """
-Base.@kwdef struct MMMBackground{T <: Number} <: LocationEstimator
+@with_kw struct MMMBackground{T <: Number} <: LocationEstimator
     median_factor::T = 3
     mean_factor::T = 2
 end
@@ -99,7 +100,7 @@ julia> BiweightLocationBackground(c=5.5)(x; dims = 1)
  1.0  1.0  1.0  1.0  1.0
 ```
 """
-Base.@kwdef struct BiweightLocationBackground{T <: Number} <: LocationEstimator
+@with_kw struct BiweightLocationBackground{T <: Number} <: LocationEstimator
     c::T = 6.0
     M::Union{Nothing,T} = nothing
 end
@@ -205,7 +206,7 @@ julia> BiweightScaleRMS(c=3.0)(data, dims=1)
  0.0  0.0  0.0  0.0  0.0
 ```
 """
-Base.@kwdef struct BiweightScaleRMS <: RMSEstimator
+@with_kw struct BiweightScaleRMS <: RMSEstimator
     c::Number = 9.0
     M::Union{Nothing,Number} = nothing
 end
