@@ -61,13 +61,13 @@ julia> x = ones(3, 5);
 julia> MMMBackground()(x)
 1.0
 
-julia> MMMBackground(4, 3)(x, dims = 1)
+julia> MMMBackground(median_factor=4, mean_factor=3)(x, dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
 
 # See Also
-[`SourceExtractorBackground`](@ref)
+* [`SourceExtractorBackground`](@ref)
 """
 Base.@kwdef struct MMMBackground{T <: Number} <: LocationEstimator
     median_factor::T = 3
@@ -94,7 +94,7 @@ julia> x = ones(3,5);
 julia> BiweightLocationBackground()(x)
 1.0
 
-julia> BiweightLocationBackground(5.5)(x; dims = 1)
+julia> BiweightLocationBackground(c=5.5)(x; dims = 1)
 1×5 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0
 ```
@@ -200,7 +200,7 @@ julia> data = ones(3, 5);
 julia> BiweightScaleRMS()(data)
 0.0
 
-julia> BiweightScaleRMS(3.0)(data, dims=1)
+julia> BiweightScaleRMS(c=3.0)(data, dims=1)
 1×5 Array{Float64,2}:
  0.0  0.0  0.0  0.0  0.0
 ```

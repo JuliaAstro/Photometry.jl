@@ -1,7 +1,5 @@
 using Photometry
 using Documenter
-# imports for doc @refs
-using ImageTransformations, Statistics
 
 setup = quote
     using Photometry

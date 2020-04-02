@@ -31,7 +31,7 @@ This abstract type embodies the possible background estimation algorithms for di
 To implement a new estimator, you must define the struct and define a method like `(::MyEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
-[Location Estimators](@ref)
+* [Location Estimators](@ref)
 """
 abstract type LocationEstimator end
 
@@ -43,7 +43,7 @@ This abstract type embodies the possible background RMS estimation algorithms fo
 To implement a new estimator, you must define the struct and define a method like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
-[RMS Estimators](@ref)
+* [RMS Estimators](@ref)
 """
 abstract type RMSEstimator end
 
@@ -60,7 +60,7 @@ This abstract type embodies the different ways of converting a low-resolution me
 To implement a new interpolation scheme, you must define the struct and define a method like `(::MyInterpolator)(mesh)`
 
 # See Also
-[Interpolators](@ref)
+* [Interpolators](@ref)
 """
 abstract type BackgroundInterpolator end
 
@@ -72,14 +72,14 @@ include("interpolators.jl")
 """
     estimate_background(data;
         location=SourceExtractorBackground(),
-        rms=StdRMS();
+        rms=StdRMS(),
         dims=:)
 
 Perform scalar background estimation using the given estimators.
 
 The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
 
-`location` and `rms` can be anything that is callable, for example [`median`](@ref), or one of the estimators we provide in [Background Estimators](@ref).
+`location` and `rms` can be anything that is callable, for example `median`, or one of the estimators we provide in [Background Estimators](@ref).
 
 # Examples
 ```jldoctest
@@ -105,8 +105,7 @@ function estimate_background(data;
 end
 
 """
-    estimate_background(data,
-        mesh_size;
+    estimate_background(data, mesh_size;
         location=SourceExtractorBackground(),
         rms=StdRMS(),
         itp=ZoomInterpolator(mesh_size),
@@ -117,9 +116,9 @@ Perform 2D background estimation using the given estimators using meshes.
 
 This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `mesh_size` is an integer, the implicit shape will be square (eg. `mesh_size=4` is equivalent to `mesh_size=(4,4)`).
 
-For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like [`median`](@ref) or one of our [Background Estimators](@ref).
+For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like `median` or one of our [Background Estimators](@ref).
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via [`ImageFiltering.MapWindow.mapwindow`](@ref). `filter_size` must be odd.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via `ImageFiltering.MapWindow.mapwindow`. `filter_size` must be odd.
 
 After filtering (if applicable), the meshes are passed to the `itp` to recreate a low-order estimate of the background at the same resolution as the input.
 
