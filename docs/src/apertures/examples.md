@@ -57,8 +57,9 @@ aps = CircularAperture.(positions, radii)
 now let's plot them up
 
 ```@example stars
-heatmap(chunk)
+p = heatmap(chunk)
 plot!.(aps, c=:white)
+p
 ```
 
 and finally let's get our output table for the photometry
@@ -86,7 +87,7 @@ heatmap!(bkg_rms, title="Background RMS", subplot=4)
 Now, using the same apertures, let's find the output using the background-subtracted image
 
 ```@example stars
-plot(layout=(1, 2),
+p = plot(layout=(1, 2),
     clims=(minimum(chunk .- bkg),
     maximum(chunk)),
     size=(600, 260),
@@ -96,6 +97,7 @@ heatmap!(chunk, title="Original", colorbar=false, subplot=1)
 heatmap!(chunk .- bkg, title="Subtracted", subplot=2)
 plot!.(aps, c=:white, subplot=1)
 plot!.(aps, c=:white, subplot=2)
+p
 ```
 
 ```@example stars

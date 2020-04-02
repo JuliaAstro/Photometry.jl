@@ -14,12 +14,13 @@ using FITSIO
 using Plots
 
 # Download our image, courtesy of astropy
-hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
+hdu = FITS("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits")
 image = read(hdu[1])'
 
-default(aspect_ratio=1, size=(600, 600), xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
+default(aspect_ratio=1, size=(600, 600),
+    xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
 
-heatmap(image, size=(300, 300))
+heatmap(image, size=(500, 500))
 ```
 
 Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
