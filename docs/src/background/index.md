@@ -21,7 +21,10 @@ default(aspect_ratio=1, size=(600, 600),
     xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
 
 heatmap(image, size=(500, 500))
+savefig("bkg-1.png"); nothing # hide
 ```
+
+![](bkg-1.png)
 
 Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
 gma-clip to try and remove the signals from the stars. Then, the background is broken down into meshes, in this case of size `(50, 50)`. Within each mesh, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
@@ -39,7 +42,10 @@ heatmap!(image, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
 heatmap!(bkg_rms, title="Background RMS", subplot=4)
+savefig("bkg-2.png"); nothing # hide
 ```
+
+![](bkg-2.png)
 
 We could apply a median filter, too, by specifying `filter_size`
 
@@ -53,7 +59,10 @@ heatmap!(bkg, title="Unfiltered", ylabel="Background", subplot=1)
 heatmap!(bkg_f, title="Filtered", subplot=2)
 heatmap!(bkg_rms, ylabel="RMS", subplot=3)
 heatmap!(bkg_rms_f, subplot=4)
+savefig("bkg-3.png"); nothing # hide
 ```
+
+![](bkg-3.png)
 
 Now we can see our image after subtracting the filtered background and ready for [Aperture Photometry](@ref)!
 
@@ -68,7 +77,10 @@ plot(layout=(1, 2),
     ticks=false)
 heatmap!(image, title="Original", colorbar=false, subplot=1)
 heatmap!(subt, title="Subtracted", subplot=2)
+savefig("bkg-4.png"); nothing # hide
 ```
+
+![](bkg-4.png)
 
 ### IDW Interpolator
 
@@ -83,7 +95,10 @@ heatmap!(b1, title="ZoomInterpolator", ylabel="Background", subplot=1)
 heatmap!(b2, title="IDWInterpolator", subplot=2)
 heatmap!(r1, ylabel="RMS", subplot=3)
 heatmap!(r2, subplot=4)
+savefig("bkg-5.png"); nothing # hide
 ```
+
+![](bkg-5.png)
 
 ## API/Reference
 

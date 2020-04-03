@@ -13,7 +13,10 @@ plot!(EllipticalAperture(0, 0, 10, 1, 32), c=3)
 plot!(EllipticalAnnulus(5, 5, 4, 5, 2, -32), c=4)
 plot!(RectangularAperture(0, 0, 4, 4, 4), c=5)
 plot!(RectangularAnnulus(5, 1, 3, 4, 4, 4), c=6)
+savefig("plot-1.png"); nothing #hide
 ```
+
+![](plot-1.png)
 
 ## Simple Stars
 
@@ -35,7 +38,10 @@ chunk = image[71:150, 81:155]
 default(aspect_ratio=1, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
 
 heatmap(chunk)
+savefig("plot-2.png"); nothing # hide
 ```
+
+![](plot-2.png)
 
 Now let's add some apertures!
 
@@ -60,7 +66,10 @@ now let's plot them up
 p = heatmap(chunk)
 plot!.(aps, c=:white)
 p
+savefig("plot-3.png"); nothing # hide
 ```
+
+![](plot-3.png)
 
 and finally let's get our output table for the photometry
 
@@ -82,7 +91,10 @@ heatmap!(chunk, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
 heatmap!(bkg_rms, title="Background RMS", subplot=4)
+savefig("plot-4.png"); nothing # hide
 ```
+
+![](plot-4.png)
 
 Now, using the same apertures, let's find the output using the background-subtracted image
 
@@ -98,7 +110,10 @@ heatmap!(chunk .- bkg, title="Subtracted", subplot=2)
 plot!.(aps, c=:white, subplot=1)
 plot!.(aps, c=:white, subplot=2)
 p
+savefig("plot-5.png"); nothing # hide
 ```
+
+![](plot-5.png)
 
 ```@example stars
 table = aperture_photometry(aps, chunk .- bkg, bkg_rms)
