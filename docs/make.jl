@@ -24,6 +24,9 @@ makedocs(
             "Background Estimators" => "background/estimators.md",
             "Background Interpolators" => "background/interpolators.md"
         ],
+        "Source Detection" => [
+            "Getting Started" => "detection/index.md",
+        ],
         "Aperture Photometry" => [
             "Getting Started" => "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
