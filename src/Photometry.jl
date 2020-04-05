@@ -2,9 +2,9 @@ module Photometry
 
 using Reexport
 
-include("aperture/Aperture.jl")
-include("background/Background.jl")
-include("detection/Detection.jl")
+include("Aperture/Aperture.jl")
+include("Background/Background.jl")
+include("Detection/Detection.jl")
 
 @reexport using .Aperture
 @reexport using .Background
