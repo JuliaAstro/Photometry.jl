@@ -83,7 +83,7 @@ This example will be the same as [Simple Stars](@ref) but will add background es
 
 ```@example stars
 clipped = sigma_clip(chunk, 1, fill=NaN)
-# Estimate 2D spatial background using meshes of size (5, 5)
+# Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
 
 plot(layout=(2, 2), size=(600, 600), ticks=false, link=:all)

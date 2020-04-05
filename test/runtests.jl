@@ -19,3 +19,7 @@ end
     include("background/estimators.jl")
     include("background/interpolators.jl")
 end
+
+@testset "Source Detection" begin
+    include("detection/detection.jl")
+end

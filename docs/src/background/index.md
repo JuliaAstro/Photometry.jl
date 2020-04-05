@@ -27,13 +27,13 @@ savefig("bkg-1.png"); nothing # hide
 ![](bkg-1.png)
 
 Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
-gma-clip to try and remove the signals from the stars. Then, the background is broken down into meshes, in this case of size `(50, 50)`. Within each mesh, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
+gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size `(50, 50)`. Within each box, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
 
 ```@example bkg
 # sigma-clip
 clipped = sigma_clip(image, 1, fill=NaN)
 
-# get background and background rms with mesh-size (50, 50)
+# get background and background rms with box-size (50, 50)
 bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
@@ -50,7 +50,7 @@ savefig("bkg-2.png"); nothing # hide
 We could apply a median filter, too, by specifying `filter_size`
 
 ```@example bkg
-# get background and background rms with mesh-size (50, 50) and filter_size (5, 5)
+# get background and background rms with box-size (50, 50) and filter_size (5, 5)
 bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
 
 # plot

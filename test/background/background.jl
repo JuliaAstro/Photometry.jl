@@ -46,6 +46,12 @@ end
     @test median(rms) ≈ 0
 end
 
+# regression test for failing to recognize NaN32 (or NaN16)
+data = ones(Float32, 100, 100)
+bk, rms = estimate_background(data, 3, edge_method = :pad)
+@test !any(isnan.(bk))
+@test !any(isnan.(rms))
+
 @testset "interpolators" begin
 
     @testset "zoom interface" begin

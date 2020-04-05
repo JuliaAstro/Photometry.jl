@@ -105,53 +105,52 @@ function estimate_background(data;
 end
 
 """
-    estimate_background(data, mesh_size;
+    estimate_background(data, box_size;
         location=SourceExtractorBackground(),
         rms=StdRMS(),
-        itp=ZoomInterpolator(mesh_size),
+        itp=ZoomInterpolator(box_size),
         edge_method=:pad,
         [filter_size])
 
-Perform 2D background estimation using the given estimators using meshes.
+Perform 2D background estimation using the given estimators mapped over windows of the data..
 
-This function will estimate backgrounds in meshes of size `mesh_size`. When `size(data)` is not an integer multiple of the mesh size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `mesh_size` is an integer, the implicit shape will be square (eg. `mesh_size=4` is equivalent to `mesh_size=(4,4)`).
+This function will estimate backgrounds in boxes of size `box_size`. When `size(data)` is not an integer multiple of the box size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `box_size` is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`).
 
-For evaluating the meshes, each mesh will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like `median` or one of our [Background Estimators](@ref).
+For evaluating the meshes, each box will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like `median` or one of our [Background Estimators](@ref).
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `mesh_size` is. Filtering is done via `ImageFiltering.MapWindow.mapwindow`. `filter_size` must be odd.
+Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `box_size` is. Filtering is done via `ImageFiltering.MapWindow.mapwindow`. `filter_size` must be odd.
 
 After filtering (if applicable), the meshes are passed to the `itp` to recreate a low-order estimate of the background at the same resolution as the input.
 
 !!! note
-    If your `mesh_size` is not an integer multiple of the input size, the output background and rms arrays will not have the same size.
+    If your `box_size` is not an integer multiple of the input size, the output background and rms arrays will not have the same size.
 
 # See Also
 * [Location Estimators](@ref), [RMS Estimators](@ref), [Interpolators](@ref)
 """
 function estimate_background(data::AbstractArray{T},
-        mesh_size::NTuple{2,<:Integer};
+        box_size::NTuple{2,<:Integer};
         location = SourceExtractorBackground(),
         rms = StdRMS(),
-        itp = ZoomInterpolator(mesh_size),
+        itp = ZoomInterpolator(box_size),
         edge_method = :pad,
         kwargs...) where T
 
     # handle border effects
-    X, nmesh = _craft_array(Val(edge_method), data, mesh_size)
+    X, nmesh = _craft_array(Val(edge_method), data, box_size)
 
     bkg = zeros(float(T), nmesh)
     bkg_rms = zeros(float(T), nmesh)
     @inbounds for i in 1:nmesh[1], j in 1:nmesh[2]
         # get view of data where mesh is and filter out NaN
-        rows = (i - 1) * mesh_size[1] + 1:i * mesh_size[1]
-        cols = (j - 1) * mesh_size[2] + 1:j * mesh_size[2]
-        d = @view X[rows, cols]
-        d_ = @view d[d .!== NaN]
+        rows = (i - 1) * box_size[1] + 1:i * box_size[1]
+        cols = (j - 1) * box_size[2] + 1:j * box_size[2]
+        d = filter(!isnan, @view(X[rows, cols]))
         # skip if only NaN
-        length(d_) == 0 && continue
+        length(d) == 0 && continue
         # calculate background and rms via estimators
-        bkg[i, j] = location(d_)
-        bkg_rms[i, j] = rms(d_)
+        bkg[i, j] = location(d)
+        bkg_rms[i, j] = rms(d)
     end
 
     # filtering
@@ -167,26 +166,26 @@ function estimate_background(data::AbstractArray{T},
 end
 
 estimate_background(data,
-    mesh_size::Int;
+    box_size::Int;
     location = SourceExtractorBackground(),
     rms = StdRMS(),
-    itp = ZoomInterpolator(mesh_size),
-    edge_method = :pad, kwargs...) = estimate_background(data, (mesh_size, mesh_size); location = location, rms = rms, itp = itp, edge_method = edge_method, kwargs...)
+    itp = ZoomInterpolator(box_size),
+    edge_method = :pad, kwargs...) = estimate_background(data, (box_size, box_size); location = location, rms = rms, itp = itp, edge_method = edge_method, kwargs...)
 
 # pad array
-function _craft_array(::Val{:pad}, data, mesh_size)
-    nextra = size(data) .% mesh_size
-    # have to make sure to avoid padding an extra mesh_size if nextra is 0
-    npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(mesh_size, nextra)])
+function _craft_array(::Val{:pad}, data, box_size)
+    nextra = size(data) .% box_size
+    # have to make sure to avoid padding an extra box_size if nextra is 0
+    npad = Tuple([n == 0 ? 0 : sz - n for (sz, n) in zip(box_size, nextra)])
     X = padarray(float(data), Fill(NaN, (0, 0), npad))
-    nmesh = size(X) .÷ mesh_size
+    nmesh = size(X) .÷ box_size
     return X, nmesh
 end
 
 # crop array
-function _craft_array(::Val{:crop}, data, mesh_size)
-    nmesh = size(data) .÷ mesh_size
-    maxidx = nmesh .* mesh_size
+function _craft_array(::Val{:crop}, data, box_size)
+    nmesh = size(data) .÷ box_size
+    maxidx = nmesh .* box_size
     idxs = Base.OneTo.(maxidx)
     X = data[idxs...]
     return X, nmesh
