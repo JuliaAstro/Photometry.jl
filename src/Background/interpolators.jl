@@ -80,7 +80,7 @@ julia> IDWInterpolator(3, 1; k=2, power=4)([1 0; 0 1])
 struct IDWInterpolator <: BackgroundInterpolator
     factors::NTuple{2,<:Integer}
     leafsize::Integer
-     k::Integer
+    k::Integer
     power::Real
     reg::Real
     conf_dist::Real

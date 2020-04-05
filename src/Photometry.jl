@@ -8,6 +8,6 @@ include("detection/Detection.jl")
 
 @reexport using .Aperture
 @reexport using .Background
-@reexport using .Background
+@reexport using .Detection
 
 end

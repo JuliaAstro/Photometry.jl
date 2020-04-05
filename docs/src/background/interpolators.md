@@ -1,6 +1,6 @@
 # Background Interpolators
 
-Background interpolators provide a method for converting low-resolution meshes into low-order high-resolution images.
+Background interpolators provide a method for converting a low-resolution mesh into a low-order high-resolution image.
 
 ```@docs
 Background.BackgroundInterpolator
