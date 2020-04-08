@@ -480,7 +480,8 @@ end
 # Rectangular routines
 
 function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
-    out = fill(0.0, ny, nx)
+    R = float(typeof(xmin))
+    out = fill(zero(R), ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx

@@ -150,6 +150,15 @@ end # overlap elliptical
     @testset "exact" begin
         @test rectangular_overlap_exact(0, 0, 1, 1, 1, 1, 0) ≈ 0.25
     end
+
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], w in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            method === :exact && continue  # TODO area in LazySets.jl not type stable
+            @inferred rectangular_overlap(-1, -1, 1, 1, grid_size, grid_size, w, w, 0, method = method)
+        end
+        # @inferred rectangular_overlap_exact(0, 0, 1, 1, 2, 2, 0) # TODO area in LazySets.jl not type stable
+        @inferred rectangular_overlap_single_subpixel(0, 0, 1, 1, 2, 2, 0, 5)
+    end
 end # overlap rectangular
 
 @testset "overlap - utils" begin
