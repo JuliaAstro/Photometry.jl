@@ -6,6 +6,7 @@ using Photometry.Aperture: circular_overlap,
                            area_triangle,
                            inside_ellipse,
                            inside_triangle,
+                           inside_rectangle,
                            circle_line,
                            circle_segment,
                            circle_segment_single2,
@@ -178,12 +179,17 @@ end # overlap rectangular
         @test !inside_ellipse(10, 10, 5, 5, 1, 1, 1)
     end
 
+    @testset "inside rectangle" begin
+        @test inside_rectangle(0, 0, 3, 4, 0)
+        @test !inside_rectangle(10, 10, 3, 4, 0)
+    end
 
     @testset "type stability" begin
         @inferred area_arc(0, 0, 0, 0, 10)
         @inferred area_triangle(0, 0, 1, 0, 0, 1)
         @inferred inside_triangle(0, 0, 0, 0, 0, 1, 1, 0)
         @inferred inside_ellipse(0, 0, 5, 5, 1, 1, 1)
+        @inferred inside_rectangle(0, 0, 3, 4, 0)
     end
 
 end # overlap utils
