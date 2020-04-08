@@ -25,7 +25,6 @@ area(ap::EllipticalAnnulus) = π * ap.a_out * ap.b_out - π * ap.a_in * ap.b_in
 area(ap::RectangularAperture) = ap.w * ap.h
 area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
-
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = ones(10, 10)
     aperture = AP(-60, 60, params...)
@@ -61,6 +60,15 @@ end
     @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
     @test table_cent.aperture_sum ≤ table_ex.aperture_sum
 
+end
+
+@testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)
+    data = zeros(40, 40)
+    aperture = AP(20.0, 20.0, params...)
+
+    @inferred aperture_photometry(aperture, data, method = :center)
+    @inferred aperture_photometry(aperture, data, method = (:subpixel, 10))
+    @inferred aperture_photometry(aperture, data, method = :exact)
 end
 
 @testset "photometry - circular" begin
