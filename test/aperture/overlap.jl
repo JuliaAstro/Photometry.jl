@@ -79,12 +79,6 @@ end # circles
 
 @testset "overlap - elliptical" begin
 
-    @testset "position with respect to ellipse" begin
-        @test !inside_ellipse(5, 3, 0, 0, 1 / 16, 1 / 32, 0)
-        @test inside_ellipse(0, 0, 0, 0, 5, 6.2, 0)
-        @test inside_ellipse(1, 2, 0, 0, 1 / 37, 1 / 36, -1 / 80)
-    end
-
     @testset "elliptical overlap" for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0], [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
 
         g = elliptical_overlap(-1, -1, 1, 1, grid_size, grid_size, ellipse_size, method = method)
@@ -144,6 +138,11 @@ end # circles
         @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
     end
 
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0], [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            @inferred elliptical_overlap(-1, -1, 1, 1, grid_size, grid_size, ellipse_size, method = method)
+        end
+    end
 end # overlap elliptical
 
 @testset "overlap - rectangular" begin
@@ -186,6 +185,9 @@ end # overlap rectangular
     @testset "inside ellipse" begin
         @test inside_ellipse(0, 0, 0, 0, 1, 1, 1)
         @test !inside_ellipse(10, 10, 5, 5, 1, 1, 1)
+        @test !inside_ellipse(5, 3, 0, 0, 1 / 16, 1 / 32, 0)
+        @test inside_ellipse(0, 0, 0, 0, 5, 6.2, 0)
+        @test inside_ellipse(1, 2, 0, 0, 1 / 37, 1 / 36, -1 / 80)
     end
 
     @testset "inside rectangle" begin
