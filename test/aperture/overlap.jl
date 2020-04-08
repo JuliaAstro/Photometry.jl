@@ -64,6 +64,16 @@ using Photometry.Aperture: circular_overlap,
 
     end
 
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], circ_size in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            @inferred circular_overlap(-1, -1, 1, 1, grid_size, grid_size, circ_size, method = method)
+        end
+        r = 5
+        @inferred circular_overlap_core(0, 0, r, r, r)
+        @inferred circular_overlap_single_exact(0, 0, r, r, r)
+        @inferred circular_overlap_single_subpixel(0, 0, 20, 20, 15, 5)
+    end
+
 end # circles
 
 @testset "overlap - elliptical" begin
