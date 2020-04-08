@@ -79,7 +79,8 @@ end
 
 """Area of overlap between a rectangle and a circle"""
 function circular_overlap_single_exact(xmin, ymin, xmax, ymax, r)
-    r ≤ 0 && return 0
+    R = float(typeof(xmin))
+    r ≤ 0 && return zero(R)
     if 0 ≤ xmin
         0 ≤ ymin && return circular_overlap_core(xmin, ymin, xmax, ymax, r)
         0 ≥ ymax && return circular_overlap_core(-ymax, xmin, -ymin, xmax, r)
@@ -104,35 +105,38 @@ end
 
 """Core of circular overlap routine"""
 function circular_overlap_core(xmin, ymin, xmax, ymax, r)
-    xmin^2 + ymin^2 > r^2 && return 0
-    xmax^2 + ymax^2 < r^2 && return (xmax - xmin) * (ymax - ymin)
+    R = float(typeof(xmin))
+    xmin^2 + ymin^2 > r^2 && return zero(R)
+    xmax^2 + ymax^2 < r^2 && return R((xmax - xmin) * (ymax - ymin))
 
     d1 = sqrt(xmax^2 + ymin^2)
     d2 = sqrt(xmin^2 + ymax^2)
     if d1 < r && d2 < r
         x1, y1 = sqrt(r^2 - ymax^2), ymax
         x2, y2 = xmax, sqrt(r^2 - xmax^2)
-        return ((xmax - xmin) * (ymax - ymin) -
+        area = ((xmax - xmin) * (ymax - ymin) -
                 area_triangle(x1, y1, x2, y2, xmax, ymax) +
                 area_arc(x1, y1, x2, y2, r))
     elseif d1 < r
         x1, y1 = xmin, sqrt(r^2 - xmin^2)
         x2, y2 = xmax, sqrt(r^2 - xmax^2)
-        return (area_arc(x1, y1, x2, y2, r) +
+        area = (area_arc(x1, y1, x2, y2, r) +
                 area_triangle(x1, y1, x1, ymin, xmax, ymin) +
                 area_triangle(x1, y1, x2, ymin, x2, y2))
     elseif d2 < r
         x1, y1 = sqrt(r^2 - ymin^2), ymin
         x2, y2 = sqrt(r^2 - ymax^2), ymax
-        return (area_arc(x1, y1, x2, y2, r) +
+        area = (area_arc(x1, y1, x2, y2, r) +
                 area_triangle(x1, y1, xmin, y1, xmin, ymax) +
                 area_triangle(x1, y1, xmin, y2, x2, y2))
     else
         x1, y1 = sqrt(r^2 - ymin^2), ymin
         x2, y2 = xmin, sqrt(r^2 - xmin^2)
-        return (area_arc(x1, y1, x2, y2, r) +
+        area = (area_arc(x1, y1, x2, y2, r) +
                 area_triangle(x1, y1, x2, y2, xmin, ymin))
     end
+
+    return R(area)
 end
 
 ####################################
@@ -150,7 +154,7 @@ Area of a circular segment above a chord between two points with circle radius `
 function area_arc(x0, y0, x1, y1, r)
     a = sqrt((x1 - x0)^2 + (y1 - y0)^2)
     θ = 2asin(0.5a / r)
-    return 0.5r^2 * (θ - sin(θ))
+    return r^2 * (θ - sin(θ)) / 2
 end
 
 # is (x, y) contained within triangle specified by three points.
@@ -185,7 +189,8 @@ General equation of ellipse:
 inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
-    out = fill(0.0, ny, nx)
+    R = float(typeof(xmin))
+    out = fill(zero(R), ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx
@@ -475,7 +480,8 @@ end
 # Rectangular routines
 
 function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
-    out = fill(0.0, ny, nx)
+    R = float(typeof(xmin))
+    out = fill(zero(R), ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx
@@ -526,9 +532,7 @@ function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels
         y = y0 - 0.5dy
         for j in 1:subpixels
             y += dy
-            if intersects_rectangle(x, y, w, h, θ)
-                frac += 1
-            end
+            frac += inside_rectangle(x, y, w, h, θ) ? 1 : 0
         end
     end
 
@@ -538,7 +542,7 @@ end
 
 # see https://math.stackexchange.com/questions/69099/equation-of-a-rectangle
 """intersection with rectangular using implicit Lamé curve"""
-function intersects_rectangle(x, y, w, h, θ)
+function inside_rectangle(x, y, w, h, θ)
     # transform into frame of rectangle
     sinth, costh = sincos(deg2rad(-θ))
     u = x * costh - y * sinth

@@ -6,6 +6,7 @@ using Photometry.Aperture: circular_overlap,
                            area_triangle,
                            inside_ellipse,
                            inside_triangle,
+                           inside_rectangle,
                            circle_line,
                            circle_segment,
                            circle_segment_single2,
@@ -64,15 +65,19 @@ using Photometry.Aperture: circular_overlap,
 
     end
 
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], circ_size in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            @inferred circular_overlap(-1, -1, 1, 1, grid_size, grid_size, circ_size, method = method)
+        end
+        r = 5
+        @inferred circular_overlap_core(0, 0, r, r, r)
+        @inferred circular_overlap_single_exact(0, 0, r, r, r)
+        @inferred circular_overlap_single_subpixel(0, 0, 20, 20, 15, 5)
+    end
+
 end # circles
 
 @testset "overlap - elliptical" begin
-
-    @testset "position with respect to ellipse" begin
-        @test !inside_ellipse(5, 3, 0, 0, 1 / 16, 1 / 32, 0)
-        @test inside_ellipse(0, 0, 0, 0, 5, 6.2, 0)
-        @test inside_ellipse(1, 2, 0, 0, 1 / 37, 1 / 36, -1 / 80)
-    end
 
     @testset "elliptical overlap" for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0], [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
 
@@ -133,11 +138,25 @@ end # circles
         @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
     end
 
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], ellipse_size in ([0.2,0.2,0], [0.4, 0.4, 0], [0.8, 0.8, 0]), method in [:center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            @inferred elliptical_overlap(-1, -1, 1, 1, grid_size, grid_size, ellipse_size, method = method)
+        end
+    end
 end # overlap elliptical
 
 @testset "overlap - rectangular" begin
     @testset "exact" begin
         @test rectangular_overlap_exact(0, 0, 1, 1, 1, 1, 0) ≈ 0.25
+    end
+
+    @testset "type stability" begin
+        for grid_size in [50, 500, 1000], w in (0.2, 0.4, 0.8), method in [:exact, :center, (:subpixel, 2), (:subpixel, 5), (:subpixel, 10)]
+            method === :exact && continue  # TODO area in LazySets.jl not type stable
+            @inferred rectangular_overlap(-1, -1, 1, 1, grid_size, grid_size, w, w, 0, method = method)
+        end
+        # @inferred rectangular_overlap_exact(0, 0, 1, 1, 2, 2, 0) # TODO area in LazySets.jl not type stable
+        @inferred rectangular_overlap_single_subpixel(0, 0, 1, 1, 2, 2, 0, 5)
     end
 end # overlap rectangular
 
@@ -161,6 +180,27 @@ end # overlap rectangular
     @testset "area arc (r = $r)" for r in 1:10
         @test area_arc(0, 0, 0, 0, r) ≈ 0
         @test area_arc(0, r, r, 0, r) ≈ r^2 / 2 * (π / 2 - 1)
+    end
+
+    @testset "inside ellipse" begin
+        @test inside_ellipse(0, 0, 0, 0, 1, 1, 1)
+        @test !inside_ellipse(10, 10, 5, 5, 1, 1, 1)
+        @test !inside_ellipse(5, 3, 0, 0, 1 / 16, 1 / 32, 0)
+        @test inside_ellipse(0, 0, 0, 0, 5, 6.2, 0)
+        @test inside_ellipse(1, 2, 0, 0, 1 / 37, 1 / 36, -1 / 80)
+    end
+
+    @testset "inside rectangle" begin
+        @test inside_rectangle(0, 0, 3, 4, 0)
+        @test !inside_rectangle(10, 10, 3, 4, 0)
+    end
+
+    @testset "type stability" begin
+        @inferred area_arc(0, 0, 0, 0, 10)
+        @inferred area_triangle(0, 0, 1, 0, 0, 1)
+        @inferred inside_triangle(0, 0, 0, 0, 0, 1, 1, 0)
+        @inferred inside_ellipse(0, 0, 5, 5, 1, 1, 1)
+        @inferred inside_rectangle(0, 0, 3, 4, 0)
     end
 
 end # overlap utils
