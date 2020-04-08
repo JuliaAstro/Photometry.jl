@@ -531,9 +531,7 @@ function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels
         y = y0 - 0.5dy
         for j in 1:subpixels
             y += dy
-            if intersects_rectangle(x, y, w, h, θ)
-                frac += 1
-            end
+            frac += inside_rectangle(x, y, w, h, θ) ? 1 : 0
         end
     end
 
@@ -543,7 +541,7 @@ end
 
 # see https://math.stackexchange.com/questions/69099/equation-of-a-rectangle
 """intersection with rectangular using implicit Lamé curve"""
-function intersects_rectangle(x, y, w, h, θ)
+function inside_rectangle(x, y, w, h, θ)
     # transform into frame of rectangle
     sinth, costh = sincos(deg2rad(-θ))
     u = x * costh - y * sinth
