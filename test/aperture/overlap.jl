@@ -173,4 +173,17 @@ end # overlap rectangular
         @test area_arc(0, r, r, 0, r) ≈ r^2 / 2 * (π / 2 - 1)
     end
 
+    @testset "inside ellipse" begin
+        @test inside_ellipse(0, 0, 0, 0, 1, 1, 1)
+        @test !inside_ellipse(10, 10, 5, 5, 1, 1, 1)
+    end
+
+
+    @testset "type stability" begin
+        @inferred area_arc(0, 0, 0, 0, 10)
+        @inferred area_triangle(0, 0, 1, 0, 0, 1)
+        @inferred inside_triangle(0, 0, 0, 0, 0, 1, 1, 0)
+        @inferred inside_ellipse(0, 0, 5, 5, 1, 1, 1)
+    end
+
 end # overlap utils
