@@ -134,7 +134,7 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
     The `:exact` method is slower than the subpixel methods by at least an order of magnitude, so if you are dealing with large images and many apertures, we recommend using `:subpixel` with some reasonable `n`, like 10.
 
 !!! tip
-    This code is automatically multi-threaded if more than 100 apertures are provided. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
+    This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error; method = :exact)
     data_weighted = apply(a, data, method = method)
