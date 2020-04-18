@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 pandas = "*"
 photutils = "*"
+tqdm = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.7"
