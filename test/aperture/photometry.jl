@@ -62,6 +62,8 @@ end
 
 end
 
+
+
 @testset "interface" begin
     data = zeros(40, 40)
     err = zeros(40, 40)
@@ -70,14 +72,17 @@ end
     t1 = aperture_photometry(aperture, data)
     t2 = aperture_photometry(aperture, data, err)
 
-    @test !haskey(t1, :aperture_sum_err)
+    # 1.0 compat (no hasproperty function)
+    hasfunc = VERSION < v"1.1" ? haskey : hasproperty
+
+    @test !hasfunc(t1, :aperture_sum_err)
     @test t2.aperture_sum_err == 0
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
     t1 = aperture_photometry(apertures, data)
     t2 = aperture_photometry(apertures, data, err)
 
-    @test !hasproperty(t1, :aperture_sum_err)
+    @test !hasfunc(t1, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
 end
 
