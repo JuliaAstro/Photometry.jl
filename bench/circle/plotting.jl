@@ -16,4 +16,4 @@ title!("size(512, 512) - CircularAperture - exact")
 ylabel!("time [s]")
 xlabel!("number of apertures")
 
-savefig(joinpath(@__DIR__, "circle_apertures_benchmark.png"))
+savefig(joinpath(@__DIR__, "..", "..", "docs", "src", "assets", "circle_apertures_benchmark.png"))
