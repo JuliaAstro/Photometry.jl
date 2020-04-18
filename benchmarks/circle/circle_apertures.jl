@@ -8,7 +8,7 @@ data = randn(512, 512) .+ 10
 
 rows = []
 
-@progress for N in [1, 10, 50, 100, 500, 1000]
+@progress for N in [1, 10, 50, 100, 200, 400, 500, 1000, 2000]
     aper = CircularAperture(256, 256, 3)
     apers = repeat([aper], N)
     time = @belapsed aperture_photometry($apers, $data)
@@ -16,6 +16,7 @@ rows = []
 end
 
 results = DataFrame(rows)
-CSV.write(joinpath(@__DIR__, "julia_circle_apertures.csv"), results)
+
+CSV.write(joinpath(@__DIR__, "julia_circle_apertures_nt=$(Threads.nthreads()).csv"), results)
 
 nothing

@@ -18,7 +18,7 @@ import os
 data = np.random.randn(512, 512) + 10
 
 rows = []
-for N in tqdm([1, 10, 50, 100, 500, 1000]):
+for N in tqdm([1, 10, 50, 100, 200, 400, 500, 1000, 2000]):
     aps = CircularAperture(list(repeat((255, 255), N)), 3)
 
     t0 = datetime.now()
