@@ -44,3 +44,21 @@ This is mostly in line with Julia's indexing, although it is important to rememb
 ```@docs
 aperture_photometry
 ```
+
+## Performance
+
+Below is a benchmark result comparing Photometry.jl to [photutils](https://github.com/astropy/photutils). The benchmark code can be found in the [benchmarks folder](https://github.com/JuliaAstro/Photometry.jl/blob/master/benchmarks/circle).
+
+![](circle_apertures_benchmark.png)
+
+```julia
+julia> versioninfo()
+Julia Version 1.4.0
+Commit b8e9a9ecc6 (2020-03-21 16:36 UTC)
+Platform Info:
+  OS: macOS (x86_64-apple-darwin18.6.0)
+  CPU: Intel(R) Core(TM) i5-8259U CPU @ 2.30GHz
+  WORD_SIZE: 64
+  LIBM: libopenlibm
+  LLVM: libLLVM-8.0.1 (ORCJIT, skylake)
+```

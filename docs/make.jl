@@ -16,7 +16,7 @@ makedocs(
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://juliaastro.github.io/Photometry.jl",
-        assets = String[],),
+    ),
     pages = [
         "Home" => "index.md",
         "Background Estimation" => [
@@ -32,7 +32,7 @@ makedocs(
             "Getting Started" => "apertures/index.md",
             "Apertures" => "apertures/apertures.md",
             "Examples" => "apertures/examples.md"
-        ],
+        ]
     ])
 
 deploydocs(

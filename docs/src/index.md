@@ -37,7 +37,7 @@ results = aperture_photometry([ap1, ap2], data, err)
 results
 
 # output
-2×4 DataFrames.DataFrame
+2×4 DataFrame
 │ Row │ xcenter │ ycenter │ aperture_sum │ aperture_sum_err │
 │     │ Float64 │ Float64 │ Float64      │ Float64          │
 ├─────┼─────────┼─────────┼──────────────┼──────────────────┤
