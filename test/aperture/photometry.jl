@@ -70,7 +70,7 @@ end
     t1 = aperture_photometry(aperture, data)
     t2 = aperture_photometry(aperture, data, err)
 
-    @test !hasproperty(t1, :aperture_sum_err)
+    @test !haskey(t1, :aperture_sum_err)
     @test t2.aperture_sum_err == 0
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
