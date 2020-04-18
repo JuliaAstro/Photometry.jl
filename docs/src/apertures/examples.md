@@ -86,7 +86,7 @@ clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
 
-plot(layout=(2, 2), size=(600, 600), ticks=false, link=:all)
+plot(layout=(2, 2), size=(600, 600), ticks=false)
 heatmap!(chunk, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
@@ -103,8 +103,7 @@ p = plot(layout=(1, 2),
     clims=(minimum(chunk .- bkg),
     maximum(chunk)),
     size=(600, 260),
-    ticks=false,
-    link=:all)
+    ticks=false)
 heatmap!(chunk, title="Original", colorbar=false, subplot=1)
 heatmap!(chunk .- bkg, title="Subtracted", subplot=2)
 plot!.(aps, c=:white, subplot=1)

@@ -4,7 +4,8 @@ are considered under a BSD 3-clause license. =#
 using LazySets
 
 function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
-    out = fill(0.0, ny, nx)
+    R = float(typeof(xmin))
+    out = fill(zero(R), ny, nx)
 
     # width of each element
     dx = (xmax - xmin) / nx
@@ -19,7 +20,7 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
     bymin = -r - 0.5dy
     bymax =  r + 0.5dy
 
-    @inbounds for i in 1:nx
+    @inbounds for i in axes(out, 2)
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
         pxcen = pxmin + 0.5dx
@@ -27,7 +28,7 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
         pxmax = pxmin + dx
 
         if pxmax > bxmin && pxmin < bxmax
-            for j in 1:ny
+            for j in axes(out, 1)
                 pymin = ymin + (j - 1) * dy
                 pycen = pymin + 0.5dy
                 pymax = pymin + dy
@@ -209,7 +210,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
 
     cxx, cyy, cxy = oblique_coefficients(a, b, theta)
 
-    @inbounds for i in 1:nx
+    @inbounds for i in axes(out, 2)
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
         pxcen = pxmin + 0.5dx
@@ -217,7 +218,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
         pxmax = pxmin + dx
 
         if pxmax > bxmin && pxmin < bxmax
-            for j in 1:ny
+            for j in axes(out, 1)
                 pymin = ymin + (j - 1) * dy
                 pycen = pymin + 0.5dy
                 pymax = pymin + dy
@@ -495,13 +496,13 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
     bymin -= 0.5dy
     bymax += 0.5dy
 
-    @inbounds for i in 1:nx
+    @inbounds for i in axes(out, 2)
         # lower end of pixel
         pxmin = xmin + (i - 1) * dx
         # upper end of pixel
         pxmax = pxmin + dx
         if pxmax > bxmin && pxmin < bxmax
-            for j in 1:ny
+            for j in axes(out, 1)
                 pymin = ymin + (j - 1) * dy
                 pymax = pymin + dy
 
@@ -532,7 +533,9 @@ function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels
         y = y0 - 0.5dy
         for j in 1:subpixels
             y += dy
-            frac += inside_rectangle(x, y, w, h, θ) ? 1 : 0
+            if inside_rectangle(x, y, w, h, θ)
+                frac += 1
+            end
         end
     end
 

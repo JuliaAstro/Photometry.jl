@@ -107,6 +107,18 @@ function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
     return cut .* mask(a, method = method)
 end
 
+
+"""
+    @threadif(cond, loop)
+
+macro that prepends `Threads.@threads` to `loop` if `cond` is true.
+"""
+macro threadif(condition, loop)
+    esc(condition)
+    cond = eval(condition)
+    return cond ? :(Threads.@threads $loop) : loop
+end
+
 """
     aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
     aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
@@ -121,8 +133,10 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 !!! note
     The `:exact` method is slower than the subpixel methods by at least an order of magnitude, so if you are dealing with large images and many apertures, we recommend using `:subpixel` with some reasonable `n`, like 10.
 
+!!! tip
+    This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
-function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = zeros(size(data)); method = :exact)
+function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error; method = :exact)
     data_weighted = apply(a, data, method = method)
     aperture_sum = sum(data_weighted)
     variance_weighted = apply(a, error.^2, method = method)
@@ -131,7 +145,30 @@ function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error = 
     return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
 end
 
-aperture_photometry(a::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error = zeros(size(data)); method = :exact) = DataFrame(aperture_photometry.(a, Ref(data), Ref(error); method = method))
+function aperture_photometry(a::AbstractAperture, data::AbstractMatrix; method = :exact)
+    data_weighted = apply(a, data, method = method)
+    aperture_sum = sum(data_weighted)
+
+    return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum)
+end
+
+function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error; method = :exact)
+    rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)})
+    Threads.@threads  for idx in eachindex(rows)
+        rows[idx] = aperture_photometry(aps[idx], data, error; method = method)
+    end
+    return DataFrame(rows)
+end
+
+function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; method = :exact)
+    rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum)})
+    Threads.@threads for idx in eachindex(rows)
+        rows[idx] = aperture_photometry(aps[idx], data; method = method)
+    end
+    return DataFrame(rows)
+end
+
+
 
 include("circular.jl")
 include("elliptical.jl")

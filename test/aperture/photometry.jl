@@ -62,13 +62,42 @@ end
 
 end
 
+
+
+@testset "interface" begin
+    data = zeros(40, 40)
+    err = zeros(40, 40)
+    aperture = CircularAperture(20.0, 20.0, 5.0)
+
+    t1 = aperture_photometry(aperture, data)
+    t2 = aperture_photometry(aperture, data, err)
+
+    # 1.0 compat (no hasproperty function)
+    hasfunc = VERSION < v"1.1" ? haskey : hasproperty
+
+    @test !hasfunc(t1, :aperture_sum_err)
+    @test t2.aperture_sum_err == 0
+
+    apertures = CircularAperture.(20, 20, [1, 2, 3])
+    t1 = aperture_photometry(apertures, data)
+    t2 = aperture_photometry(apertures, data, err)
+
+    @test !hasfunc(t1, :aperture_sum_err)
+    @test t2.aperture_sum_err == zeros(3)
+end
+
 @testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = zeros(40, 40)
+    err = zeros(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
     @inferred aperture_photometry(aperture, data, method = :center)
     @inferred aperture_photometry(aperture, data, method = (:subpixel, 10))
     @inferred aperture_photometry(aperture, data, method = :exact)
+
+    @inferred aperture_photometry(aperture, data, err, method = :center)
+    @inferred aperture_photometry(aperture, data, err, method = (:subpixel, 10))
+    @inferred aperture_photometry(aperture, data, err, method = :exact)
 end
 
 @testset "photometry - circular" begin

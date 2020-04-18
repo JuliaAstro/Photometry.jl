@@ -37,7 +37,7 @@ clipped = sigma_clip(image, 1, fill=NaN)
 bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
-plot(layout=(2, 2), link=:all, ticks=false)
+plot(layout=(2, 2), ticks=false)
 heatmap!(image, title="Original", subplot=1)
 heatmap!(clipped, title="Sigma-Clipped", subplot=2)
 heatmap!(bkg, title="Background", subplot=3)
@@ -54,7 +54,7 @@ We could apply a median filter, too, by specifying `filter_size`
 bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
 
 # plot
-plot(layout=(2, 2), link=:all, ticks=false)
+plot(layout=(2, 2), ticks=false)
 heatmap!(bkg, title="Unfiltered", ylabel="Background", subplot=1)
 heatmap!(bkg_f, title="Filtered", subplot=2)
 heatmap!(bkg_rms, ylabel="RMS", subplot=3)
@@ -69,7 +69,6 @@ Now we can see our image after subtracting the filtered background and ready for
 ```@example bkg
 subt = image .- bkg_f[axes(image)...]
 plot(layout=(1, 2),
-    link=:all,
     size=(600, 260),
     xlims=(400, 800),
     ylims=(400, 800),
@@ -90,7 +89,7 @@ Here is a quick example using the [`IDWInterpolator`](@ref)
 b1, r1 = estimate_background(clipped, 50, filter_size=5)
 b2, r2 = estimate_background(clipped, 50, itp=IDWInterpolator(50), filter_size=5)
 
-plot(layout=(2, 2), link=:all, ticks=false)
+plot(layout=(2, 2), ticks=false)
 heatmap!(b1, title="ZoomInterpolator", ylabel="Background", subplot=1)
 heatmap!(b2, title="IDWInterpolator", subplot=2)
 heatmap!(r1, ylabel="RMS", subplot=3)
