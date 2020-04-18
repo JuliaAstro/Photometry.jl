@@ -47,7 +47,7 @@ aperture_photometry
 
 ## Performance
 
-Below is a benchmark result comparing Photometry.jl to [photutils](https://github.com/astropy/photutils). The benchmark code can be found in the [benchmarks folder](https://github.com/JuliaAstro/Photometry.jl/blob/master/benchmarks/circle).
+Below is a benchmark result comparing Photometry.jl to [photutils](https://github.com/astropy/photutils). The benchmark code can be found in the [`bench` folder](https://github.com/JuliaAstro/Photometry.jl/blob/master/bench/circle).
 
 ![](../assets/circle_apertures_benchmark.png)
 
