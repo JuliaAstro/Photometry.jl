@@ -107,18 +107,6 @@ function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
     return cut .* mask(a, method = method)
 end
 
-
-"""
-    @threadif(cond, loop)
-
-macro that prepends `Threads.@threads` to `loop` if `cond` is true.
-"""
-macro threadif(condition, loop)
-    esc(condition)
-    cond = eval(condition)
-    return cond ? :(Threads.@threads $loop) : loop
-end
-
 """
     aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
     aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
