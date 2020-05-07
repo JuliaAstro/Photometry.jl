@@ -52,7 +52,7 @@ end
 
 
     data = randn(100, 100)
-    @test estimator(data) ≈ 1 atol = 2e-2
+    @test estimator(data) ≈ 1 rtol = 2.5e-2
 end
 
 @testset "StdRMS" begin
