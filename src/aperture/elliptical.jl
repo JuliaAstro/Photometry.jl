@@ -23,7 +23,7 @@ struct EllipticalAperture{T <: Number} <: AbstractAperture
 
     function EllipticalAperture(x::T, y::T, a::T, b::T, theta::T) where T <: Number
         a < 0 && error("Invalid axis a=$a. a must be greater than or equal to 0")
-        b < 0 && error("Invalid axis b=$b. a must be greater than or equal to 0")
+        b < 0 && error("Invalid axis b=$b. b must be greater than or equal to 0")
         new{T}(x, y, a, b, mod(theta, 360))
     end
 end

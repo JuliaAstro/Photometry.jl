@@ -51,8 +51,8 @@ end
     @test estimator(data, dims = 2) ≈ zeros(10)
 
 
-    data = randn(100, 100)
-    @test estimator(data) ≈ 1 atol = 2e-2
+    data = randn(10000, 10000)
+    @test estimator(data) ≈ 1 atol = 1e-2
 end
 
 @testset "StdRMS" begin
