@@ -4,7 +4,7 @@ are considered under a BSD 3-clause license. =#
 
 module Aperture
 
-using DataFrames: DataFrame
+using TypedTables
 
 export mask,
        cutout,
@@ -111,7 +111,7 @@ end
     aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
     aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
 
-Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `DataFrame`, otherwise a `NamedTuple`.
+Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `TypedTables.Table`, otherwise a `NamedTuple`.
 
 # Methods
 * `:exact` - Will calculate the exact geometric overlap
@@ -145,7 +145,7 @@ function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::Abst
     Threads.@threads  for idx in eachindex(rows)
         rows[idx] = aperture_photometry(aps[idx], data, error; method = method)
     end
-    return DataFrame(rows)
+    return Table(rows)
 end
 
 function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; method = :exact)
@@ -153,14 +153,14 @@ function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::Abst
     Threads.@threads for idx in eachindex(rows)
         rows[idx] = aperture_photometry(aps[idx], data; method = method)
     end
-    return DataFrame(rows)
+    return Table(rows)
 end
-
-
 
 include("circular.jl")
 include("elliptical.jl")
 include("rectangle.jl")
 include("overlap.jl")
 include("plotting.jl")
+
 end
+
