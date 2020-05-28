@@ -38,7 +38,15 @@ aps = CircularAperture.(positions, radii)</code></pre><pre><code class="language
  CircularAperture(13.25, 10.5, r=2.7)
  CircularAperture(65.5, 14.0, r=3.0)</code></pre><p>now let&#39;s plot them up</p><pre><code class="language-julia">p = heatmap(chunk)
 plot!.(aps, c=:white)
-p</code></pre><p><img src="../plot-3.png" alt/></p><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-julia">table = aperture_photometry(aps, chunk)</code></pre><table class="data-frame"><thead><tr><th></th><th>xcenter</th><th>ycenter</th><th>aperture_sum</th></tr><tr><th></th><th>Float64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 3 columns</p><tr><th>1</th><td>47.5</td><td>67.5</td><td>248267.0</td></tr><tr><th>2</th><td>29.5</td><td>62.5</td><td>225989.0</td></tr><tr><th>3</th><td>23.5</td><td>48.5</td><td>149979.0</td></tr><tr><th>4</th><td>17.5</td><td>29.5</td><td>72189.4</td></tr><tr><th>5</th><td>13.25</td><td>10.5</td><td>148118.0</td></tr><tr><th>6</th><td>65.5</td><td>14.0</td><td>202803.0</td></tr></tbody></table><h2 id="Stars-with-Spatial-Background-Subtraction-1"><a class="docs-heading-anchor" href="#Stars-with-Spatial-Background-Subtraction-1">Stars with Spatial Background Subtraction</a><a class="docs-heading-anchor-permalink" href="#Stars-with-Spatial-Background-Subtraction-1" title="Permalink"></a></h2><p>This example will be the same as <a href="#Simple-Stars-1">Simple Stars</a> but will add background estimation using the tools in <a href="../../background/#Background-Estimation-1">Background Estimation</a></p><pre><code class="language-julia">clipped = sigma_clip(chunk, 1, fill=NaN)
+p</code></pre><p><img src="../plot-3.png" alt/></p><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-julia">table = aperture_photometry(aps, chunk)</code></pre><pre><code class="language-none">Table with 3 columns and 6 rows:
+     xcenter  ycenter  aperture_sum
+   ┌───────────────────────────────
+ 1 │ 47.5     67.5     248267.0
+ 2 │ 29.5     62.5     225989.0
+ 3 │ 23.5     48.5     149979.0
+ 4 │ 17.5     29.5     72189.4
+ 5 │ 13.25    10.5     148118.0
+ 6 │ 65.5     14.0     202803.0</code></pre><h2 id="Stars-with-Spatial-Background-Subtraction-1"><a class="docs-heading-anchor" href="#Stars-with-Spatial-Background-Subtraction-1">Stars with Spatial Background Subtraction</a><a class="docs-heading-anchor-permalink" href="#Stars-with-Spatial-Background-Subtraction-1" title="Permalink"></a></h2><p>This example will be the same as <a href="#Simple-Stars-1">Simple Stars</a> but will add background estimation using the tools in <a href="../../background/#Background-Estimation-1">Background Estimation</a></p><pre><code class="language-julia">clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
 
@@ -46,7 +54,7 @@ plot(layout=(2, 2), size=(600, 600), ticks=false)
 heatmap!(chunk, title=&quot;Original&quot;, subplot=1)
 heatmap!(clipped, title=&quot;Sigma-Clipped&quot;, subplot=2)
 heatmap!(bkg, title=&quot;Background&quot;, subplot=3)
-heatmap!(bkg_rms, title=&quot;Background RMS&quot;, subplot=4)</code></pre><p><img src="../plot-4.png" alt/></p><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-julia">p = plot(layout=(1, 2),
+heatmap!(bkg_rms, title=&quot;Background RMS&quot;, subplot=4)</code></pre><p><img src="../plot-4.png" alt/></p><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-">p = plot(layout=(1, 2),
     clims=(minimum(chunk .- bkg),
     maximum(chunk)),
     size=(600, 260),
@@ -55,4 +63,13 @@ heatmap!(chunk, title=&quot;Original&quot;, colorbar=false, subplot=1)
 heatmap!(chunk .- bkg, title=&quot;Subtracted&quot;, subplot=2)
 plot!.(aps, c=:white, subplot=1)
 plot!.(aps, c=:white, subplot=2)
-p</code></pre><p><img src="../plot-5.png" alt/></p><pre><code class="language-julia">table = aperture_photometry(aps, chunk .- bkg, bkg_rms)</code></pre><table class="data-frame"><thead><tr><th></th><th>xcenter</th><th>ycenter</th><th>aperture_sum</th><th>aperture_sum_err</th></tr><tr><th></th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>47.5</td><td>67.5</td><td>213534.0</td><td>431.48</td></tr><tr><th>2</th><td>29.5</td><td>62.5</td><td>114217.0</td><td>887.37</td></tr><tr><th>3</th><td>23.5</td><td>48.5</td><td>59230.7</td><td>1061.28</td></tr><tr><th>4</th><td>17.5</td><td>29.5</td><td>23159.6</td><td>697.556</td></tr><tr><th>5</th><td>13.25</td><td>10.5</td><td>54638.1</td><td>1048.67</td></tr><tr><th>6</th><td>65.5</td><td>14.0</td><td>91179.1</td><td>1168.71</td></tr></tbody></table></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../apertures/">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 14 May 2020 00:36">Thursday 14 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+p
+savefig(&quot;plot-5.png&quot;); nothing # hide</code></pre><p><img src="../plot-5.png" alt/></p><pre><code class="language-julia">table = aperture_photometry(aps, chunk .- bkg, bkg_rms)</code></pre><pre><code class="language-none">Table with 4 columns and 6 rows:
+     xcenter  ycenter  aperture_sum  aperture_sum_err
+   ┌─────────────────────────────────────────────────
+ 1 │ 47.5     67.5     213534.0      431.48
+ 2 │ 29.5     62.5     114217.0      887.37
+ 3 │ 23.5     48.5     59230.7       1061.28
+ 4 │ 17.5     29.5     23159.6       697.556
+ 5 │ 13.25    10.5     54638.1       1048.67
+ 6 │ 65.5     14.0     91179.1       1168.71</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../apertures/">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 28 May 2020 00:01">Thursday 28 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
