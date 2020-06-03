@@ -54,7 +54,7 @@ plot(layout=(2, 2), size=(600, 600), ticks=false)
 heatmap!(chunk, title=&quot;Original&quot;, subplot=1)
 heatmap!(clipped, title=&quot;Sigma-Clipped&quot;, subplot=2)
 heatmap!(bkg, title=&quot;Background&quot;, subplot=3)
-heatmap!(bkg_rms, title=&quot;Background RMS&quot;, subplot=4)</code></pre><p><img src="../plot-4.png" alt/></p><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-">p = plot(layout=(1, 2),
+heatmap!(bkg_rms, title=&quot;Background RMS&quot;, subplot=4)</code></pre><p><img src="../plot-4.png" alt/></p><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-julia">p = plot(layout=(1, 2),
     clims=(minimum(chunk .- bkg),
     maximum(chunk)),
     size=(600, 260),
@@ -63,8 +63,7 @@ heatmap!(chunk, title=&quot;Original&quot;, colorbar=false, subplot=1)
 heatmap!(chunk .- bkg, title=&quot;Subtracted&quot;, subplot=2)
 plot!.(aps, c=:white, subplot=1)
 plot!.(aps, c=:white, subplot=2)
-p
-savefig(&quot;plot-5.png&quot;); nothing # hide</code></pre><p><img src="../plot-5.png" alt/></p><pre><code class="language-julia">table = aperture_photometry(aps, chunk .- bkg, bkg_rms)</code></pre><pre><code class="language-none">Table with 4 columns and 6 rows:
+p</code></pre><p><img src="../plot-5.png" alt/></p><pre><code class="language-julia">table = aperture_photometry(aps, chunk .- bkg, bkg_rms)</code></pre><pre><code class="language-none">Table with 4 columns and 6 rows:
      xcenter  ycenter  aperture_sum  aperture_sum_err
    ┌─────────────────────────────────────────────────
  1 │ 47.5     67.5     213534.0      431.48
@@ -72,4 +71,4 @@ savefig(&quot;plot-5.png&quot;); nothing # hide</code></pre><p><img src="../plot
  3 │ 23.5     48.5     59230.7       1061.28
  4 │ 17.5     29.5     23159.6       697.556
  5 │ 13.25    10.5     54638.1       1048.67
- 6 │ 65.5     14.0     91179.1       1168.71</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../apertures/">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 28 May 2020 00:02">Thursday 28 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 6 │ 65.5     14.0     91179.1       1168.71</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../apertures/">« Apertures</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 3 June 2020 02:23">Wednesday 3 June 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
