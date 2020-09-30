@@ -31,7 +31,7 @@ sum(result) = 44
 
 This module uses the above principal with common aperture shapes in a fast and precise manner, including exact overlaps between apertures and pixels.
 
-The majority of the lifting is done with the [`aperture_photometry`](@ref) function with common shapes being described in [Apertures](@ref). It is possible to create a custom aperture by sub-typing the [`Aperture.AbstractAperture`](@ref) class, although it may be easier to perform PSF photometry instead.
+The majority of the lifting is done with the [`photometry`](@ref) function with common shapes being described in [Apertures](@ref). It is possible to create a custom aperture by sub-typing the [`Aperture.AbstractAperture`](@ref) class, although it may be easier to perform PSF photometry instead.
 
 ## Pixel Convention
 
@@ -42,7 +42,7 @@ This is mostly in line with Julia's indexing, although it is important to rememb
 ## API/Reference
 
 ```@docs
-aperture_photometry
+photometry
 ```
 
 ## Performance
