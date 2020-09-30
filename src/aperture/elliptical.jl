@@ -30,11 +30,13 @@ end
 
 
 EllipticalAperture(x, y, a, b, theta) = EllipticalAperture(promote(x, y, a, b, theta)...)
-EllipticalAperture(center::AbstractVector, a, b, theta) = EllipticalAperture(center..., a, b, theta)
+EllipticalAperture(center, a, b, theta) = EllipticalAperture(center..., a, b, theta)
 
 function Base.show(io::IO, e::EllipticalAperture)
     print(io, "EllipticalAperture($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°)")
 end
+
+oblique_coefficients(ap::EllipticalAperture) = oblique_coefficients(ap.a, ap.b, ap.theta)
 
 function oblique_coefficients(a, b, theta)
     sintheta, costheta = sincos(deg2rad(theta))
@@ -46,8 +48,22 @@ function oblique_coefficients(a, b, theta)
     return cxx, cyy, cxy
 end
 
-function bbox(e::EllipticalAperture)
+function overlap(ap::EllipticalAperture, i, j)
+    cxx, cyy, cxy = oblique_coefficients(ap)
+    flags = (
+        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy)
+    )
+    n_in = count(flags)
+    n_in === 4 && return Inside
+    n_in === 0 && return Outside
 
+    return Partial
+end
+
+function bounds(e::EllipticalAperture)
     sintheta, costheta = sincos(deg2rad(e.theta))
 
     t = atan((-e.b * tand(e.theta)) / e.a)
@@ -59,26 +75,18 @@ function bbox(e::EllipticalAperture)
     for n in -2:2
         sint, cost = sincos(t + n * pi)
         xmin = min(xmin, e.x + e.a * cost * costheta - e.b * sint * sintheta)
-    end
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
         xmax = max(xmax, e.x + e.a * cost * costheta - e.b * sint * sintheta)
     end
 
-    t = atan((e.b * cotd(e.theta)) / e.a)
+    t2 = atan((e.b * cotd(e.theta)) / e.a)
 
-    sint, cost = sincos(t)
+    sint, cost = sincos(t2)
     ymin = e.y + e.b * sint * costheta + e.a * cost * sintheta
     ymax = ymin
 
     for n in -2:2
-        sint, cost = sincos(t + n * pi)
+        sint, cost = sincos(t2 + n * pi)
         ymin = min(ymin, e.y + e.b * sint * costheta + e.a * cost * sintheta)
-    end
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
         ymax = max(ymax, e.y + e.b * sint * costheta + e.a * cost * sintheta)
     end
 
@@ -90,11 +98,8 @@ function bbox(e::EllipticalAperture)
     return xmin, xmax, ymin, ymax
 end
 
-function mask(e::EllipticalAperture; method = :center)
-    bounds = edges(e)
-    ny, nx = size(e)
-    return elliptical_overlap(bounds..., nx, ny, e.a, e.b, e.theta, method = method)
-end
+partial(ap::EllipticalAperture) = (x, y) -> elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
+partial(ap::Subpixel{<:EllipticalAperture}) = (x, y) -> elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta, ap.N)
 
 
 #######################################################
@@ -135,7 +140,31 @@ function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")
 end
 
-function bbox(e::EllipticalAnnulus)
+
+function overlap(ap::EllipticalAnnulus, i, j)
+    coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
+    flags_out = (
+        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_out...)
+    )
+
+    coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
+    flags_in = (
+        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_in...)
+    )
+
+   all(flags_out) && all(!, flags_in) && return Inside
+   all(flags_in) || all(!, flags_out) && return Outside
+
+    return Partial
+end
+
+function bounds(e::EllipticalAnnulus)
 
     sintheta, costheta = sincos(deg2rad(e.theta))
 
@@ -148,26 +177,18 @@ function bbox(e::EllipticalAnnulus)
     for n in -2:2
         sint, cost = sincos(t + n * pi)
         xmin = min(xmin, e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta)
-    end
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
         xmax = max(xmax, e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta)
     end
 
-    t = atan((e.b_out * cotd(e.theta)) / e.a_out)
+    t2 = atan((e.b_out * cotd(e.theta)) / e.a_out)
 
-    sint, cost = sincos(t)
+    sint, cost = sincos(t2)
     ymin = e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta
     ymax = ymin
 
     for n in -2:2
-        sint, cost = sincos(t + n * pi)
+        sint, cost = sincos(t2 + n * pi)
         ymin = min(ymin, e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta)
-    end
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
         ymax = max(ymax, e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta)
     end
 
@@ -179,11 +200,13 @@ function bbox(e::EllipticalAnnulus)
     return xmin, xmax, ymin, ymax
 end
 
-function mask(e::EllipticalAnnulus; method = :exact)
-    bounds = edges(e)
-    ny, nx = size(e)
-    out = elliptical_overlap(bounds..., nx, ny, e.a_out, e.b_out, e.theta, method = method)
-    out .-= elliptical_overlap(bounds..., nx, ny, e.a_in, e.b_in, e.theta, method = method)
 
-    return out
+function partial(ap::EllipticalAnnulus)
+    (x, y) -> elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta) -
+              elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta)
+end
+
+function partial(ap::Subpixel{<:EllipticalAnnulus})
+    (x, y) -> elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta, ap.N) -
+              elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta, ap.N)
 end

@@ -29,14 +29,14 @@ struct RectangularAperture{T <: Number} <: AbstractAperture
     end
 end
 
-RectangularAperture(center::AbstractVector, w, h, θ) = RectangularAperture(center..., w, h, θ)
-RectangularAperture(x, y,  w, h, θ) = RectangularAperture(promote(x, y, w, h, θ)...)
+RectangularAperture(center, w, h, θ) = RectangularAperture(center..., w, h, θ)
+RectangularAperture(x, y, w, h, θ) = RectangularAperture(promote(x, y, w, h, θ)...)
 
 function Base.show(io::IO, ap::RectangularAperture)
     print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w), h=$(ap.h), θ=$(ap.theta)°)")
 end
 
-function bbox(ap::RectangularAperture{T}) where T
+function bounds(ap::RectangularAperture)
     w2 = ap.w / 2
     h2 = ap.h / 2
     sint, cost = sincos(deg2rad(ap.theta))
@@ -56,11 +56,23 @@ function bbox(ap::RectangularAperture{T}) where T
     return xmin, xmax, ymin, ymax
 end
 
-function mask(ap::RectangularAperture; method = :exact)
-    bounds = edges(ap)
-    ny, nx = size(ap)
-    return rectangular_overlap(bounds..., nx, ny, ap.w, ap.h, ap.theta, method = method)
+function overlap(ap::RectangularAperture, i, j)
+    y = i - ap.y
+    x = j - ap.x
+    flags = (
+        inside_rectangle(x - 0.5, y - 0.5, ap.w, ap.h, ap.theta),
+        inside_rectangle(x - 0.5, y + 0.5, ap.w, ap.h, ap.theta),
+        inside_rectangle(x + 0.5, y - 0.5, ap.w, ap.h, ap.theta),
+        inside_rectangle(x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
+    )
+    all(flags) && return Inside
+    all(!, flags) && return Outside
+
+    return Partial
 end
+
+partial(ap::RectangularAperture) = (x, y) -> rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
+partial(ap::Subpixel{<:RectangularAperture}) = (x, y) -> rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
 
 #######################################################
 
@@ -100,7 +112,31 @@ function Base.show(io::IO, ap::RectangularAnnulus)
     print(io, "RectangularAnnulus($(ap.x), $(ap.y), w_in=$(ap.w_in), w_out=$(ap.w_out), h_in=$(ap.h_in), h_out=$(ap.h_out), θ=$(ap.theta)°)")
 end
 
-function bbox(ap::RectangularAnnulus)
+
+function overlap(ap::RectangularAnnulus, i, j)
+    y = i - ap.y
+    x = j - ap.x
+    flags_out = (
+        inside_rectangle(x - 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
+        inside_rectangle(x - 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta),
+        inside_rectangle(x + 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
+        inside_rectangle(x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta)
+    )
+
+    flags_in = (
+        inside_rectangle(x - 0.5, y - 0.5, ap.w_in, ap.h_in, ap.theta),
+        inside_rectangle(x - 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta),
+        inside_rectangle(x + 0.5, y - 0.5, ap.w_in, ap.h_in, ap.theta),
+        inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+    )
+
+   all(flags_out) && all(!, flags_in) && return Inside
+   all(flags_in) || all(!, flags_out) && return Outside
+
+    return Partial
+end
+
+function bounds(ap::RectangularAnnulus)
     w2 = ap.w_out / 2
     h2 = ap.h_out / 2
     sint, cost = sincos(deg2rad(ap.theta))
@@ -120,9 +156,12 @@ function bbox(ap::RectangularAnnulus)
     return (xmin, xmax, ymin, ymax)
 end
 
-function mask(ap::RectangularAnnulus; method = :exact)
-    bounds = edges(ap)
-    ny, nx = size(ap)
-    out = rectangular_overlap(bounds..., nx, ny, ap.w_out, ap.h_out, ap.theta, method = method)
-    out .-= rectangular_overlap(bounds..., nx, ny,  ap.w_in, ap.h_in, ap.theta, method = method)
+function partial(ap::RectangularAnnulus)
+    (x, y) -> rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta) -
+              rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+end
+
+function partial(ap::Subpixel{<:RectangularAnnulus})
+    (x, y) -> rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, ap.N) -
+              rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, ap.N)
 end

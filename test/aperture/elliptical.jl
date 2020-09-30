@@ -1,16 +1,16 @@
 using Photometry.Aperture: edges,
-                           bbox,
+                           bounds,
                            oblique_coefficients
 
 @testset "Apertures" begin
 
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
-    @test bbox(ap_ellipse) == (-20, 20, -10, 10)
+    @test bounds(ap_ellipse) == (-20, 20, -10, 10)
 
     @test EllipticalAperture([0, 0], 20, 10, 0) == ap_ellipse
 
     ap_ellipse = EllipticalAperture(0, 0, 2, 1, 45)
-    @test bbox(ap_ellipse) == (-2, 2, -2, 2)
+    @test bounds(ap_ellipse) == (-2, 2, -2, 2)
 end
 
 @testset "Elliptical Aperture" begin
@@ -56,6 +56,6 @@ end
 @testset "Elliptical Annulus bounding box" begin
 
     e = EllipticalAnnulus(0, 0, 8, 16, 4, 0)
-    @test all(bbox(e) == (-16, 16, -4, 4))
+    @test all(bounds(e) == (-16, 16, -4, 4))
 
 end

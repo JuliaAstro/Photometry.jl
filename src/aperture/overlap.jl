@@ -33,7 +33,6 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
                 pycen = pymin + 0.5dy
                 pymax = pymin + dy
                 if pymax > bymin && pymin < bymax
-
                     # distance from circle to pixel
                     d = sqrt(pxcen^2 + pycen^2)
 
@@ -43,6 +42,7 @@ function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
                     # partially within radius
                     elseif d < r + pixel_radius
                         if method === :exact
+                            @show j,i
                             out[j, i] = circular_overlap_single_exact(pxmin, pymin, pxmax, pymax, r) / (dx * dy)
                         elseif method === :center
                             out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
@@ -187,7 +187,7 @@ If point inside ellipse: Returns true else returns false
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
+@inline inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
     R = float(typeof(xmin))
@@ -201,7 +201,7 @@ function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method 
     pixel_radius = 0.5sqrt(dx^2 + dy^2)
 
     # bounding box
-    bxmin, bxmax, bymin, bymax = bbox(EllipticalAperture(0, 0, a, b, theta))
+    bxmin, bxmax, bymin, bymax = bounds(EllipticalAperture(0, 0, a, b, theta))
 
     bxmin -= 0.5dx
     bxmax += 0.5dx
@@ -291,8 +291,8 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     ds = [d1, d2, d3]
     order = sortperm(ds)
     ds = ds[order]
-    x1, x2, x3 = [x1, x2, x3][order]
-    y1, y2, y3 = [y1, y2, y3][order]
+    x1, x2, x3 = (x1, x2, x3)[order]
+    y1, y2, y3 = (y1, y2, y3)[order]
 
     # which are inside circle
     inside = ds .< 1
@@ -489,7 +489,7 @@ function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = 
     dy = (ymax - ymin) / ny
 
     # bounding box
-    bxmin, bxmax, bymin, bymax = bbox(RectangularAperture(0, 0, w, h, θ))
+    bxmin, bxmax, bymin, bymax = bounds(RectangularAperture(0, 0, w, h, θ))
 
     bxmin -= 0.5dx
     bxmax += 0.5dx
@@ -574,6 +574,7 @@ function intersection_area(X::AbstractHyperrectangle{N},
 
     Y_clist = linear_map(matrix(Y), set(Y)) |> constraints_list
     Y_poly = HPolygon(Y_clist, sort_constraints = true, prune = false, check_boundedness = false)
-
-    return intersection(X_poly, Y_poly) |> area
+    inter = intersection(X_poly, Y_poly)
+    
+    return inter isa EmptySet ? 0.0 : area(inter)
 end

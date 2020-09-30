@@ -6,9 +6,8 @@ module Aperture
 
 using TypedTables
 
-export mask,
-       cutout,
-       aperture_photometry,
+export photometry,
+       Subpixel,
        CircularAperture,
        CircularAnnulus,
        EllipticalAperture,
@@ -22,94 +21,84 @@ The abstract super-type for Apertures
 abstract type AbstractAperture end
 
 """
-    mask(::AbstractAperture; method=:exact)
-
-Return an array of the weighting of the aperture in the minimum bounding box. For an explanation of the different methods, see [`aperture_photometry`](@ref).
-"""
-mask(::AbstractAperture)
-
-"""
-    bbox(::AbstractAperture)
+    bounds(::AbstractAperture)
 
 Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture.
 """
-bbox(::AbstractAperture)
+bounds(::AbstractAperture)
 
 """
     size(::AbstractAperture)
 
 Return (`ny`, `nx`) of the aperture.
 """
-function Base.size(a::AbstractAperture)
-    box = bbox(a)
-    return (box[4] - box[3] + 1, box[2] - box[1] + 1)
-end
+Base.size(ap::AbstractAperture) = map(length, axes(ap))
+Base.size(ap::AbstractAperture, dim) = length(axes(ap, dim))
 
-function edges(ap::AbstractAperture)
-    ibox = bbox(ap)
-    xmin = ibox[1] - ap.x - 0.5
-    xmax = ibox[2] - ap.x + 0.5
-    ymin = ibox[3] - ap.y - 0.5
-    ymax = ibox[4] - ap.y + 0.5
-    return (xmin, xmax, ymin, ymax)
-end
 
-function overlap_slices(c::AbstractAperture, shape::Tuple)
-    xmin, xmax, ymin, ymax = bbox(c)
+###
+### common implementations
+###
 
-    # No overlap
-    if xmin ≥ shape[2] || ymin ≥ shape[1] || xmax ≤ 1 || ymax ≤ 1
-        return nothing, nothing
-    end
-
+function cutout_indices(ap::AbstractAperture, data::AbstractArray)
     # slices for indexing the larger array
-    slices_large = (max(ymin, 1):min(ymax, shape[1]),
-                    max(xmin, 1):min(xmax, shape[2]))
+    xmin, xmax, ymin, ymax = bounds(ap)
 
-    # slices for indexing the smaller array
-    slices_small = (max(2 - ymin, 1):min(ymax - ymin, shape[1] - ymin) + 1,
-                    max(2 - xmin, 1):min(xmax - xmin, shape[2] - xmin) + 1)
-
-    return slices_large, slices_small
+    x_slice = max(xmin, firstindex(data, 2)):min(xmax, lastindex(data, 2))
+    y_slice = max(ymin, firstindex(data, 1)):min(ymax, lastindex(data, 1))
+    return CartesianIndices((y_slice, x_slice))
 end
 
-"""
-    cutout(::AbstractAperture, data)
+Base.getindex(ap::AbstractAperture, idx::CartesianIndex) = getindex(ap, idx.I...)
+Base.getindex(ap::AbstractAperture, idxs) = map(idx -> ap[idx], idxs)
+Base.eachindex(ap::AbstractAperture) = CartesianIndices(axes(ap))
+Base.collect(ap::AbstractAperture) = map(idx -> ap[idx], eachindex(ap))
 
-Get the cutout of the aperture from the `data`. This will handle partial overlap by padding the data with zeros.
-"""
-function cutout(c::AbstractAperture, data::AbstractMatrix{T}) where T
-    box = bbox(c)
-    maxy, maxx = size(data)
-    ny, nx = size(c)
+function Base.axes(ap::AbstractAperture)
+    xmin, xmax, ymin, ymax = bounds(ap)
+    return ymin:ymax, xmin:xmax
+end
+Base.axes(ap::AbstractAperture, dim) = axes(ap)[dim]
 
-    # Check if x or y are less than our minimum index
-    partial_overlap = box[1] < 1 || box[3] < 1 || box[2] > maxx || box[4] > maxy
 
-    if !partial_overlap
-        cutout = data[box[3]:box[4], box[1]:box[2]]
-    end
-
-    if partial_overlap || size(cutout) != size(c)
-        slices_large, slices_small = overlap_slices(c, size(data))
-        # no overlap
-        slices_small === nothing && return nothing
-
-        cutout = zeros(T, ny, nx)
-        cutout[slices_small...] .= data[slices_large...]
-    end
-    return cutout
+struct Subpixel{AP<:AbstractAperture} <: AbstractAperture
+    ap::AP
+    N::Int
 end
 
-function apply(a::AbstractAperture, data::AbstractMatrix; method = :exact)
-    cut = cutout(a, data)
-    cut === nothing && return similar(data, 0, 0)
-    return cut .* mask(a, method = method)
+function Base.show(io::IO, c::Subpixel)
+    print(io, "Subpixel(")
+    print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
+    print(io, ", $(c.N))")
 end
 
+bounds(sp_ap::Subpixel) = bounds(sp_ap.ap)
+overlap(sp_ap::Subpixel, args...) = overlap(sp_ap.ap, args...)
+
+Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
+
+
+function Base.getproperty(ap::Subpixel, key::Symbol)
+    key in (:N, :ap) && return getfield(ap, key)
+    return getfield(ap.ap, key)
+end
+
+@enum OverlapFlag Inside Outside Partial
+
+function Base.getindex(ap::AbstractAperture, i, j)
+    flag = overlap(ap, i, j)
+    flag === Outside && return 0.0
+    flag === Inside && return 1.0
+
+    return partial(ap)(j - ap.x, i - ap.y)
+end
+
+
+###########
+
 """
-    aperture_photometry(::AbstractAperture, data::AbstractMatrix, [error]; method=:exact)
-    aperture_photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; method=:exact)
+    photometry(::AbstractAperture, data::AbstractMatrix, [error])
+    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error])
 
 Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `TypedTables.Table`, otherwise a `NamedTuple`.
 
@@ -124,34 +113,34 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 !!! tip
     This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
-function aperture_photometry(a::AbstractAperture, data::AbstractMatrix, error; method = :exact)
-    data_weighted = apply(a, data, method = method)
-    aperture_sum = sum(data_weighted)
-    variance_weighted = apply(a, error.^2, method = method)
-    aperture_sum_err = sqrt(sum(variance_weighted))
+function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
+    idxs = cutout_indices(ap, data)
+    isempty(idxs) && return (xcenter = ap.x, ycenter = ap.y, aperture_sum = 0.0, aperture_sum_err = NaN)
+    aperture_sum = sum(idx -> ap[idx] * data[idx], idxs)
+    aperture_sum_err = sqrt(sum(idx -> ap[idx] * error[idx]^2, idxs))
 
-    return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
+    return (xcenter = ap.x, ycenter = ap.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
 end
 
-function aperture_photometry(a::AbstractAperture, data::AbstractMatrix; method = :exact)
-    data_weighted = apply(a, data, method = method)
-    aperture_sum = sum(data_weighted)
-
-    return (xcenter = a.x, ycenter = a.y, aperture_sum = aperture_sum)
+function photometry(ap::AbstractAperture, data::AbstractMatrix)
+    idxs = cutout_indices(ap, data)
+    isempty(idxs) && return (xcenter = ap.x, ycenter = ap.y, aperture_sum = 0.0)
+    aperture_sum = sum(idx -> ap[idx] * data[idx], idxs)
+    return (xcenter = ap.x, ycenter = ap.y, aperture_sum = aperture_sum)
 end
 
-function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error; method = :exact)
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error)
     rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)})
     Threads.@threads  for idx in eachindex(rows)
-        rows[idx] = aperture_photometry(aps[idx], data, error; method = method)
+        rows[idx] = photometry(aps[idx], data, error)
     end
     return Table(rows)
 end
 
-function aperture_photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; method = :exact)
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix)
     rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum)})
     Threads.@threads for idx in eachindex(rows)
-        rows[idx] = aperture_photometry(aps[idx], data; method = method)
+        rows[idx] = photometry(aps[idx], data)
     end
     return Table(rows)
 end
