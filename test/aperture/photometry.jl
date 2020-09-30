@@ -181,7 +181,7 @@ end # photometry - circular
         data = ones(20, 20)
         error = ones(size(data))
         positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
-        apertures = [EllipticalAperture(positions[i, :], 5, 5, 0) for i in axes(positions, 1)]
+        apertures = [EllipticalAperture(positions[i, :], 5, 5) for i in axes(positions, 1)]
 
         table = photometry(Subpixel.(apertures, 128), data, error)
         @test table.aperture_sum[1] ≈ 25π rtol = 1e-3

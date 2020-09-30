@@ -31,6 +31,7 @@ function Base.show(io::IO, e::EllipticalAperture)
 end
 
 oblique_coefficients(ap::EllipticalAperture) = oblique_coefficients(ap.a, ap.b, ap.theta)
+oblique_coefficients(ap::Subpixel{<:EllipticalAperture}) = oblique_coefficients(ap.ap)
 
 function oblique_coefficients(a, b, theta)
     sintheta, costheta = sincos(deg2rad(theta))
@@ -50,9 +51,8 @@ function overlap(ap::EllipticalAperture, i, j)
         inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
         inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy)
     )
-    n_in = count(flags)
-    n_in === 4 && return Inside
-    n_in === 0 && return Outside
+    all(flags) && return Inside
+    all(!, flags) && return Outside
 
     return Partial
 end
@@ -61,7 +61,7 @@ function bounds(e::EllipticalAperture)
     iszero(e.a) && return e.x, e.x, e.y, e.y
     sintheta, costheta = sincos(deg2rad(e.theta))
 
-    t = atan((-e.b * tand(e.theta)) / e.a)
+    t = atan(-e.b * tand(e.theta), e.a)
     
     sint, cost = sincos(t)
     xmin = e.x + e.a * cost * costheta - e.b * sint * sintheta
@@ -73,7 +73,7 @@ function bounds(e::EllipticalAperture)
         xmax = max(xmax, e.x + e.a * cost * costheta - e.b * sint * sintheta)
     end
 
-    t2 = atan((e.b * cotd(e.theta)) / e.a)
+    t2 = atan(e.b * cotd(e.theta),  e.a)
 
     sint, cost = sincos(t2)
     ymin = e.y + e.b * sint * costheta + e.a * cost * sintheta
@@ -94,7 +94,7 @@ function bounds(e::EllipticalAperture)
 end
 
 partial(ap::EllipticalAperture, x, y) = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
-partial(ap::Subpixel{<:EllipticalAperture}, x, y) = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta, ap.N)
+partial(ap::Subpixel{<:EllipticalAperture}, x, y) = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(ap)..., ap.N)
 
 
 #######################################################
@@ -157,7 +157,7 @@ function bounds(e::EllipticalAnnulus)
 
     sintheta, costheta = sincos(deg2rad(e.theta))
 
-    t = atan((-e.b_out * tand(e.theta)) / e.a_out)
+    t = atan(-e.b_out * tand(e.theta), e.a_out)
 
     sint, cost = sincos(t)
     xmin = e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta
@@ -169,7 +169,7 @@ function bounds(e::EllipticalAnnulus)
         xmax = max(xmax, e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta)
     end
 
-    t2 = atan((e.b_out * cotd(e.theta)) / e.a_out)
+    t2 = atan(e.b_out * cotd(e.theta), e.a_out)
 
     sint, cost = sincos(t2)
     ymin = e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta
@@ -197,7 +197,9 @@ function partial(ap::EllipticalAnnulus, x, y)
 end
 
 function partial(ap::Subpixel{<:EllipticalAnnulus}, x, y)
-    f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta, ap.N)
-    f2 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta, ap.N)
+    coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
+    f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_out..., ap.N)
+    coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
+    f2 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_in..., ap.N)
     return f1 - f2
 end
