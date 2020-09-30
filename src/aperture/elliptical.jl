@@ -3,8 +3,8 @@ Part of this work is derived from astropy/photutils. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
 """
-    EllipticalAperture(x, y, a, b, θ)
-    EllipticalAperture(position, a, b, θ)
+    EllipticalAperture(x, y, a, b, θ=0)
+    EllipticalAperture(position, a, b, θ=0)
 
 An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and position angle `θ`. `a` and `b` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
 
@@ -20,17 +20,11 @@ struct EllipticalAperture{T <: Number} <: AbstractAperture
     a::T
     b::T
     theta::T
-
-    function EllipticalAperture(x::T, y::T, a::T, b::T, theta::T) where T <: Number
-        a < 0 && error("Invalid axis a=$a. a must be greater than or equal to 0")
-        b < 0 && error("Invalid axis b=$b. b must be greater than or equal to 0")
-        new{T}(x, y, a, b, mod(theta, 360))
-    end
 end
 
 
-EllipticalAperture(x, y, a, b, theta) = EllipticalAperture(promote(x, y, a, b, theta)...)
-EllipticalAperture(center, a, b, theta) = EllipticalAperture(center..., a, b, theta)
+EllipticalAperture(x::Number, y::Number, a, b, theta=0) = EllipticalAperture(promote(x, y, a, b, theta)...)
+EllipticalAperture(center, a, b, theta=0) = EllipticalAperture(center..., a, b, theta)
 
 function Base.show(io::IO, e::EllipticalAperture)
     print(io, "EllipticalAperture($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°)")
@@ -64,10 +58,11 @@ function overlap(ap::EllipticalAperture, i, j)
 end
 
 function bounds(e::EllipticalAperture)
+    iszero(e.a) && return e.x, e.x, e.y, e.y
     sintheta, costheta = sincos(deg2rad(e.theta))
 
     t = atan((-e.b * tand(e.theta)) / e.a)
-
+    
     sint, cost = sincos(t)
     xmin = e.x + e.a * cost * costheta - e.b * sint * sintheta
     xmax = xmin
@@ -98,15 +93,15 @@ function bounds(e::EllipticalAperture)
     return xmin, xmax, ymin, ymax
 end
 
-partial(ap::EllipticalAperture) = (x, y) -> elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
-partial(ap::Subpixel{<:EllipticalAperture}) = (x, y) -> elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta, ap.N)
+partial(ap::EllipticalAperture, x, y) = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
+partial(ap::Subpixel{<:EllipticalAperture}, x, y) = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta, ap.N)
 
 
 #######################################################
 
 """
-    EllipticalAnnulus(x, y, a_in, a_out, b_out, θ)
-    EllipticalAnnulus(position, a_in, a_out, b_out, θ)
+    EllipticalAnnulus(x, y, a_in, a_out, b_out, θ=0)
+    EllipticalAnnulus(position, a_in, a_out, b_out, θ=0)
 An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis `a_out`, outer semi-minor axis `b_out`, and position angle `θ`.
 `a_out` ≥ `a_in` ≥ 0 and `b_out` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
 
@@ -125,16 +120,10 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture
     a_out::T
     b_out::T
     theta::T
-
-    function EllipticalAnnulus(x::T, y::T, a_in::T, b_in::T, a_out::T, b_out::T, theta::T) where T <: Number
-        0 ≤ a_in ≤ a_out || error("Invalid axis a_in=$a_in or a_out=$a_out. a_out must be greater than a_in which must be greater than or equal to 0")
-        0 ≤ b_in ≤ b_out || error("Invalid axis b_in=$b_in or b_out=$b_out. b_out must be greater than b_in which must be greater than or equal to 0")
-        new{T}(x, y, a_in, b_in, a_out, b_out, mod(theta, 360))
-    end
 end
 
-EllipticalAnnulus(x, y, a_in, a_out, b_out, theta) = EllipticalAnnulus(promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...)
-EllipticalAnnulus(center::AbstractVector, a_in, a_out, b_out, theta) = EllipticalAnnulus(center..., a_in, a_out, b_out, theta)
+EllipticalAnnulus(x::Number, y::Number, a_in, a_out, b_out, theta=0) = EllipticalAnnulus(promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...)
+EllipticalAnnulus(center, a_in, a_out, b_out, theta=0) = EllipticalAnnulus(center..., a_in, a_out, b_out, theta)
 
 function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")
@@ -201,12 +190,14 @@ function bounds(e::EllipticalAnnulus)
 end
 
 
-function partial(ap::EllipticalAnnulus)
-    (x, y) -> elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta) -
-              elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta)
+function partial(ap::EllipticalAnnulus, x, y)
+    f1 = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta)
+    f2 = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta)
+    return f1 - f2
 end
 
-function partial(ap::Subpixel{<:EllipticalAnnulus})
-    (x, y) -> elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta, ap.N) -
-              elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta, ap.N)
+function partial(ap::Subpixel{<:EllipticalAnnulus}, x, y)
+    f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_out, ap.b_out, ap.theta, ap.N)
+    f2 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a_in, ap.b_in, ap.theta, ap.N)
+    return f1 - f2
 end

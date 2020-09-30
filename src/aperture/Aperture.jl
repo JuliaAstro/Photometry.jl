@@ -35,11 +35,6 @@ Return (`ny`, `nx`) of the aperture.
 Base.size(ap::AbstractAperture) = map(length, axes(ap))
 Base.size(ap::AbstractAperture, dim) = length(axes(ap, dim))
 
-
-###
-### common implementations
-###
-
 function cutout_indices(ap::AbstractAperture, data::AbstractArray)
     # slices for indexing the larger array
     xmin, xmax, ymin, ymax = bounds(ap)
@@ -52,7 +47,7 @@ end
 Base.getindex(ap::AbstractAperture, idx::CartesianIndex) = getindex(ap, idx.I...)
 Base.getindex(ap::AbstractAperture, idxs) = map(idx -> ap[idx], idxs)
 Base.eachindex(ap::AbstractAperture) = CartesianIndices(axes(ap))
-Base.collect(ap::AbstractAperture) = map(idx -> ap[idx], eachindex(ap))
+Base.collect(ap::AbstractAperture) = ap[eachindex(ap)]
 
 function Base.axes(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
@@ -68,7 +63,7 @@ end
 
 function Base.show(io::IO, c::Subpixel)
     print(io, "Subpixel(")
-    print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
+    print(io, c.ap)
     print(io, ", $(c.N))")
 end
 
@@ -90,7 +85,7 @@ function Base.getindex(ap::AbstractAperture, i, j)
     flag === Outside && return 0.0
     flag === Inside && return 1.0
 
-    return partial(ap)(j - ap.x, i - ap.y)
+    return partial(ap, j - ap.x, i - ap.y)
 end
 
 

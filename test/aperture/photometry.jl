@@ -28,16 +28,16 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = ones(10, 10)
     aperture = AP(-60, 60, params...)
-    @test aperture_photometry(aperture, data).aperture_sum ≈ 0
+    @test photometry(aperture, data).aperture_sum ≈ 0
 end
 
 @testset "inside zeros - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = zeros(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
-    table_cent = aperture_photometry(aperture, data, method = :center)
-    table_sub = aperture_photometry(aperture, data, method = (:subpixel, 10))
-    table_ex = aperture_photometry(aperture, data, method = :exact)
+    table_cent = photometry(Subpixel(aperture), data)
+    table_sub = photometry(Subpixel(aperture, 10), data)
+    table_ex = photometry(aperture, data)
 
 
     @test table_ex.aperture_sum ≈ 0
@@ -50,9 +50,9 @@ end
     data = ones(40, 40)
     aperture = AP(20.0, 20.0, params...)
 
-    table_cent = aperture_photometry(aperture, data, method = :center)
-    table_sub = aperture_photometry(aperture, data, method = (:subpixel, 10))
-    table_ex = aperture_photometry(aperture, data, method = :exact)
+    table_cent = photometry(Subpixel(aperture), data)
+    table_sub = photometry(Subpixel(aperture, 10), data)
+    table_ex = photometry(aperture, data)
 
     true_flux = area(aperture)
 
@@ -69,8 +69,8 @@ end
     err = zeros(40, 40)
     aperture = CircularAperture(20.0, 20.0, 5.0)
 
-    t1 = aperture_photometry(aperture, data)
-    t2 = aperture_photometry(aperture, data, err)
+    t1 = photometry(aperture, data)
+    t2 = photometry(aperture, data, err)
 
     # 1.0 compat (no hasproperty function)
     hasfunc = VERSION < v"1.1" ? haskey : hasproperty
@@ -79,44 +79,44 @@ end
     @test t2.aperture_sum_err == 0
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
-    t1 = aperture_photometry(apertures, data)
-    t2 = aperture_photometry(apertures, data, err)
+    t1 = photometry(apertures, data)
+    t2 = photometry(apertures, data, err)
 
     @test !hasfunc(t1, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
 end
 
-@testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)
-    data = zeros(40, 40)
-    err = zeros(40, 40)
-    aperture = AP(20.0, 20.0, params...)
+# @testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)
+#     data = zeros(40, 40)
+#     err = zeros(40, 40)
+#     aperture = AP(20.0, 20.0, params...)
 
-    @inferred aperture_photometry(aperture, data, method = :center)
-    @inferred aperture_photometry(aperture, data, method = (:subpixel, 10))
-    @inferred aperture_photometry(aperture, data, method = :exact)
+#     @inferred photometry(Subpixel(aperture), data)
+#     @inferred photometry(Subpixel(aperture, 10), data)
+#     @inferred photometry(aperture, data)
 
-    @inferred aperture_photometry(aperture, data, err, method = :center)
-    @inferred aperture_photometry(aperture, data, err, method = (:subpixel, 10))
-    @inferred aperture_photometry(aperture, data, err, method = :exact)
-end
+#     @inferred photometry(Subpixel(aperture), data, err)
+#     @inferred photometry(Subpixel(aperture, 10), data, err)
+#     @inferred photometry(aperture, data, err)
+# end
 
 @testset "photometry - circular" begin
     function test_aperture(data, aperture)
         error = ones(size(data))
 
-        table_cent = aperture_photometry(aperture, data, error, method = :center)
-        table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 12))
-        table_ex = aperture_photometry(aperture, data, error, method = :exact)
+        table_cent = photometry(Subpixel(aperture), data, error)
+        table_sub = photometry(Subpixel(aperture, 10), data, error)
+        table_ex = photometry(aperture, data, error)
 
         true_flux = area(aperture)
         true_err = sqrt(true_flux)
 
         @test table_ex.aperture_sum ≈ true_flux
-        @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
+        @test table_sub.aperture_sum ≈ table_ex.aperture_sum rtol = 1e-3
         @test table_cent.aperture_sum < table_ex.aperture_sum
 
         @test table_ex.aperture_sum_err ≈ true_err
-        @test table_sub.aperture_sum_err ≈ table_ex.aperture_sum_err atol = 0.1
+        @test table_sub.aperture_sum_err ≈ table_ex.aperture_sum_err rtol = 1e-3
         @test table_cent.aperture_sum_err < table_ex.aperture_sum_err
     end
 
@@ -138,7 +138,7 @@ end
         positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
         apertures = [CircularAperture(positions[i, :], 5) for i in axes(positions, 1)]
 
-        table = aperture_photometry(apertures, data, error)
+        table = photometry(apertures, data, error)
         @test table.aperture_sum[1] ≈ 25π
         @test all(table.aperture_sum[2:end] .< 25π)
     end
@@ -148,9 +148,9 @@ end # photometry - circular
     function test_elliptical_aperture(data, aperture)
         error = ones(size(data))
 
-        table_ex = aperture_photometry(aperture, data, error, method = :exact)
-        table_cent = aperture_photometry(aperture, data, error, method = :center)
-        table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 128))
+        table_cent = photometry(Subpixel(aperture), data, error)
+        table_sub = photometry(Subpixel(aperture, 128), data, error)
+        table_ex = photometry(aperture, data, error)
 
         true_flux = area(aperture)
         true_err = sqrt(true_flux)
@@ -183,7 +183,7 @@ end # photometry - circular
         positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
         apertures = [EllipticalAperture(positions[i, :], 5, 5, 0) for i in axes(positions, 1)]
 
-        table = aperture_photometry(apertures, data, error, method = (:subpixel, 128))
+        table = photometry(Subpixel.(apertures, 128), data, error)
         @test table.aperture_sum[1] ≈ 25π rtol = 1e-3
         @test all(table.aperture_sum[2:end] .< 25π)
     end
@@ -194,17 +194,20 @@ end # photometry elliptical
     function test_aperture(data, aperture)
         error = ones(size(data))
 
-        table_cent = aperture_photometry(aperture, data, error, method = :center)
-        table_sub = aperture_photometry(aperture, data, error, method = (:subpixel, 64))
+        table_cent = photometry(Subpixel(aperture), data, error)
+        table_sub = photometry(Subpixel(aperture, 10), data, error)
+        table_ex = photometry(aperture, data, error)
 
         true_flux = area(aperture)
         true_err = sqrt(true_flux)
 
+        @test table_ex.aperture_sum ≈ true_flux
         @test table_sub.aperture_sum ≈ true_flux rtol = 1e-2
-        @test table_cent.aperture_sum < table_sub.aperture_sum
+        @test table_cent.aperture_sum <= table_sub.aperture_sum
 
+        @test table_ex.aperture_sum_err ≈ true_err
         @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-2
-        @test table_cent.aperture_sum_err < table_sub.aperture_sum_err
+        @test table_cent.aperture_sum_err <= true_err
     end
 
     @testset "errors - RectangularAperture" begin
@@ -225,7 +228,7 @@ end # photometry elliptical
         positions = [10.5 10.5; 1 1; 1 20; 20 1; 20 20]
         apertures = [RectangularAperture(positions[i, :], 10, 10, 0) for i in axes(positions, 1)]
 
-        table = aperture_photometry(apertures, data, error, method = (:subpixel, 64))
+        table = photometry(Subpixel.(apertures, 64), data, error)
         @test table.aperture_sum[1] ≈ 100 rtol = 1e-2
         @test all(table.aperture_sum[2:end] .< 100)
     end

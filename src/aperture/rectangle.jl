@@ -4,8 +4,8 @@ are considered under a BSD 3-clause license. =#
 
 
 """
-    RectangularAperture(x, y, w, h, θ)
-    RectangularAperture(position, w, h, θ)
+    RectangularAperture(x, y, w, h, θ=0)
+    RectangularAperture(position, w, h, θ=0)
 
 A rectangular aperture.
 
@@ -71,14 +71,14 @@ function overlap(ap::RectangularAperture, i, j)
     return Partial
 end
 
-partial(ap::RectangularAperture) = (x, y) -> rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
-partial(ap::Subpixel{<:RectangularAperture}) = (x, y) -> rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
+partial(ap::RectangularAperture, x, y) = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
+partial(ap::Subpixel{<:RectangularAperture}, x, y) = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
 
 #######################################################
 
 """
-    RectangularAnnulus(x, y, w_in, w_out, h_out, θ)
-    RectangularAnnulus(position, w_in, w_out, h_out, θ)
+    RectangularAnnulus(x, y, w_in, w_out, h_out, θ=0)
+    RectangularAnnulus(position, w_in, w_out, h_out, θ=0)
 
 A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in > 0`.
 
@@ -96,17 +96,11 @@ struct RectangularAnnulus{T <: Number} <: AbstractAperture
     h_in::T
     h_out::T
     theta::T
-
-    function RectangularAnnulus(x::T, y::T, w_in::T, w_out::T, h_out::T, θ::T) where T <: Number
-        0 < w_in ≤ w_out || error("Invalid sides ($w_in, $w_out). `w_out` must be greater than or equal to `w_in` which must be greater than 0.")
-        h_out ≤ 0 && error("Invalid side($h_out). `h_out` must be greater than 0.")
-        P = typeof(one(T) / 1)
-        new{P}(x, y, w_in, w_out, w_in / w_out * h_out, h_out, mod(θ, 360))
-    end
 end
 
-RectangularAnnulus(center::AbstractVector, w_in, w_out, h_out, θ) = RectangularAnnulus(center..., w_in, w_out, h_out, θ)
-RectangularAnnulus(x, y, w_in, w_out, h_out, θ) = RectangularAnnulus(promote(x, y, w_in, w_out, h_out, θ)...)
+RectangularAnnulus(center, w_in, w_out, h_out, θ=0) = RectangularAnnulus(center..., w_in, w_out, h_out, θ)
+RectangularAnnulus(x::Number, y::Number, w_in, w_out, h_out, θ=0) = RectangularAnnulus(promote(x, y, w_in, w_out, h_out * w_in / w_out, h_out, θ)...)
+# RectangularAnnulus(x, y, w_in, w_out, h_out) = RectangularAnnulus(promote(x, y, w_in, w_out, h_out, 0)...)
 
 function Base.show(io::IO, ap::RectangularAnnulus)
     print(io, "RectangularAnnulus($(ap.x), $(ap.y), w_in=$(ap.w_in), w_out=$(ap.w_out), h_in=$(ap.h_in), h_out=$(ap.h_out), θ=$(ap.theta)°)")
@@ -156,12 +150,14 @@ function bounds(ap::RectangularAnnulus)
     return (xmin, xmax, ymin, ymax)
 end
 
-function partial(ap::RectangularAnnulus)
-    (x, y) -> rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta) -
-              rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+function partial(ap::RectangularAnnulus, x, y)
+    f1 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta)
+    f2 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+    return f1 - f2
 end
 
-function partial(ap::Subpixel{<:RectangularAnnulus})
-    (x, y) -> rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, ap.N) -
-              rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, ap.N)
+function partial(ap::Subpixel{<:RectangularAnnulus}, x, y)
+    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, ap.N)
+    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, ap.N)
+    return f1 - f2
 end

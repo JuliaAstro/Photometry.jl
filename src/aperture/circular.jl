@@ -32,8 +32,8 @@ function overlap(ap::CircularAperture, i, j)
     return Partial
 end
 
-partial(ap::CircularAperture) = (x, y) -> circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
-partial(ap::Subpixel{<:CircularAperture}) = (x, y) -> circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r, ap.N)
+partial(ap::CircularAperture, x, y) = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
+partial(ap::Subpixel{<:CircularAperture}, x, y) = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r, ap.N)
 
 
 CircularAperture(center, r) = CircularAperture(center..., r)
@@ -72,11 +72,6 @@ struct CircularAnnulus{T <: Number} <: AbstractAperture
     y::T
     r_in::T
     r_out::T
-
-    function CircularAnnulus(x::T, y::T, r_in::T, r_out::T) where T <: Number
-        0 ≤ r_in ≤ r_out || error("Invalid radii ($r_in, $r_out). r_out must be greater than r_in which must be greater than or equal to 0.")
-        new{T}(x, y, r_in, r_out)
-    end
 end
 
 
@@ -96,14 +91,16 @@ function overlap(ap::CircularAnnulus, i, j)
     return Partial
 end
 
-function partial(ap::CircularAnnulus)
-    (x, y) -> circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out) -
-              circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in)
+function partial(ap::CircularAnnulus, x, y)
+    f1 = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out)
+    f2 = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in)
+    return f1 - f2
 end
 
-function partial(ap::Subpixel{<:CircularAnnulus})
-    (x, y) -> circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, ap.N) -
-              circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, ap.N)
+function partial(ap::Subpixel{<:CircularAnnulus}, x, y)
+    f1 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, ap.N)
+    f2 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, ap.N)
+    return f1 - f2
 end
 
 function bounds(c::CircularAnnulus)
