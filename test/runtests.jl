@@ -11,15 +11,15 @@ Random.seed!(8462852)
     include("aperture/photometry.jl")
     include("aperture/elliptical.jl")
     include("aperture/rectangular.jl")
-    # include("aperture/plots.jl")
+    include("aperture/plots.jl")
 end
 
-# @testset "Background Estimation" begin
-#     include("background/background.jl")
-#     include("background/estimators.jl")
-#     include("background/interpolators.jl")
-# end
+@testset "Background Estimation" begin
+    include("background/background.jl")
+    include("background/estimators.jl")
+    include("background/interpolators.jl")
+end
 
-# @testset "Source Detection" begin
-#     include("detection/detection.jl")
-# end
+@testset "Source Detection" begin
+    include("detection/detection.jl")
+end
