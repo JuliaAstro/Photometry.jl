@@ -11,7 +11,12 @@ An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and positi
 # Examples
 ```jldoctest
 julia> ap = EllipticalAperture(0, 0, 4, 2, 35)
-EllipticalAperture(0, 0, a=4, b=2, θ=35°)
+5×7 EllipticalAperture{Int64} with indices -2:2×-3:3:
+ 0.873382  1.0       1.0       0.796137  0.23968   0.0       0.0
+ 0.844185  1.0       1.0       1.0       0.990119  0.435284  0.0
+ 0.324917  0.997821  1.0       1.0       1.0       0.997821  0.324917
+ 0.0       0.435284  0.990119  1.0       1.0       1.0       0.844185
+ 0.0       0.0       0.23968   0.796137  1.0       1.0       0.873382
 ```
 """
 struct EllipticalAperture{T <: Number} <: AbstractAperture{T}
@@ -112,7 +117,22 @@ An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis `
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
-EllipticalAnnulus(0.0, 0.0, a_in=4.0, a_out=10.0, b_in=2.0, b_out=5.0, θ=45.0°)
+15×15 EllipticalAnnulus{Float64} with indices -7:7×-7:7:
+ 0.594853   1.0       1.0       1.0         …  0.0       0.0       0.0
+ 1.0        1.0       1.0       1.0            0.0       0.0       0.0
+ 1.0        1.0       1.0       1.0            0.0       0.0       0.0
+ 1.0        1.0       1.0       1.0            0.0       0.0       0.0
+ 1.0        1.0       1.0       1.0            0.0       0.0       0.0
+ 0.814163   1.0       1.0       1.0         …  0.414163  0.0       0.0
+ 0.369432   1.0       1.0       1.0            0.975704  0.193728  0.0
+ 0.0112571  0.809079  1.0       1.0            1.0       0.809079  0.0112571
+ 0.0        0.193728  0.975704  1.0            1.0       1.0       0.369432
+ 0.0        0.0       0.414163  1.0            1.0       1.0       0.814163
+ 0.0        0.0       0.0       0.546165    …  1.0       1.0       1.0
+ 0.0        0.0       0.0       0.00252321     1.0       1.0       1.0
+ 0.0        0.0       0.0       0.0            1.0       1.0       1.0
+ 0.0        0.0       0.0       0.0            1.0       1.0       1.0
+ 0.0        0.0       0.0       0.0            1.0       1.0       0.594853
 ```
 """
 struct EllipticalAnnulus{T <: Number} <: AbstractAperture{T}

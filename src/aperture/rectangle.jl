@@ -14,7 +14,12 @@ A rectangular aperture with width `w`, height `h`, and position angle `θ` in de
 # Examples
 ```jldoctest
 julia> ap = RectangularAperture(0, 0, 10, 4, 0)
-RectangularAperture(0, 0, w=10, h=4, θ=0°)
+5×11 RectangularAperture{Int64} with indices -2:2×-5:5:
+ 0.25  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.25
+ 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
+ 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
+ 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
+ 0.25  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.25
 ```
 """
 struct RectangularAperture{T <: Number} <: AbstractAperture{T}
@@ -85,7 +90,20 @@ A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height
 # Examples
 ```jldoctest
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
-RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, θ=45.0°)
+13×13 RectangularAnnulus{Float64} with indices -6:6×-6:6:
+ 0.0       0.0       0.0       0.0       …  0.0       0.0       0.0
+ 0.0       0.0       0.0       0.0          0.0       0.0       0.0
+ 0.0       0.0       0.0       0.568542     0.0       0.0       0.0
+ 0.0       0.0       0.568542  1.0          0.0       0.0       0.0
+ 0.0       0.568542  1.0       1.0          0.5       0.0       0.0
+ 0.528175  1.0       1.0       1.0       …  0.941125  0.0       0.0
+ 0.0       0.941125  1.0       0.678301     1.0       0.941125  0.0
+ 0.0       0.0       0.941125  1.0          1.0       1.0       0.528175
+ 0.0       0.0       0.5       0.941125     1.0       0.568542  0.0
+ 0.0       0.0       0.0       0.5          0.568542  0.0       0.0
+ 0.0       0.0       0.0       0.0       …  0.0       0.0       0.0
+ 0.0       0.0       0.0       0.0          0.0       0.0       0.0
+ 0.0       0.0       0.0       0.0          0.0       0.0       0.0
 ```
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture{T}

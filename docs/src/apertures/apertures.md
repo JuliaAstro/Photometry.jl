@@ -26,7 +26,7 @@ Subpixel
 
 ### Circular Apertures
 
-These apertures are parametrized by radius.
+These apertures are parameterized by radius.
 
 ```@docs
 CircularAperture
@@ -35,7 +35,7 @@ CircularAnnulus
 
 ### Elliptical Apertures
 
-These apertures are parametrized by the semi-major axis `a`, semi-minor axis `b` and position angle in degrees counter-clockwise from the positive x-axis `θ`
+These apertures are parameterized by the semi-major axis `a`, semi-minor axis `b` and position angle in degrees counter-clockwise from the positive x-axis `θ`
 
 
 ```@docs
@@ -46,7 +46,7 @@ EllipticalAnnulus
 
 ### Rectangular Apertures
 
-These apertures are parametrized by width `w`, height `h`, and position angle in degrees counter-clockwise from the positive x-axis `θ`.
+These apertures are parameterized by width `w`, height `h`, and position angle in degrees counter-clockwise from the positive x-axis `θ`.
 
 ```@docs
 RectangularAperture

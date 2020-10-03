@@ -52,13 +52,13 @@ Performing aperture photometry is merely summing the weighted cutout shown above
 
 ```jldoctest ap1
 julia> flux = sum(weighted_cutout)
-39.26990816987243
+39.269908169872416
 
 julia> flux ≈ (π * 2.5^2) * 2 # area of circle times intensity of 2
 true
 ```
 
-What's interesting about the implementation of apertures, though, is they are actual lazy. This means there is no stored matrix of aperture values, rather they are calculated on the fly as needed. This allows extremely efficient computation of aperture photometry from small to medium sized apertures.
+What's interesting about the implementation of apertures, though, is they are lazy. This means there is no stored matrix of aperture values; rather, they are calculated on the fly as needed.
 
 ```jldoctest ap1
 julia> axes(ap)
@@ -67,8 +67,18 @@ julia> axes(ap)
 julia> ap[-10, -10] # out-of-bounds, but calculated on the fly
 0.0
 
-julia> sum(ap .* data) # calculates for eachindex(data), regardless of ap bound
+julia> ap .* ones(5, 7) # broadcasts to eachindex(data), regardless of ap bound
+5×7 Array{Float64,2}:
+ 0.136857  0.769325  0.983232  0.769325  0.136857  0.0  0.0
+ 0.769325  1.0       1.0       1.0       0.769325  0.0  0.0
+ 0.983232  1.0       1.0       1.0       0.983232  0.0  0.0
+ 0.769325  1.0       1.0       1.0       0.769325  0.0  0.0
+ 0.136857  0.769325  0.983232  0.769325  0.136857  0.0  0.0
+```
 
+This allows extremely efficient computation of aperture photometry from small to medium sized apertures.
+
+```julia
 julia> phot_sum(ap, data) = sum(idx -> ap[idx] * data[idx], Aperture.cutout_indices(ap, data))
 phot_sum (generic function with 1 method)
 
@@ -116,7 +126,7 @@ Base.axes(ap::AbstractAperture, dim) = axes(ap)[dim]
 """
     Subpixel(ap, N=1) <: AbstractAperture
 
-Use a subpixel quadrature approximation for pixel shading instead of exact geometric methods. This will wrap `ap` semi-transparently: all fields of `ap` are still accessible as well as `N`.
+Use a subpixel quadrature approximation for pixel shading instead of exact geometric methods. This will wrap `ap` semi-transparently: all fields of `ap` are still accessible in addition to `N`.
 
 For any pixel laying on the border of `ap`, this alters the shading algorithm by breaking the border pixel up into `(N, N)` subpixels. The shading value is the fraction of these subpixels within the geometric border of `ap`.
 
