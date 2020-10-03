@@ -4,11 +4,15 @@ using Photometry.Aperture: bounds,
 @testset "Apertures" begin
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
     @test bounds(ap_ellipse) == (-20, 20, -10, 10)
+    @test size(ap_ellipse) == (21, 41)
+    @test size(ap_ellipse, 1) == 21
+    @test all(axes(ap_ellipse) .== (-10:10, -20:20))
+    @test eachindex(ap_ellipse) == CartesianIndex(-10, -20):CartesianIndex(10, 20)
 
     @test EllipticalAperture([0, 0], 20, 10, 0) == ap_ellipse
 
     ap_ellipse = EllipticalAperture(0, 0, 2, 1, 45)
-    @test bounds(ap_ellipse) == (-2, 2, -2, 2)
+    @test bounds(ap_ellipse) == (-1, 1, -1, 1)
 end
 
 @testset "Elliptical Aperture" begin
@@ -30,5 +34,9 @@ end
 
 @testset "Elliptical Annulus bounding box" begin
     e = EllipticalAnnulus(0, 0, 8, 16, 4, 0)
-    @test all(bounds(e) == (-16, 16, -4, 4))
+
+    @test bounds(e) == (-16, 16, -4, 4)
+    @test size(e) == (9, 33)
+    @test all(axes(e) .== (-4:4, -16:16))
+    @test eachindex(e) == CartesianIndex(-4, -16):CartesianIndex(4, 16)
 end

@@ -16,7 +16,15 @@ The position can be pixels or sky coordinates. The sky coordinate positions util
 !!! note
     See [Pixel Convention](@ref) - The origin is the bottom-left with `(1, 1)` being the center of the pixel.
 
-## Circular Apertures
+
+## API/Reference
+
+```@docs
+Aperture.AbstractAperture
+Subpixel
+```
+
+### Circular Apertures
 
 These apertures are parametrized by radius.
 
@@ -25,7 +33,7 @@ CircularAperture
 CircularAnnulus
 ```
 
-## Elliptical Apertures
+### Elliptical Apertures
 
 These apertures are parametrized by the semi-major axis `a`, semi-minor axis `b` and position angle in degrees counter-clockwise from the positive x-axis `θ`
 
@@ -36,19 +44,11 @@ EllipticalAnnulus
 ```
 
 
-## Rectangular Apertures
+### Rectangular Apertures
 
 These apertures are parametrized by width `w`, height `h`, and position angle in degrees counter-clockwise from the positive x-axis `θ`.
 
 ```@docs
 RectangularAperture
 RectangularAnnulus
-```
-
-## API/Reference
-
-```@docs
-Aperture.AbstractAperture
-mask
-cutout
 ```

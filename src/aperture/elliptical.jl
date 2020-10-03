@@ -14,7 +14,7 @@ julia> ap = EllipticalAperture(0, 0, 4, 2, 35)
 EllipticalAperture(0, 0, a=4, b=2, θ=35°)
 ```
 """
-struct EllipticalAperture{T <: Number} <: AbstractAperture
+struct EllipticalAperture{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     a::T
@@ -31,10 +31,10 @@ function Base.show(io::IO, e::EllipticalAperture)
 end
 
 oblique_coefficients(ap::EllipticalAperture) = oblique_coefficients(ap.a, ap.b, ap.theta)
-oblique_coefficients(ap::Subpixel{<:EllipticalAperture}) = oblique_coefficients(ap.ap)
+oblique_coefficients(ap::Subpixel{T,<:EllipticalAperture}) where {T} = oblique_coefficients(ap.ap)
 
 function oblique_coefficients(a, b, theta)
-    sintheta, costheta = sincos(deg2rad(theta))
+    sintheta, costheta = sincosd(theta)
     a2 = a^2
     b2 = b^2
     cxx = costheta^2 / a2 + sintheta^2 / b2
@@ -57,44 +57,47 @@ function overlap(ap::EllipticalAperture, i, j)
     return Partial
 end
 
-function bounds(e::EllipticalAperture)
-    iszero(e.a) && return e.x, e.x, e.y, e.y
-    sintheta, costheta = sincos(deg2rad(e.theta))
+function elliptical_bounds(cx, cy, a, b, theta)
+    iszero(a) && return cx, cx, cy, cy
+    sintheta, costheta = sincosd(theta)
 
-    t = atan(-e.b * tand(e.theta), e.a)
+    t = atan(-b * tand(theta), a)
     
     sint, cost = sincos(t)
-    xmin = e.x + e.a * cost * costheta - e.b * sint * sintheta
+    xmin = cx + a * cost * costheta - b * sint * sintheta
     xmax = xmin
 
     for n in -2:2
         sint, cost = sincos(t + n * pi)
-        xmin = min(xmin, e.x + e.a * cost * costheta - e.b * sint * sintheta)
-        xmax = max(xmax, e.x + e.a * cost * costheta - e.b * sint * sintheta)
+        xmin = min(xmin, cx + a * cost * costheta - b * sint * sintheta)
+        xmax = max(xmax, cx + a * cost * costheta - b * sint * sintheta)
     end
 
-    t2 = atan(e.b * cotd(e.theta),  e.a)
+    t2 = atan(b * cotd(theta),  a)
 
     sint, cost = sincos(t2)
-    ymin = e.y + e.b * sint * costheta + e.a * cost * sintheta
+    ymin = cy + b * sint * costheta + a * cost * sintheta
     ymax = ymin
 
     for n in -2:2
         sint, cost = sincos(t2 + n * pi)
-        ymin = min(ymin, e.y + e.b * sint * costheta + e.a * cost * sintheta)
-        ymax = max(ymax, e.y + e.b * sint * costheta + e.a * cost * sintheta)
+        ymin = min(ymin, cy + b * sint * costheta + a * cost * sintheta)
+        ymax = max(ymax, cy + b * sint * costheta + a * cost * sintheta)
     end
 
-    xmin = floor(Int, xmin)
-    xmax = ceil(Int, xmax)
-    ymin = floor(Int, ymin)
-    ymax = ceil(Int, ymax)
+    xmin = ceil(Int, xmin)
+    xmax = floor(Int, xmax)
+    ymin = ceil(Int, ymin)
+    ymax = floor(Int, ymax)
 
     return xmin, xmax, ymin, ymax
 end
 
+
+bounds(e::EllipticalAperture) = elliptical_bounds(e.x, e.y, e.a, e.b, e.theta)
+
 partial(ap::EllipticalAperture, x, y) = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
-partial(ap::Subpixel{<:EllipticalAperture}, x, y) = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(ap)..., ap.N)
+partial(ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T} = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(ap)..., ap.N)
 
 
 #######################################################
@@ -112,7 +115,7 @@ julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
 EllipticalAnnulus(0.0, 0.0, a_in=4.0, a_out=10.0, b_in=2.0, b_out=5.0, θ=45.0°)
 ```
 """
-struct EllipticalAnnulus{T <: Number} <: AbstractAperture
+struct EllipticalAnnulus{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     a_in::T
@@ -153,41 +156,7 @@ function overlap(ap::EllipticalAnnulus, i, j)
     return Partial
 end
 
-function bounds(e::EllipticalAnnulus)
-
-    sintheta, costheta = sincos(deg2rad(e.theta))
-
-    t = atan(-e.b_out * tand(e.theta), e.a_out)
-
-    sint, cost = sincos(t)
-    xmin = e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta
-    xmax = xmin
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
-        xmin = min(xmin, e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta)
-        xmax = max(xmax, e.x + e.a_out * cost * costheta - e.b_out * sint * sintheta)
-    end
-
-    t2 = atan(e.b_out * cotd(e.theta), e.a_out)
-
-    sint, cost = sincos(t2)
-    ymin = e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta
-    ymax = ymin
-
-    for n in -2:2
-        sint, cost = sincos(t2 + n * pi)
-        ymin = min(ymin, e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta)
-        ymax = max(ymax, e.y + e.b_out * sint * costheta + e.a_out * cost * sintheta)
-    end
-
-    xmin = floor(Int, xmin)
-    xmax = ceil(Int, xmax)
-    ymin = floor(Int, ymin)
-    ymax = ceil(Int, ymax)
-
-    return xmin, xmax, ymin, ymax
-end
+bounds(e::EllipticalAnnulus) =  elliptical_bounds(e.x, e.y, e.a_out, e.b_out, e.theta)
 
 
 function partial(ap::EllipticalAnnulus, x, y)
@@ -196,7 +165,7 @@ function partial(ap::EllipticalAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{<:EllipticalAnnulus}, x, y)
+function partial(ap::Subpixel{T,<:EllipticalAnnulus}, x, y) where T
     coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
     f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_out..., ap.N)
     coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)

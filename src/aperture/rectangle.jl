@@ -17,7 +17,7 @@ julia> ap = RectangularAperture(0, 0, 10, 4, 0)
 RectangularAperture(0, 0, w=10, h=4, θ=0°)
 ```
 """
-struct RectangularAperture{T <: Number} <: AbstractAperture
+struct RectangularAperture{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     w::T
@@ -72,7 +72,7 @@ function overlap(ap::RectangularAperture, i, j)
 end
 
 partial(ap::RectangularAperture, x, y) = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
-partial(ap::Subpixel{<:RectangularAperture}, x, y) = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
+partial(ap::Subpixel{T,<:RectangularAperture}, x, y) where {T} = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
 
 #######################################################
 
@@ -88,7 +88,7 @@ julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
 RectangularAnnulus(0.0, 0.0, w_in=5.0, w_out=10.0, h_in=4.0, h_out=8.0, θ=45.0°)
 ```
 """
-struct RectangularAnnulus{T <: Number} <: AbstractAperture
+struct RectangularAnnulus{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     w_in::T
@@ -156,7 +156,7 @@ function partial(ap::RectangularAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{<:RectangularAnnulus}, x, y)
+function partial(ap::Subpixel{T,<:RectangularAnnulus}, x, y) where T
     f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, ap.N)
     f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, ap.N)
     return f1 - f2

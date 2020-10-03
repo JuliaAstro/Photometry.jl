@@ -18,7 +18,7 @@ julia> ap = CircularAperture(0, 0, 10)
 CircularAperture(0, 0, r=10)
 ```
 """
-struct CircularAperture{T<:Number} <: AbstractAperture
+struct CircularAperture{T<:Number} <: AbstractAperture{T}
     x::T
     y::T
     r::T
@@ -33,7 +33,7 @@ function overlap(ap::CircularAperture, i, j)
 end
 
 partial(ap::CircularAperture, x, y) = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
-partial(ap::Subpixel{<:CircularAperture}, x, y) = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r, ap.N)
+partial(ap::Subpixel{T,<:CircularAperture}, x, y) where {T} = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r, ap.N)
 
 
 CircularAperture(center, r) = CircularAperture(center..., r)
@@ -45,8 +45,10 @@ end
 
 
 function bounds(c::CircularAperture)
-    xmin = ceil(Int, c.x - c.r - 0.5)
-    ymin = ceil(Int, c.y - c.r - 0.5)
+    _xmin = c.x - c.r - 0.5
+    _ymin = c.y - c.r - 0.5
+    xmin = isinteger(_xmin) ? ceil(Int, _xmin) + 1 : ceil(Int, _xmin)
+    ymin = isinteger(_ymin) ? ceil(Int, _ymin) + 1 : ceil(Int, _ymin)
     xmax = ceil(Int, c.x + c.r - 0.5)
     ymax = ceil(Int, c.y + c.r - 0.5)
     return (xmin, xmax, ymin, ymax)
@@ -67,7 +69,7 @@ julia> ap = CircularAnnulus(0, 0, 5, 10)
 CircularAnnulus(0, 0, r_in=5, r_out=10)
 ```
 """
-struct CircularAnnulus{T <: Number} <: AbstractAperture
+struct CircularAnnulus{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     r_in::T
@@ -97,7 +99,7 @@ function partial(ap::CircularAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{<:CircularAnnulus}, x, y)
+function partial(ap::Subpixel{T,<:CircularAnnulus}, x, y) where T
     f1 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, ap.N)
     f2 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, ap.N)
     return f1 - f2

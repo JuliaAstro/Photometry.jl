@@ -4,6 +4,7 @@ using Photometry.Aperture: bounds
     ap_rect = RectangularAperture(50, 40, 10, 10, 0)
     @test bounds(ap_rect) == (45, 55, 35, 45)
     @test size(ap_rect) == (11, 11)
+    @test size(ap_rect, 1) == 11
     @test RectangularAperture([50, 40], 10, 10, 0) == ap_rect
 
     ap_ann = RectangularAnnulus(50, 40, 5, 10, 10, 0)

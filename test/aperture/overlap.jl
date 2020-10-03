@@ -23,7 +23,7 @@ using Photometry.Aperture: circular_overlap_core,
         if use_subpixel
             ap = Subpixel(ap, 10)
         end
-        @test all(p -> 0 ≤ p ≤ 1, collect(ap))
+        @test all(p -> 0 ≤ p ≤ 1, ap)
     end
 
     @testset "overlap core (r = $r)" for r in 1:10
@@ -62,7 +62,7 @@ end # circles
         if use_subpixel
             ap = Subpixel(ap, 10)
         end
-        @test all(p -> 0 ≤ p ≤ 1, collect(ap))
+        @test all(p -> 0 ≤ p ≤ 1, ap)
     end
 
     @testset "overlap subpixel (elliptical apperture)" begin
