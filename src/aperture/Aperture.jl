@@ -197,9 +197,10 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
     meta = (xcenter = ap.x, ycenter = ap.y)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
-    isempty(idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
-    aperture_sum = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-    aperture_sum_var = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
+    any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+    
+    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
+    aperture_sum_var = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
     aperture_sum_err = sqrt(aperture_sum_var)
 
     return (meta..., aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
@@ -209,8 +210,8 @@ end
 function photometry(ap::AbstractAperture, data::AbstractMatrix)
     meta = (xcenter = ap.x, ycenter = ap.y)
     idxs = map(intersect, axes(ap), axes(data))
-    isempty(idxs) && return (meta..., aperture_sum = 0.0)
-    aperture_sum = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
+    any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
+    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
     return (meta..., aperture_sum = aperture_sum)
 end
 
