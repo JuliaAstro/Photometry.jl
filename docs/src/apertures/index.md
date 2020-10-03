@@ -70,4 +70,6 @@ This benchmark shows how performance scales as we increase the number of apertur
 
 ### Size of Apertures
 
-This benchmark analyzes how the aperture size affects performance. Theoretically it should increase with `O(n^2)` complexity. For aperture sizes increasing from `r=1` to `r=100` located in the center of a an image of size (512, 512).
+This benchmark analyzes how the aperture size affects performance. Theoretically it should increase with `O(n^2)` complexity. For aperture sizes increasing from 1 to 200,  located in the center of a an image of size (512, 512).
+
+![](../assets/size_aperture_benchmark.png)

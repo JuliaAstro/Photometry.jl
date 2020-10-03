@@ -5,6 +5,7 @@ are considered under a BSD 3-clause license. =#
 module Aperture
 
 using TypedTables
+using Transducers
 
 export photometry,
        Subpixel,
@@ -37,9 +38,9 @@ This is a useful way of thinking about apertures: if we have some data, we can w
 ```jldoctest ap1
 julia> data = fill(2, 5, 5);
 
-julia> indices = Aperture.cutout_indices(ap, data);
+julia> idxs = map(intersect, axes(ap), axes(data));
 
-julia> weighted_cutout = data[indices] .* ap[indices]
+julia> weighted_cutout = data[idxs...] .* ap[idxs...]
 5×5 Array{Float64,2}:
  0.273713  1.53865  1.96646  1.53865  0.273713
  1.53865   2.0      2.0      2.0      1.53865
@@ -108,20 +109,10 @@ function Base.size(ap::AbstractAperture)
     return ymax - ymin + 1, xmax - xmin + 1
 end
 
-function cutout_indices(ap::AbstractAperture, data::AbstractArray)
-    # slices for indexing the larger array
-    xmin, xmax, ymin, ymax = bounds(ap)
-
-    x_slice = max(xmin, firstindex(data, 2)):min(xmax, lastindex(data, 2))
-    y_slice = max(ymin, firstindex(data, 1)):min(ymax, lastindex(data, 1))
-    return CartesianIndices((y_slice, x_slice))
-end
-
 function Base.axes(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
     return ymin:ymax, xmin:xmax
 end
-Base.axes(ap::AbstractAperture, dim) = axes(ap)[dim]
 
 """
     Subpixel(ap, N=1) <: AbstractAperture
@@ -180,7 +171,7 @@ end
 
 @enum OverlapFlag Inside Outside Partial
 
-function Base.getindex(ap::AbstractAperture, i, j)
+function Base.getindex(ap::AbstractAperture, i::Int, j::Int)
     flag = overlap(ap, i, j)
     flag === Outside && return 0.0
     flag === Inside && return 1.0
@@ -204,34 +195,32 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
     This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
-    idxs = cutout_indices(ap, data)
-    isempty(idxs) && return (xcenter = ap.x, ycenter = ap.y, aperture_sum = 0.0, aperture_sum_err = NaN)
-    aperture_sum = sum(idx -> ap[idx] * data[idx], idxs)
-    aperture_sum_err = sqrt(sum(idx -> ap[idx] * error[idx]^2, idxs))
+    meta = (xcenter = ap.x, ycenter = ap.y)
+    idxs = map(intersect, axes(ap), axes(data), axes(error))
+    isempty(idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+    aperture_sum = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
+    aperture_sum_var = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
+    aperture_sum_err = sqrt(aperture_sum_var)
 
-    return (xcenter = ap.x, ycenter = ap.y, aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
+    return (meta..., aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
 end
 
+
 function photometry(ap::AbstractAperture, data::AbstractMatrix)
-    idxs = cutout_indices(ap, data)
-    isempty(idxs) && return (xcenter = ap.x, ycenter = ap.y, aperture_sum = 0.0)
-    aperture_sum = sum(idx -> ap[idx] * data[idx], idxs)
-    return (xcenter = ap.x, ycenter = ap.y, aperture_sum = aperture_sum)
+    meta = (xcenter = ap.x, ycenter = ap.y)
+    idxs = map(intersect, axes(ap), axes(data))
+    isempty(idxs) && return (meta..., aperture_sum = 0.0)
+    aperture_sum = foldxl(+, CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
+    return (meta..., aperture_sum = aperture_sum)
 end
 
 function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error)
-    rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)})
-    Threads.@threads  for idx in eachindex(rows)
-        rows[idx] = photometry(aps[idx], data, error)
-    end
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error)))
     return Table(rows)
 end
 
 function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix)
-    rows = similar(aps, NamedTuple{(:xcenter, :ycenter, :aperture_sum)})
-    Threads.@threads for idx in eachindex(rows)
-        rows[idx] = photometry(aps[idx], data)
-    end
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data)))
     return Table(rows)
 end
 

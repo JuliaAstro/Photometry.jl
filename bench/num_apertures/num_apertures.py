@@ -25,11 +25,14 @@ for N in tqdm([1, 10, 50, 100, 200, 400, 500, 1000, 2000]):
     pos = [(x, y) for x, y in zip(xs, ys)]
     aps = CircularAperture(pos, 10)
 
-    t0 = datetime.now()
-    t = aperture_photometry(data, aps, method="exact")
-    t1 = datetime.now()
-    time = (t1 - t0).total_seconds()
-
+    ts = []
+    for _ in range(5):
+        t0 = datetime.now()
+        t = aperture_photometry(data, aps, method="exact")
+        t1 = datetime.now()
+        ts.append((t1 - t0).total_seconds())
+        
+    time = sum(ts) / 5
     rows.append((N, time))
 
 df = pd.DataFrame(rows, columns=["N", "time"])
