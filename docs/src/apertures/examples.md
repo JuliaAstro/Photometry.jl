@@ -74,7 +74,7 @@ savefig("plot-3.png"); nothing # hide
 and finally let's get our output table for the photometry
 
 ```@example stars
-table = aperture_photometry(aps, chunk)
+table = photometry(aps, chunk)
 ```
 
 ## Stars with Spatial Background Subtraction
@@ -115,5 +115,5 @@ savefig("plot-5.png"); nothing # hide
 ![](plot-5.png)
 
 ```@example stars
-table = aperture_photometry(aps, chunk .- bkg, bkg_rms)
+table = photometry(aps, chunk .- bkg, bkg_rms)
 ```

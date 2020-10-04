@@ -1,20 +1,32 @@
-using Photometry.Aperture: edges,
-                           bbox
+using Photometry.Aperture: bounds
 
 @testset "Apertures" begin
     ap_circ = CircularAperture(50, 40, 10)
-    @test edges(ap_circ) == (-10.5, 10.5, -10.5, 10.5)
-    @test bbox(ap_circ) == (40, 60, 30, 50)
-    @test size(ap_circ) == (21, 21)
+    @test bounds(ap_circ) == (40, 60, 30, 50)
+    @test size(ap_circ) == map(length, axes(ap_circ)) == (21, 21)
+    @test size(ap_circ, 1) == 21
+    @test all(axes(ap_circ) .== (30:50, 40:60))
+    @test eachindex(ap_circ) == CartesianIndex(30, 40):CartesianIndex(50, 60)
 
     @test CircularAperture([50, 40], 10) == ap_circ
 
     ap_ann = CircularAnnulus(50, 40, 5, 10)
-    @test edges(ap_ann) == (-10.5, 10.5, -10.5, 10.5)
-    @test bbox(ap_ann) == (40, 60, 30, 50)
+    @test bounds(ap_ann) == (40, 60, 30, 50)
     @test size(ap_ann) == (21, 21)
+    @test all(axes(ap_ann) .== (30:50, 40:60))
+    @test eachindex(ap_ann) == CartesianIndex(30, 40):CartesianIndex(50, 60)
 
     @test CircularAnnulus([50, 40], 5, 10) == ap_ann
+end
+
+@testset "broadcasting" begin
+    ap = CircularAperture(3, 3, 2.5)
+    data = ones(5, 7)
+    weighted = ap .* data
+    @test weighted == data .* ap # commutative
+    @test sum(weighted) == sum(ap) == photometry(ap, data).aperture_sum
+    @test all(iszero, weighted[:, 6:7])
+
 end
 
 @testset "Circle Aperture" begin
@@ -26,16 +38,8 @@ end
 
     @test sprint(show, c1) == "CircularAperture(0, 0, r=1)"
 
-    @test_throws ErrorException CircularAperture(0, 0, -12)
-    @test_throws ErrorException CircularAperture(0, 0, -1.0)
-
-    # cbig = CircularAperture{BigFloat}((0, 1), 2)
-
-    # @test area(cbig) ≈ BigFloat(4) * π
-
-    c = CircularAperture(0, 0, 10)
-    @test mask(c, method = :center) == mask(c, method = (:subpixel, 1))
-
+    sub_c1 = Subpixel(c1, 5)
+    @test sprint(show, sub_c1) == "Subpixel(CircularAperture(0, 0, r=1), 5)"
 end
 
 @testset "Circle Annulus" begin
@@ -46,14 +50,4 @@ end
     c1 = CircularAnnulus(0, 0, 0, 1)
 
     @test sprint(show, c1) == "CircularAnnulus(0, 0, r_in=0, r_out=1)"
-
-    @test_throws ErrorException CircularAnnulus(0, 0, -3, 4)
-    @test_throws ErrorException CircularAnnulus(0, 0, 4, 3)
-    @test_throws ErrorException CircularAnnulus(0, 0, 4, 3.0)
-
-    # cbig = CircularAnnulus{BigFloat}((0, 1), 1, 2)
-
-    c = CircularAnnulus(0, 0, 5, 10)
-    @test mask(c, method = :center) == mask(c, method = (:subpixel, 1))
-
 end

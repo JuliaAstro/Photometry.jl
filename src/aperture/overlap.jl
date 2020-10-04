@@ -2,61 +2,8 @@
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
 using LazySets
-
-function circular_overlap(xmin, xmax, ymin, ymax, nx, ny, r; method = :exact)
-    R = float(typeof(xmin))
-    out = fill(zero(R), ny, nx)
-
-    # width of each element
-    dx = (xmax - xmin) / nx
-    dy = (ymax - ymin) / ny
-
-    # radius of one pixel
-    pixel_radius = 0.5sqrt(dx^2 + dy^2)
-
-    # bounding box
-    bxmin = -r - 0.5dx
-    bxmax =  r + 0.5dx
-    bymin = -r - 0.5dy
-    bymax =  r + 0.5dy
-
-    @inbounds for i in axes(out, 2)
-        # lower end of pixel
-        pxmin = xmin + (i - 1) * dx
-        pxcen = pxmin + 0.5dx
-        # upper end of pixel
-        pxmax = pxmin + dx
-
-        if pxmax > bxmin && pxmin < bxmax
-            for j in axes(out, 1)
-                pymin = ymin + (j - 1) * dy
-                pycen = pymin + 0.5dy
-                pymax = pymin + dy
-                if pymax > bymin && pymin < bymax
-
-                    # distance from circle to pixel
-                    d = sqrt(pxcen^2 + pycen^2)
-
-                    # fully within radius
-                    if d < r - pixel_radius
-                        out[j, i] = 1
-                    # partially within radius
-                    elseif d < r + pixel_radius
-                        if method === :exact
-                            out[j, i] = circular_overlap_single_exact(pxmin, pymin, pxmax, pymax, r) / (dx * dy)
-                        elseif method === :center
-                            out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, 1)
-                        elseif method[1] === :subpixel
-                            out[j, i] =  circular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, r, method[2])
-                        end
-                    end
-                end
-            end
-        end
-
-    end
-    return out
-end
+using Rotations
+using StaticArrays
 
 function circular_overlap_single_subpixel(xmin, ymin, xmax, ymax, r, subpixels)
     frac = 0
@@ -154,7 +101,7 @@ Area of a circular segment above a chord between two points with circle radius `
 """
 function area_arc(x0, y0, x1, y1, r)
     a = sqrt((x1 - x0)^2 + (y1 - y0)^2)
-    θ = 2asin(0.5a / r)
+    θ = 2 * asin(0.5 * a / r)
     return r^2 * (θ - sin(θ)) / 2
 end
 
@@ -187,79 +134,7 @@ If point inside ellipse: Returns true else returns false
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
-
-function elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, a, b, theta; method = :exact)
-    R = float(typeof(xmin))
-    out = fill(zero(R), ny, nx)
-
-    # width of each element
-    dx = (xmax - xmin) / nx
-    dy = (ymax - ymin) / ny
-
-    # radius of one pixel
-    pixel_radius = 0.5sqrt(dx^2 + dy^2)
-
-    # bounding box
-    bxmin, bxmax, bymin, bymax = bbox(EllipticalAperture(0, 0, a, b, theta))
-
-    bxmin -= 0.5dx
-    bxmax += 0.5dx
-    bymin -= 0.5dy
-    bymax += 0.5dy
-
-    cxx, cyy, cxy = oblique_coefficients(a, b, theta)
-
-    @inbounds for i in axes(out, 2)
-        # lower end of pixel
-        pxmin = xmin + (i - 1) * dx
-        pxcen = pxmin + 0.5dx
-        # upper end of pixel
-        pxmax = pxmin + dx
-
-        if pxmax > bxmin && pxmin < bxmax
-            for j in axes(out, 1)
-                pymin = ymin + (j - 1) * dy
-                pycen = pymin + 0.5dy
-                pymax = pymin + dy
-                if pymax > bymin && pymin < bymax
-
-                    # 4 flags for four different ends of the pixel
-                    # each flag tells wether the point is inside the ellipse or not
-                    # sample strcture of a pixel is shown below
-                    #  2---4
-                    #  |   |
-                    #  |   |
-                    #  1---3
-                    flags = [
-                        inside_ellipse(pxmin, pymin, 0, 0, cxx, cyy, cxy),
-                        inside_ellipse(pxmin, pymax, 0, 0, cxx, cyy, cxy),
-                        inside_ellipse(pxmax, pymin, 0, 0, cxx, cyy, cxy),
-                        inside_ellipse(pxmax, pymax, 0, 0, cxx, cyy, cxy)
-                    ]
-
-                    # fully within radius
-                    if all(flags)
-                        out[j, i] = 1
-                    # partially within radius
-                    elseif any(flags)
-                        if method === :exact
-                            out[j, i] = elliptical_overlap_exact(pxmin, pymin, pxmax, pymax, a, b, theta)
-                        elseif method === :center
-                            out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, 1)
-                        elseif method[1] === :subpixel
-                            out[j, i] =  elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, cxx, cyy, cxy, method[2])
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return out
-end
-
-elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, parameters::AbstractVector; method) = elliptical_overlap(xmin, xmax, ymin, ymax, nx, ny, parameters... ; method = :center)
-
+@inline inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cxy, subpixels)
     frac = 0
@@ -291,8 +166,8 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     ds = [d1, d2, d3]
     order = sortperm(ds)
     ds = ds[order]
-    x1, x2, x3 = [x1, x2, x3][order]
-    y1, y2, y3 = [y1, y2, y3][order]
+    x1, x2, x3 = (x1, x2, x3)[order]
+    y1, y2, y3 = (y1, y2, y3)[order]
 
     # which are inside circle
     inside = ds .< 1
@@ -480,48 +355,6 @@ end
 ####################################
 # Rectangular routines
 
-function rectangular_overlap(xmin, xmax, ymin, ymax, nx, ny, w, h, θ; method = :exact)
-    R = float(typeof(xmin))
-    out = fill(zero(R), ny, nx)
-
-    # width of each element
-    dx = (xmax - xmin) / nx
-    dy = (ymax - ymin) / ny
-
-    # bounding box
-    bxmin, bxmax, bymin, bymax = bbox(RectangularAperture(0, 0, w, h, θ))
-
-    bxmin -= 0.5dx
-    bxmax += 0.5dx
-    bymin -= 0.5dy
-    bymax += 0.5dy
-
-    @inbounds for i in axes(out, 2)
-        # lower end of pixel
-        pxmin = xmin + (i - 1) * dx
-        # upper end of pixel
-        pxmax = pxmin + dx
-        if pxmax > bxmin && pxmin < bxmax
-            for j in axes(out, 1)
-                pymin = ymin + (j - 1) * dy
-                pymax = pymin + dy
-
-                if bymin < pymax && pymin < bymax
-                    if method === :exact
-                        out[j, i] = rectangular_overlap_exact(pxmin, pymin, pxmax, pymax, w, h, θ)
-                    elseif method === :center
-                        out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, 1)
-                    elseif method[1] === :subpixel
-                        out[j, i] = rectangular_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, w, h, θ, method[2])
-                    end
-                end
-            end
-        end
-    end
-
-    return out
-end
-
 function rectangular_overlap_single_subpixel(x0, y0, x1, y1, w, h, θ, subpixels)
     dx = (x1 - x0) / subpixels
     dy = (y1 - y0) / subpixels
@@ -547,20 +380,18 @@ end
 """intersection with rectangular using implicit Lamé curve"""
 function inside_rectangle(x, y, w, h, θ)
     # transform into frame of rectangle
-    sinth, costh = sincos(deg2rad(-θ))
-    u = x * costh - y * sinth
-    v = x * sinth + y * costh
-
+    u, v = RotMatrix{2}(θ) \ SA[x, y]
     return abs(u) < w / 2 && abs(v) < h / 2
 end
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
-    sint, cost = sincos(deg2rad(θ))
-    R = [cost -sint; sint cost]
-    aper = R * Hyperrectangle(zeros(2), [w / 2, h / 2])
+    # sint, cost = sincos(deg2rad(θ))
+    # R = [cost -sint; sint cost]
+    R = RotMatrix{2}(deg2rad(θ))
+    aper = R * Hyperrectangle(zeros(SVector{2}), SA[w / 2, h / 2])
     dy = ymax - ymin
     dx = xmax - xmin
-    pix = Hyperrectangle([dx / 2 + xmin, dy / 2 + ymin], [dx / 2, dy / 2])
+    pix = Hyperrectangle(SA[dx / 2 + xmin, dy / 2 + ymin], SA[dx / 2, dy / 2])
     return intersection_area(pix, aper)
 end
 
@@ -574,6 +405,7 @@ function intersection_area(X::AbstractHyperrectangle{N},
 
     Y_clist = linear_map(matrix(Y), set(Y)) |> constraints_list
     Y_poly = HPolygon(Y_clist, sort_constraints = true, prune = false, check_boundedness = false)
+    inter = intersection(X_poly, Y_poly)
 
-    return intersection(X_poly, Y_poly) |> area
+    return inter isa EmptySet ? 0.0 : area(inter)
 end
