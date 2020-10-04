@@ -38,9 +38,9 @@ This is a useful way of thinking about apertures: if we have some data, we can w
 ```jldoctest ap1
 julia> data = fill(2, 5, 5);
 
-julia> idxs = map(intersect, axes(ap), axes(data));
+julia> idxs = map(intersect, axes(ap), axes(data)) |> CartesianIndices;
 
-julia> weighted_cutout = data[idxs...] .* ap[idxs...]
+julia> weighted_cutout = data[idxs] .* ap[idxs]
 5×5 Array{Float64,2}:
  0.273713  1.53865  1.96646  1.53865  0.273713
  1.53865   2.0      2.0      2.0      1.53865
@@ -80,12 +80,11 @@ julia> ap .* ones(5, 7) # broadcasts to eachindex(data), regardless of ap bound
 This allows extremely efficient computation of aperture photometry from small to medium sized apertures.
 
 ```julia
-julia> phot_sum(ap, data) = sum(idx -> ap[idx] * data[idx], Aperture.cutout_indices(ap, data))
-phot_sum (generic function with 1 method)
+julia> using BenchmarkTools
 
-julia> using BenchmarkTools; @btime phot_sum(\$ap, \$data)
-  1.068 μs (0 allocations: 0 bytes)
-  39.26990816987243
+julia> @btime sum(idx -> \$ap[idx] * \$data[idx], \$idxs)
+  1.097 μs (0 allocations: 0 bytes)
+39.26990816987243
 ```
 
 This is essentially the full implementation of [`photometry`](@ref), save for the packing of additional information into a tabular form.
