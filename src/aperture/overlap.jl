@@ -1,7 +1,18 @@
 #=
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
-using LazySets
+using LazySets: AbstractHyperrectangle,
+                EmptySet,
+                HPolygon,
+                Hyperrectangle,
+                LinearMap,
+                area,
+                constraints_list,
+                intersection,
+                linear_map,
+                matrix,
+                set
+
 using Rotations
 using StaticArrays
 
@@ -385,8 +396,6 @@ function inside_rectangle(x, y, w, h, θ)
 end
 
 function rectangular_overlap_exact(xmin, ymin, xmax, ymax, w, h, θ)
-    # sint, cost = sincos(deg2rad(θ))
-    # R = [cost -sint; sint cost]
     R = RotMatrix{2}(deg2rad(θ))
     aper = R * Hyperrectangle(zeros(SVector{2}), SA[w / 2, h / 2])
     dy = ymax - ymin

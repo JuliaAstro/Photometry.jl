@@ -118,11 +118,11 @@ end
 """
     Subpixel(ap, N=1) <: AbstractAperture
 
-Use a subpixel quadrature approximation for pixel shading instead of exact geometric methods. This will wrap `ap` semi-transparently: all fields of `ap` are still accessible in addition to `N`.
+Use a subpixel quadrature approximation for pixel shading instead of exact geometric methods.
 
 For any pixel laying on the border of `ap`, this alters the shading algorithm by breaking the border pixel up into `(N, N)` subpixels. The shading value is the fraction of these subpixels within the geometric border of `ap`.
 
-Using a subpixel shading method is generally faster than exact methods at the cost of accuracy.
+Using a subpixel shading method is sometimes faster than exact methods at the cost of accuracy. For [`CircularAperture`](@ref) the subpixel method is only faster than the exact method for `N` ~ 7. for [`EllipticalAperture`](@ref) the cutoff is `N` ~ 12, and for [`RectangularAperture`](@ref) the cutoff is `N` ~ 20.
 
 
 # Examples
