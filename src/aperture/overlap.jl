@@ -163,17 +163,16 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     d3 = x3^2 + y3^2
 
     # order by distances
-    ds = [d1, d2, d3]
+    ds = SA[d1, d2, d3]
     order = sortperm(ds)
-    ds = ds[order]
-    x1, x2, x3 = (x1, x2, x3)[order]
-    y1, y2, y3 = (y1, y2, y3)[order]
+    x1, x2, x3 = SA[x1, x2, x3][order]
+    y1, y2, y3 = SA[y1, y2, y3][order]
 
     # which are inside circle
-    inside = ds .< 1
+    inside = map(d -> d < 1, ds)
 
     # on circle
-    on = isapprox.(ds, 1, atol = 1e-10)
+    on = map(d -> isapprox(d, 1, atol = 1e-10), ds)
 
     # triangle is completely inside circle
     if inside[3] || on[3]
@@ -224,11 +223,11 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
                 point1, point2 = point2, point1
               end
 
-              return (area_triangle(x1, y1, point3..., point1...) +
-                      area_triangle(x1, y1, point1..., point2...) +
-                      area_triangle(x1, y1, point2..., point4...) +
-                      area_arc(point1..., point3..., 1) +
-                      area_arc(point2..., point4..., 1))
+              return sum((area_triangle(x1, y1, point3..., point1...),
+                      area_triangle(x1, y1, point1..., point2...),
+                      area_triangle(x1, y1, point2..., point4...),
+                      area_arc(point1..., point3..., 1),
+                      area_arc(point2..., point4..., 1)))
 
         end
     else
@@ -252,7 +251,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
             return (triangle_unitcircle_overlap(x1, y1, x3, y3, xp, yp) +
                     triangle_unitcircle_overlap(x3, y3, x2, y2, xp, yp))
         else
-            return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0
+            return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0.0
         end
     end
 end
@@ -263,12 +262,12 @@ function circle_segment(x1, y1, x2, y2)
 
     if ((point1[1] > x1 && point1[1] > x2) || (point1[1] < x1 && point1[1] < x2) ||
         (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
-        point1 = (2, 2)
+        point1 = (2.0, 2.0)
     end
 
     if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
         (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
-        point2 = (2, 2)
+        point2 = (2.0, 2.0)
     end
 
     return point1[1] > 1 && point2[1] < 2 ?  (point1, point2) : (point2, point1)
@@ -295,7 +294,7 @@ function circle_line(x1, y1, x2, y2)
     dy = y2 - y1
 
     if dx ≈ 0 && dy ≈ 0
-        return (2, 2), (2, 2)
+        return (2.0, 2.0), (2.0, 2.0)
     elseif abs(dx) > abs(dy)
         # find slope and intercept
         a = dy / dx
@@ -311,7 +310,7 @@ function circle_line(x1, y1, x2, y2)
             _y2 = a * _x2 + b
             return (_x1, _y1), (_x2, _y2)
         else
-            return (2, 2), (2, 2)
+            return (2.0, 2.0), (2.0, 2.0)
         end
     else
         # find slope and intercept
@@ -328,13 +327,13 @@ function circle_line(x1, y1, x2, y2)
             _x2 = a * _y2 + b
             return (_x1, _y1), (_x2, _y2)
         else
-            return (2, 2), (2, 2)
+            return (2.0, 2.0), (2.0, 2.0)
         end
     end
 end
 
 function elliptical_overlap_exact(xmin, ymin, xmax, ymax, a, b, θ)
-    sint, cost = sincos(deg2rad(-θ))
+    sint, cost = sincosd(-θ)
 
     scale = a * b
 
