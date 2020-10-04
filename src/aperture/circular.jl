@@ -53,7 +53,7 @@ function overlap(ap::CircularAperture, i, j)
 end
 
 partial(ap::CircularAperture, x, y) = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
-partial(ap::Subpixel{T,<:CircularAperture}, x, y) where {T} = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r, ap.N)
+partial(sub_ap::Subpixel{T,<:CircularAperture}, x, y) where {T} = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N)
 
 
 CircularAperture(center, r) = CircularAperture(center..., r)
@@ -139,9 +139,10 @@ function partial(ap::CircularAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{T,<:CircularAnnulus}, x, y) where T
-    f1 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, ap.N)
-    f2 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, ap.N)
+function partial(sub_ap::Subpixel{T,<:CircularAnnulus}, x, y) where T
+    ap = sub_ap.ap
+    f1 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, sub_ap.N)
+    f2 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, sub_ap.N)
     return f1 - f2
 end
 

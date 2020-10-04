@@ -102,7 +102,7 @@ end
 bounds(e::EllipticalAperture) = elliptical_bounds(e.x, e.y, e.a, e.b, e.theta)
 
 partial(ap::EllipticalAperture, x, y) = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
-partial(ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T} = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(ap)..., ap.N)
+partial(sub_ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T} = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(sub_ap.ap)..., sub_ap.N)
 
 
 #######################################################
@@ -185,10 +185,11 @@ function partial(ap::EllipticalAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{T,<:EllipticalAnnulus}, x, y) where T
+function partial(sub_ap::Subpixel{T,<:EllipticalAnnulus}, x, y) where T
+    ap = sub_ap.ap
     coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
-    f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_out..., ap.N)
+    f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_out..., sub_ap.N)
     coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
-    f2 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_in..., ap.N)
+    f2 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_in..., sub_ap.N)
     return f1 - f2
 end

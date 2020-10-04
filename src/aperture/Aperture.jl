@@ -98,6 +98,8 @@ Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture.
 """
 bounds(::AbstractAperture)
 
+center(ap::AbstractAperture) = ap.y, ap.x # greedy
+
 """
     size(::AbstractAperture)
 
@@ -157,16 +159,11 @@ function Base.show(io::IO, c::Subpixel)
     print(io, ", $(c.N))")
 end
 
+center(sp_ap::Subpixel) = center(sp_ap.ap)
 bounds(sp_ap::Subpixel) = bounds(sp_ap.ap)
-overlap(sp_ap::Subpixel, args...) = overlap(sp_ap.ap, args...)
+overlap(sp_ap::Subpixel, i, j) = overlap(sp_ap.ap, i, j)
 
 Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
-
-
-function Base.getproperty(ap::Subpixel, key::Symbol)
-    key in (:N, :ap) && return getfield(ap, key)
-    return getfield(ap.ap, key)
-end
 
 @enum OverlapFlag Inside Outside Partial
 
@@ -174,8 +171,9 @@ function Base.getindex(ap::AbstractAperture, i::Int, j::Int)
     flag = overlap(ap, i, j)
     flag === Outside && return 0.0
     flag === Inside && return 1.0
+    cy, cx = center(ap)
 
-    return partial(ap, j - ap.x, i - ap.y)
+    return partial(ap, j - cx, i - cy)
 end
 
 # This bypasses checking aperture axes for broadcasting
@@ -194,7 +192,8 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
     This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
-    meta = (xcenter = ap.x, ycenter = ap.y)
+    cy, cx = center(ap)
+    meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
     
@@ -207,7 +206,8 @@ end
 
 
 function photometry(ap::AbstractAperture, data::AbstractMatrix)
-    meta = (xcenter = ap.x, ycenter = ap.y)
+    cy, cx = center(ap)
+    meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
     aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))

@@ -77,7 +77,7 @@ function overlap(ap::RectangularAperture, i, j)
 end
 
 partial(ap::RectangularAperture, x, y) = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
-partial(ap::Subpixel{T,<:RectangularAperture}, x, y) where {T} = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta, ap.N)
+partial(sub_ap::Subpixel{T,<:RectangularAperture}, x, y) where {T} = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.w, sub_ap.ap.h, sub_ap.ap.theta, sub_ap.N)
 
 #######################################################
 
@@ -174,8 +174,9 @@ function partial(ap::RectangularAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(ap::Subpixel{T,<:RectangularAnnulus}, x, y) where T
-    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, ap.N)
-    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, ap.N)
+function partial(sub_ap::Subpixel{T,<:RectangularAnnulus}, x, y) where T
+    ap = sub_ap.ap
+    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, sub_ap.N)
+    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, sub_ap.N)
     return f1 - f2
 end
