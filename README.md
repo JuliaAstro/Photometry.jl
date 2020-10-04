@@ -14,7 +14,29 @@ Inspired by [photutils](https://github.com/astropy/photutils), [SEP](https://git
 
 ## Usage
 
-Please see [the documentation](https://JuliaAstro.github.io/Photometry.jl/dev) for examples and reference material.
+Here is a basic example to do some aperture photometry using `CircularAperture`. The `photometry` function performs the photometry using a given method. Please see [the documentation](https://JuliaAstro.github.io/Photometry.jl/dev) for more examples and reference material.
+
+```julia
+data = ones(100, 100)
+err = ones(100, 100)
+
+ap1 = CircularAperture(50, 50, 3)
+# partial overlap
+ap2 = CircularAperture(0.5, 0.5, 5)
+
+results = photometry([ap1, ap2], data, err)
+@assert results.aperture_sum[1] ≈ 9π
+@assert results.aperture_sum[2] ≈ 25π / 4
+
+results
+
+# output
+Table with 4 columns and 2 rows:
+     xcenter  ycenter  aperture_sum  aperture_sum_err
+   ┌─────────────────────────────────────────────────
+ 1 │ 50.0     50.0     28.2743       5.31736
+ 2 │ 0.5      0.5      19.635        4.43113
+```
 
 ## Contributing
 
