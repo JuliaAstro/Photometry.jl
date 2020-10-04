@@ -165,6 +165,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     # order by distances
     ds = SA[d1, d2, d3]
     order = sortperm(ds)
+    ds = ds[order]
     x1, x2, x3 = SA[x1, x2, x3][order]
     y1, y2, y3 = SA[y1, y2, y3][order]
 
@@ -223,11 +224,11 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
                 point1, point2 = point2, point1
               end
 
-              return sum((area_triangle(x1, y1, point3..., point1...),
-                      area_triangle(x1, y1, point1..., point2...),
-                      area_triangle(x1, y1, point2..., point4...),
-                      area_arc(point1..., point3..., 1),
-                      area_arc(point2..., point4..., 1)))
+              return sum(area_triangle(x1, y1, point3..., point1...) +
+                      area_triangle(x1, y1, point1..., point2...) +
+                      area_triangle(x1, y1, point2..., point4...) +
+                      area_arc(point1..., point3..., 1) +
+                      area_arc(point2..., point4..., 1))
 
         end
     else
