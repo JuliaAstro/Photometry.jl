@@ -11,13 +11,14 @@ data = randn(rng, 512, 512) .+ 10
 
 rows = []
 using Statistics
-@progress for r in 1:5:200
-    ap = CircularAperture(256.5, 256.5, r)
-    time = @belapsed photometry($ap, $data)
-    push!(rows, (nt=Threads.nthreads(), r=r, time=time))
+@progress for N in [1, 10, 50, 100, 200, 400, 500, 1000, 2000]
+    xs, ys = size(data) .* (rand(rng, N), rand(rng, N))
+    apers = EllipticalAperture.(xs, ys, 10, 10, 20)
+    time = @belapsed photometry($apers, $data)
+    push!(rows, (nt=Threads.nthreads(), N=N, time=time))
 end
 
-path = joinpath(@__DIR__, "julia_aperture_size.csv")
+path = joinpath(@__DIR__, "julia_num_apertures-ellipse.csv")
 results = CSV.File(path)
 
 rows_to_update = @. results[:nt] == Threads.nthreads()

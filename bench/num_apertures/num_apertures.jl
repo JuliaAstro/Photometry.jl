@@ -15,12 +15,15 @@ using Statistics
     xs, ys = size(data) .* (rand(rng, N), rand(rng, N))
     apers = CircularAperture.(xs, ys, 10)
     time = @belapsed photometry($apers, $data)
-    push!(rows, (N=N, time=time))
+    push!(rows, (nt=Threads.nthreads(), N=N, time=time))
 end
 
-results = DataFrame(rows)
-outfile = "julia_num_apertures_nt=$(Threads.nthreads()).csv"
-@info "saving to $outfile"
-CSV.write(joinpath(@__DIR__, outfile), results)
+path = joinpath(@__DIR__, "julia_num_apertures.csv")
+results = CSV.File(path)
+
+rows_to_update = @. results[:nt] == Threads.nthreads()
+results[rows_to_update] = DataFrame(rows)
+
+CSV.write(path, results)
 
 nothing

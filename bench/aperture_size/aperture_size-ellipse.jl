@@ -12,17 +12,15 @@ data = randn(rng, 512, 512) .+ 10
 rows = []
 using Statistics
 @progress for r in 1:5:200
-    ap = CircularAperture(256.5, 256.5, r)
+    ap = EllipticalAperture(256.5, 256.5, r, r, 20)
     time = @belapsed photometry($ap, $data)
     push!(rows, (nt=Threads.nthreads(), r=r, time=time))
 end
 
-path = joinpath(@__DIR__, "julia_aperture_size.csv")
+path = joinpath(@__DIR__, "julia_aperture_size-ellipse.csv")
 results = CSV.File(path)
 
 rows_to_update = @. results[:nt] == Threads.nthreads()
 results[rows_to_update] = DataFrame(rows)
 
 CSV.write(path, results)
-
-nothing
