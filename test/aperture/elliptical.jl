@@ -40,3 +40,9 @@ end
     @test all(axes(e) .== (-4:4, -16:16))
     @test eachindex(e) == CartesianIndex(-4, -16):CartesianIndex(4, 16)
 end
+
+@testset "regression circular ellipse" begin
+    # some weird bug where centered on-grid past a certain size (and rotated) would fail
+    e = EllipticalAperture(5.5, 5.5, 4, 4, 20)
+    @test sum(e) ≈ photometry(e, ones(9, 9)).aperture_sum # just a test that no errors occur
+end

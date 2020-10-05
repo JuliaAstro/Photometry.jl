@@ -166,6 +166,26 @@ function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cx
     return frac / subpixels^2
 end
 
+function sort_order(d1, d2, d3)
+    if d1 < d2
+        if d2 < 3
+            return SA[1, 2, 3]
+        elseif d1 < d3
+            return SA[1, 3, 2]
+        else
+            return SA[3, 1, 2]
+        end
+    else
+        if d1 < d3
+            return SA[2, 1, 3]
+        elseif d2 < d3
+            return SA[2, 3, 1]
+        else
+            return SA[3, 2, 1]
+        end
+    end
+end
+
 # overlap between triangle and unit circle
 function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     # distances
@@ -175,6 +195,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
 
     # order by distances
     ds = SA[d1, d2, d3]
+    # order = sortperm(ds)
     order = sortperm(ds)
     ds = ds[order]
     x1, x2, x3 = SA[x1, x2, x3][order]
@@ -184,7 +205,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     inside = map(d -> d < 1, ds)
 
     # on circle
-    on = map(d -> isapprox(d, 1, atol = 1e-10), ds)
+    on = map(d -> d ≈ 1, ds)
 
     # triangle is completely inside circle
     if inside[3] || on[3]
@@ -194,7 +215,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     elseif inside[2] || on[2]
         intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
         intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
-        if intersect13 && intersect23
+        if intersect13 && intersect23 && !on[2]
             point1 = circle_segment_single2(x1, y1, x3, y3)
             point2 = circle_segment_single2(x2, y2, x3, y3)
 
@@ -210,10 +231,12 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
             point2 = circle_segment_single2(x2, y2, x3, y3)
 
             return (area_triangle(x1, y1, x2, y2, point2...) +
-                    area_arc(x2, y2, point2..., 1))
+                    area_arc(x1, y1, point2..., 1))
         else
             return area_arc(x1, y1, x2, y2, 1)
         end
+    elseif on[1]
+        return 0.0
     elseif inside[1]
         point1, point2 = circle_segment(x2, y2, x3, y3)
         point3 = circle_segment_single2(x1, y1, x2, y2)
@@ -228,19 +251,16 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
                 return area_triangle(x1, y1, point3..., point4...) + area_arc(point3..., point4..., 1)
             end
         else
-
-              # ensure that point1 is the point closest to (x2, y2)
-              if (((point2[1] - x2) * (point2[1] - x2) + (point2[2] - y2) * (point2[2] - y2)) <
-                  ((point1[1] - x2) * (point1[1] - x2) + (point1[2] - y2) * (point1[2] - y2)))
+            # ensure that point1 is the point closest to (x2, y2)
+            if (point2[1] - x2)^2 + (point2[2] - y2)^2 < (point1[1] - x2)^2 + (point1[2] - y2)^2
                 point1, point2 = point2, point1
-              end
+            end
 
-              return sum(area_triangle(x1, y1, point3..., point1...) +
-                      area_triangle(x1, y1, point1..., point2...) +
-                      area_triangle(x1, y1, point2..., point4...) +
-                      area_arc(point1..., point3..., 1) +
-                      area_arc(point2..., point4..., 1))
-
+            return (area_triangle(x1, y1, point3..., point1...) +
+                    area_triangle(x1, y1, point1..., point2...) +
+                    area_triangle(x1, y1, point2..., point4...) +
+                    area_arc(point1..., point3..., 1) +
+                    area_arc(point2..., point4..., 1))
         end
     else
         point1, point2 = circle_segment(x1, y1, x2, y2)
@@ -260,7 +280,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
         elseif point5[1] ≤ 1
             xp = (point5[1] + point6[1]) / 2
             yp = (point5[2] + point6[2]) / 2
-            return (triangle_unitcircle_overlap(x1, y1, x3, y3, xp, yp) +
+            return (triangle_unitcircle_overlap(x1, y1, x2, y2, xp, yp) +
                     triangle_unitcircle_overlap(x3, y3, x2, y2, xp, yp))
         else
             return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0.0
@@ -292,6 +312,7 @@ function circle_segment_single2(x1, y1, x2, y2)
     dy1 = abs(point1[2] - y2)
     dx2 = abs(point2[1] - x2)
     dy2 = abs(point2[2] - y2)
+
 
     if dx1 > dy1
         return dx1 > dx2 ? point2 : point1
