@@ -1,7 +1,7 @@
 name = "Photometry"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 authors = ["Miles Lucas <mdlucas@hawaii.edu>"]
-version = "0.7.2"
+version = "0.7.3"
 
 [deps]
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
@@ -22,7 +22,7 @@ TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 [compat]
 ImageFiltering = "0.6"
 ImageTransformations = "0.8"
-Interpolations = "0.12"
+Interpolations = "0.12,0.13"
 LazySets = "1.32"
 NearestNeighbors = "0.4"
 Parameters = "0.12"
