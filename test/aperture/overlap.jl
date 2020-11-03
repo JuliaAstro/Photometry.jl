@@ -131,7 +131,7 @@ end # overlap elliptical
     end
 
     @testset "type stability" begin
-        # @inferred rectangular_overlap_exact(0, 0, 1, 1, 2, 2, 0) # TODO area in LazySets.jl not type stable
+        @inferred rectangular_overlap_exact(0, 0, 1, 1, 2, 2, 0)
         @inferred rectangular_overlap_single_subpixel(0, 0, 1, 1, 2, 2, 0, 5)
     end
 end # overlap rectangular
