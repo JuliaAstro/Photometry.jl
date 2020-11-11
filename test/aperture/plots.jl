@@ -11,17 +11,27 @@ APERTURES = [
 ]
 
 @testset "Aperture Plots - $(typeof(ap))" for ap in APERTURES
-    rec = apply_recipe(Dict{Symbol,Any}(), ap)
-    for i in length(rec)
-        @test getfield(rec[i], 1) == Dict{Symbol,Any}(
+    recipes = apply_recipe(Dict{Symbol,Any}(), ap)
+    for rec in recipes
+        @test getfield(rec, 1) == Dict{Symbol,Any}(
             :seriescolor => :red,
+            :fillcolor => nothing,
+            :linecolor => :match,
             :label => "",
-            :seriestype => :path,
+            :seriestype => :shape,
             :aspect_ratio => :equal)
 
         # test to make sure our position is correct (should be +0.5 the given (x,y))
-        x, y = rec[i].args
-        @test mean(x[1:end - 1]) ≈ 3.5
-        @test mean(y[1:end - 1]) ≈ 3.5
+        points = rec.args[1]
+        x_tot = y_tot = 0
+        for point in points
+            x_tot += point[1]
+            y_tot += point[2]
+        end
+        N = length(points)
+        x_mean = x_tot / N
+        y_mean = y_tot / N
+        @test x_mean ≈ 3.5 atol = x_mean / sqrt(N)
+        @test y_mean ≈ 3.5 atol = y_mean / sqrt(N)
     end
 end
