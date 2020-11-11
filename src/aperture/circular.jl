@@ -44,6 +44,9 @@ struct CircularAperture{T<:Number} <: AbstractAperture{T}
     r::T
 end
 
+CircularAperture(center, r) = CircularAperture(center..., r)
+CircularAperture(x, y, r) = CircularAperture(promote(x, y, r)...)
+
 function overlap(ap::CircularAperture, i, j)
     dist = sqrt((i - ap.y)^2 + (j - ap.x)^2)
     dr = sqrt(2) / 2 # corner-center distance of pixel
@@ -54,10 +57,6 @@ end
 
 partial(ap::CircularAperture, x, y) = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
 partial(sub_ap::Subpixel{T,<:CircularAperture}, x, y) where {T} = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N)
-
-
-CircularAperture(center, r) = CircularAperture(center..., r)
-CircularAperture(x, y, r) = CircularAperture(promote(x, y, r)...)
 
 function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
