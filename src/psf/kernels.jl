@@ -2,7 +2,7 @@
 """
     Kernels
 
-Statistical kernels for constructing point spread functions (PSFs). These kernels act like matrices but without allocating any memory, which makes them efficient to fit and apply.
+Statistical kernels for constructing point-spread functions (PSFs). These kernels act like matrices but without allocating any memory, which makes them efficient to fit and apply.
 
 # Kernels
 
@@ -10,6 +10,74 @@ The following kernels are currently implemented
 * [`Kernels.Gaussian`](@ref)
 * [`Kernels.AiryDisk`](@ref)
 * [`Kernels.Moffat`](@ref)
+
+# Usage
+
+Using the kernels should feel just like an array. In fact, `Kernels.PSFKernel <: AbstractMatrix`. However, no data is stored and no allocations have to be made. In other words, representing the kernels as matrices is merely a convenience, since typically astronomical data is stored in dense arrays.
+
+```jldoctest kernel
+julia> k = Kernels.Gaussian(5); # fwhm of 5 pixels, centered at (0, 0)
+
+julia> k[0, 0]
+1.0
+```
+because the kernel is a matrix, it needs to have a size. In this case, the size is `maxsize * FWHM` pixels, centered around the origin, and rounded up. We can see how this alters the indices from a typical `Matrix`
+
+```jldoctest kernel
+julia> size(k)
+(17, 17)
+
+julia> axes(k)
+(-8:8, -8:8)
+```
+
+these axes are merely a convenience for bounding the kernel, since they accept any real number as input. 
+
+```jldoctest kernel
+julia> k[100, 10000]
+0.0
+```
+
+By bounding the kernel, we get a cutout which can be applied to arrays with much larger dimensions without having to iterate over the whole matrix
+
+```jldoctest
+julia> big_mat = ones(101, 101);
+
+julia> small_kern = Kernels.Gaussian(51, 51, 2); # center of big_mat
+
+julia> ax = map(intersect, axes(big_mat), axes(small_kern))
+(48:54, 48:54)
+
+julia> cutout = @view big_mat[ax...]
+7×7 view(::Array{Float64,2}, 48:54, 48:54) with eltype Float64:
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+ 1.0  1.0  1.0  1.0  1.0  1.0  1.0
+
+julia> photsum = sum(cutout .* view(small_kern, ax...))
+4.5322418212890625
+```
+Nice- we only had to reduce ~50 pixels instead of ~10,000 to calculate the aperture sum.
+
+Since the kernels are lazy (no allocations), that means the type of the output can be specified, as long as it can be converted to from a real number.
+
+```jldoctest
+julia> kbig = Kernels.Gaussian{BigFloat}(12);
+
+julia> sum(kbig)
+163.07467408408593790971336380361822460116627553361468017101287841796875
+```
+
+!!! tip "Tip: Automatic Differentation"
+    Forward-mode AD libraries tend to use dual numbers, which can cause headaches getting the types correct. We recommend using the primal vector's element type to avoid these headaches
+    ```julia
+    # example generative model for position and scalar fwhm
+    kernel(X::AbstractVector{T}) where {T} = Kernels.Gaussian{T}(X...)
+    ```
 
 # Examples
 
@@ -70,6 +138,7 @@ using StaticArrays
 """
 abstract type PSFKernel{T} <: AbstractMatrix{T} end
 
+# always inbounds
 Base.checkbounds(::Type{Bool}, ::PSFKernel, idx...) = true
 Base.checkbounds(::Type{Bool}, ::PSFKernel, idx::CartesianIndex) = true
 
@@ -89,12 +158,31 @@ end
 #     upper = @. ceil(Int, pos - halfextent)
 # end
 
-"""
-    Kernels.Gaussian(fwhm; maxsize=ceil(Int, 3fwhm))
-    Kernels.Normal(fwhm; maxsize=ceil(Int, 3fwhm))
+@doc raw"""
+    Kernels.Gaussian(fwhm; maxsize=3)
+    Kernels.Gaussian(position, fwhm; maxsize=3)
+    Kernels.Gaussian(x, y, fwhm; maxsize=3)
+    Kernels.Gaussian(::Polar, fwhm; maxsize=3, origin=[0, 0])
+    Kernels.Gaussian{T}(args...; kwargs...)
 
-A Gaussian kernel
+An unnormalized bivariate Gaussian distribution. The position can be specified in `(x, y)` coordinates as a `Tuple`, `AbstractVector`, or as separate arguments. By default the kernel is placed at the origin. The position can also be given as a `CoordinateTransformations.Polar`, optionally centered around `origin`.
 
+The `fwhm` can be a scalar (isotropic), vector/tuple (diagonal), or a matrix (correlated). For efficient calculations, we recommend using [StaticArrys](https://github.com/JuliaArrays/StaticArrays.jl). Here, `maxsize` is a multiple of the fwhm, and can be given as a scalar or as a tuple for each axis.
+
+The output type can be specified, and will default to `Float64`. The amplitude is unnormalized, meaning the maximum value will always be 1. This is distinct from the probability distribution (pdf) of a bivariate Gaussian which assures the kernel *sums* to 1.
+
+# Extended help
+## Functional form
+```
+f(x̂ | x, FWHM) = exp(-4ln2 * ⟨x̂ - x⟩ / FWHM^2)
+```
+where `x̂` and `x` are position vectors (indices) `⟨⋅,⋅⟩` represents a dot product, and `FWHM` is the full width at half-maximum.
+
+The FWHM can be unique for each axis, or include a cross-term. In this case, the functional form becomes
+```
+f(x̂ | x, Q) = exp(-4ln2 * (x̂ - x)ᵀ Q (x̂ - x))
+```
+where `Q` is the inverse covariance matrix (or precision matrix). This is equivalent to the inverse of the FWHM matrix after squaring each element.
 """
 struct Gaussian{T,FT,VT<:AbstractVector,IT<:Tuple} <: PSFKernel{T}
     pos::VT
