@@ -49,7 +49,6 @@ struct Gaussian{T,FT,VT<:AbstractVector,IT<:Tuple} <: PSFKernel{T}
     fwhm::FT
     indices::IT
 
-    # hello, it's me: type soup
     Gaussian{T}(pos::VT, fwhm::FT, indices::IT) where {T,VT<:AbstractVector,FT,IT<:Tuple} = new{T,FT,VT,IT}(pos, fwhm, indices)
 end
 
@@ -61,10 +60,10 @@ Gaussian{T}(pos::AbstractVector, fwhm; maxsize=3) where {T} = Gaussian{T}(pos, f
 # default position is [0, 0]
 Gaussian{T}(fwhm; kwargs...) where {T} = Gaussian{T}(SA[0, 0], fwhm; kwargs...)
 # # parse position to vector
-# Gaussian{T}(x, y, fwhm; kwargs...) where {T} = Gaussian(SA[x, y], fwhm; kwargs...)
+Gaussian{T}(x::Number, y::Number, fwhm; kwargs...) where {T} = Gaussian{T}(SA[x, y], fwhm; kwargs...)
 Gaussian{T}(xy::Tuple, fwhm; kwargs...) where {T} = Gaussian{T}(SVector(xy), fwhm; kwargs...)
 # # translate polar coordinates to cartesian, optionally recentering
-# Gaussian{T}(p::Polar, fwhm; origin=SA[0, 0], kwargs...) where {T} = Gaussian(CartesianFromPolar()(p) .+ origin, fwhm; kwargs...)
+Gaussian{T}(p::Polar, fwhm; origin=SA[0, 0], kwargs...) where {T} = Gaussian(CartesianFromPolar()(p) .+ origin, fwhm; kwargs...)
 
 function indices_from_extent(pos, fwhm, maxsize)
     halfextent = @. maxsize * fwhm / 2
@@ -82,26 +81,28 @@ end
 
 Base.size(g::Gaussian) = map(length, g.indices)
 Base.axes(g::Gaussian) = g.indices
-
-(g::Gaussian)(dist) = exp(-4 * log(2) * (dist / g.fwhm)^2)
+Base.checkbounds(::Type{Bool}, ::PSFKernel, idx...) = true
 
 # fallback, also covers scalar case
 function Base.getindex(g::Gaussian{T}, idx::Vararg{<:Integer,2}) where T
     Δ = sqeuclidean(SVector(idx), g.pos)
-    return convert(T, exp(-4 * log(2) * Δ / g.fwhm^2))
+    val = exp(-4 * log(2) * Δ / g.fwhm^2)
+    return convert(T, val)
 end
 # vector case
 function Base.getindex(g::Gaussian{T,<:Union{Tuple,AbstractVector}}, idx::Vararg{<:Integer,2}) where T
     weights = SA[1/first(g.fwhm)^2, 1/last(g.fwhm)^2] # manually invert
     Δ = wsqeuclidean(SVector(idx), g.pos, weights)
-    return convert(T, exp(-4 * log(2) * Δ))
+    val = exp(-4 * log(2) * Δ)
+    return convert(T, val)
 end
 
 # matrix case
 function Base.getindex(g::Gaussian{T,<:AbstractMatrix}, idx::Vararg{<:Integer,2}) where T
     R = SVector(idx) - g.pos
     Δ = R' * ((g.fwhm .^2) \ R)
-    return convert(T, exp(-4 * log(2) * Δ))
+    val = exp(-4 * log(2) * Δ)
+    return convert(T, val)
 end
 
 # Alias Normal -> Gaussian
