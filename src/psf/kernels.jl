@@ -162,7 +162,7 @@ end
     Kernels.Gaussian(fwhm; maxsize=3)
     Kernels.Gaussian(position, fwhm; maxsize=3)
     Kernels.Gaussian(x, y, fwhm; maxsize=3)
-    Kernels.Gaussian(::Polar, fwhm; maxsize=3, origin=[0, 0])
+    Kernels.Gaussian(::Polar, fwhm; maxsize=3, origin=(0, 0))
     Kernels.Gaussian{T}(args...; kwargs...)
 
 An unnormalized bivariate Gaussian distribution. The position can be specified in `(x, y)` coordinates as a `Tuple`, `AbstractVector`, or as separate arguments. By default the kernel is placed at the origin. The position can also be given as a `CoordinateTransformations.Polar`, optionally centered around `origin`.
@@ -173,13 +173,13 @@ The output type can be specified, and will default to `Float64`. The amplitude i
 
 # Functional form
 ```
-f(x̂ | x, FWHM) = exp(-4ln2 * ||x̂ - x|| / FWHM^2)
+f(x | x̂, FWHM) = exp[-4ln(2) * ||x - x̂|| / FWHM^2]
 ```
-where `x̂` and `x` are position vectors (indices) `||⋅||` represents the square-distance, and `FWHM` is the full width at half-maximum.
+where `x̂` and `x` are position vectors (indices) `||⋅||` represents the square-distance, and `FWHM` is the full width at half-maximum. If `FWHM` is a vector or tuple, the weighting is applied along each axis.
 
-The FWHM can be unique for each axis, or include a cross-term. In this case, the functional form becomes
+If the `FWHM` is a correlated matrix, the functional form uses the square-Mahalanobis distance
 ```
-f(x̂ | x, Q) = exp(-4ln2 * (x̂ - x)ᵀ Q (x̂ - x))
+f(x | x̂, Q) = exp[-4ln(2) * (x - x̂)ᵀ Q (x - x̂)]
 ```
 where `Q` is the inverse covariance matrix (or precision matrix). This is equivalent to the inverse of the FWHM matrix after squaring each element.
 """
@@ -241,8 +241,23 @@ const Normal = Gaussian
 
 ############
 
-"""
-    Kernels.AiryDisk(pos, fwhm)
+@doc raw"""
+    Kernels.AiryDisk(fwhm; maxsize=3)
+    Kernels.AiryDisk(position, fwhm; maxsize=3)
+    Kernels.AiryDisk(x, y, fwhm; maxsize=3)
+    Kernels.AiryDisk(::Polar, fwhm; maxsize=3, origin=(0, 0))
+    Kernels.AiryDisk{T}(args...; kwargs...)
+
+An unnormalized Airy disk. The position can be specified in `(x, y)` coordinates as a `Tuple`, `AbstractVector`, or as separate arguments. By default the kernel is placed at the origin. The position can also be given as a `CoordinateTransformations.Polar`, optionally centered around `origin`.
+
+The `fwhm` can be a scalar (isotropic) or vector/tuple (diagonal). For efficient calculations, we recommend using [StaticArrys](https://github.com/JuliaArrays/StaticArrays.jl). Here, `maxsize` is a multiple of the fwhm, and can be given as a scalar or as a tuple for each axis.
+
+The output type can be specified, and will default to `Float64`. The amplitude is unnormalized, meaning the maximum value will always be 1. This means the kernels act like a transmission weighting.
+
+# Functional form
+```
+TODO
+```
 """
 struct AiryDisk{T,FT,VT<:AbstractVector,IT<:Tuple} <: PSFKernel{T}
     pos::VT
@@ -287,8 +302,24 @@ end
 
 ############
 
-"""
-    Kernels.Moffat(pos, fwhm)
+@doc raw"""
+    Kernels.Moffat(fwhm; maxsize=3)
+    Kernels.Moffat(position, fwhm; maxsize=3)
+    Kernels.Moffat(x, y, fwhm; maxsize=3)
+    Kernels.Moffat(::Polar, fwhm; maxsize=3, origin=(0, 0))
+    Kernels.Moffat{T}(args...; kwargs...)
+
+An unnormalized Airy disk. The position can be specified in `(x, y)` coordinates as a `Tuple`, `AbstractVector`, or as separate arguments. By default the kernel is placed at the origin. The position can also be given as a `CoordinateTransformations.Polar`, optionally centered around `origin`.
+
+The `fwhm` can be a scalar (isotropic) or vector/tuple (diagonal). For efficient calculations, we recommend using [StaticArrys](https://github.com/JuliaArrays/StaticArrays.jl). Here, `maxsize` is a multiple of the fwhm, and can be given as a scalar or as a tuple for each axis.
+
+The output type can be specified, and will default to `Float64`. The amplitude is unnormalized, meaning the maximum value will always be 1. This means the kernels act like a transmission weighting.
+
+# Functional form
+```
+f(x | x̂, FWHM) = 1 / [1 + ||x - x̂|| / (FWHM / 2)^2]
+```
+where `x̂` and `x` are position vectors (indices) `||⋅||` represents the square-distance, and `FWHM` is the full width at half-maximum. If `FWHM` is a vector or tuple, the weighting is applied along each axis.
 """
 struct Moffat{T,FT,VT<:AbstractVector,IT<:Tuple} <: PSFKernel{T}
     pos::VT
