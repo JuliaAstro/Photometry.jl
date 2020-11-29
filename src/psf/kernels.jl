@@ -1,4 +1,63 @@
 
+"""
+    Kernels
+
+Statistical kernels for constructing point spread functions (PSFs). These kernels act like matrices but without allocating any memory, which makes them efficient to fit and apply.
+
+# Kernels
+
+The following kernels are currently implemented
+* [`Kernels.Gaussian`](@ref)
+* [`Kernels.AiryDisk`](@ref)
+* [`Kernels.Moffat`](@ref)
+
+# Examples
+
+Here is a brief example which shows how to construct a loss function for fitting a `PSFKernel` to some data.
+
+```julia
+data = ones(101, 101)
+# generative model
+function kernel(X::AbstractVector{T}) where T
+    position = X[1:2] # x, y position
+    fwhm = X[3:4]     # fwhm_x, fwhm_y
+    return Kernels.Gaussian{T}(position, fwhm)
+end
+# objective function
+function loss(X::AbstractVector, data)
+    k = kernel(X)
+    amp = X[5]
+    # l2-distance loss (χ² loss)
+    return sum(abs2, data .- amp .* k[axes(data)...])
+end
+
+test_params = Float64[51, 51, 10, 10, 1]
+loss(test_params, data)
+
+# output
+
+10031.03649468148
+```
+
+The objective function can then be used with an optimization library like [Optim.jl](https://github.com/JuliaOpt/Optim.jl) to find best-fitting parameters
+```julia
+using Optim
+
+# Fit our data using test_params as a starting point
+# uses Nelder-Mead optimization
+res = optimize(P -> loss(P, data), test_params)
+
+# utilize automatic differentiation (AD) to enable
+# advanced algorithms, like Newton's method
+res_ad = optimize(P -> loss(P, data), test_params, Newton(); autodiff=:forward)
+```
+we can see which result has the better loss, and then use the generative model to create a kernel that we can use elsewhere
+```julia
+best_res = minimum(res) < minimum(res_ad) ? res : res_ad
+best_fit_params = Optim.minimizer(best_res)
+model = kernel(best_fit_params)
+```
+"""
 module Kernels
 
 using CoordinateTransformations
@@ -8,8 +67,6 @@ using StaticArrays
 
 """
     Kernels.PSFKernel{T} <: AbstractMatrix{T}
-
-A kernel used for defining a PSF.
 """
 abstract type PSFKernel{T} <: AbstractMatrix{T} end
 
@@ -38,30 +95,6 @@ end
 
 A Gaussian kernel
 
-```math
-K(d) = \\exp\\left[-4\\ln{2}\\left(\\frac{d}{\\Gamma}\\right)^2\\right]
-```
-
-```
-  ┌────────────────────────────────────────┐
-1 │                  .'::                  │ Gaussian(x)
-  │                 .: :'.                 │
-  │                 :  : :                 │
-  │                :'  : ':                │
-  │                :   :  :                │
-  │               .'   :  ':               │
-  │               :    :   :               │
-  │              .:    :   '.              │
-  │              :     :    :              │
-  │             .'     :    ':             │
-  │             :      :     :             │
-  │            .'      :     ':            │
-  │           .'       :      ':           │
-  │          .'        :       ':          │
-0 │.........''         :         ':........│
-  └────────────────────────────────────────┘
-  -2fwhm                               2fwhm
-```
 """
 struct Gaussian{T,FT,VT<:AbstractVector,IT<:Tuple} <: PSFKernel{T}
     pos::VT
