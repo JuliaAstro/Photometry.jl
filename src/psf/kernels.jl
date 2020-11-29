@@ -154,8 +154,8 @@ function Base.getindex(a::AiryDisk{T}, idx::Vararg{<:Integer,2}) where T
 end
 
 function Base.getindex(a::AiryDisk{T,<:Union{AbstractVector,Tuple}}, idx::Vararg{<:Integer,2}) where T
-    weights = @. (rz / (a.fwhm * 1.18677))^2
-    r = weuclidean(SVector(idx), a.pos, SVector(weights...))
+    weights = SA[(rz / (first(a.fwhm) * 1.18677))^2, (rz / (last(a.fwhm) * 1.18677))^2]
+    r = weuclidean(SVector(idx), a.pos, weights)
     val = ifelse(iszero(r), one(T), 2 * besselj1(π * r) / (π * r))
     return convert(T, val)
 end
@@ -192,24 +192,17 @@ Base.axes(m::Moffat) = m.indices
 # scalar case
 function Base.getindex(m::Moffat{T}, idx::Vararg{<:Integer,2}) where T
     hwhm = m.fwhm / 2
-    Δ = sqeuclidean(SVector(idx), a.pos)
+    Δ = sqeuclidean(SVector(idx), m.pos)
     val = inv(1 + Δ / hwhm^2)
     return convert(T, val)
 end
 
 # vector case
 function Base.getindex(m::Moffat{T,<:Union{AbstractVector,Tuple}}, idx::Vararg{<:Integer,2}) where T
-    weights = @. (2 / m.fwhm)^2
-    Δ = wsqeuclidean(SVector(idx), a.pos, SVector(weights...))
+    weights = SA[(2 / first(m.fwhm))^2, (2 / last(m.fwhm))^2]
+    Δ = wsqeuclidean(SVector(idx), m.pos, weights)
     val = inv(1 + Δ)
     return convert(T, val)
 end
 
-
-# function (m::Moffat)(dist)
-#     hwhm = m.fwhm / 2
-#     return inv(1 + (dist / hwhm)^2)
-# end
-
-# """
 end # module Kernels
