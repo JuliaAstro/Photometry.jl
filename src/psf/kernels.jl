@@ -48,8 +48,8 @@ julia> small_kern = Kernels.Gaussian(51, 51, 2); # center of big_mat
 julia> ax = map(intersect, axes(big_mat), axes(small_kern))
 (48:54, 48:54)
 
-julia> cutout = @view big_mat[ax...]
-7×7 view(::Array{Float64,2}, 48:54, 48:54) with eltype Float64:
+julia> cutout = big_mat[ax...]
+7×7 Array{Float64,2}:
  1.0  1.0  1.0  1.0  1.0  1.0  1.0
  1.0  1.0  1.0  1.0  1.0  1.0  1.0
  1.0  1.0  1.0  1.0  1.0  1.0  1.0
@@ -58,12 +58,12 @@ julia> cutout = @view big_mat[ax...]
  1.0  1.0  1.0  1.0  1.0  1.0  1.0
  1.0  1.0  1.0  1.0  1.0  1.0  1.0
 
-julia> photsum = sum(cutout .* view(small_kern, ax...))
+julia> photsum = sum(cutout .* small_kern[ax...]))
 4.5322418212890625
 ```
-Nice- we only had to reduce ~50 pixels instead of ~10,000 to calculate the aperture sum.
+Nice- we only had to reduce ~50 pixels instead of ~10,000 to calculate the aperture sum, and with some care we could make it allocation-free.
 
-Since the kernels are lazy (no allocations), that means the type of the output can be specified, as long as it can be converted to from a real number.
+Since the kernels are lazy, that means the type of the output can be specified, as long as it can be converted to from a real number (so no integer types).
 
 ```jldoctest
 julia> kbig = Kernels.Gaussian{BigFloat}(12);
@@ -169,14 +169,13 @@ An unnormalized bivariate Gaussian distribution. The position can be specified i
 
 The `fwhm` can be a scalar (isotropic), vector/tuple (diagonal), or a matrix (correlated). For efficient calculations, we recommend using [StaticArrys](https://github.com/JuliaArrays/StaticArrays.jl). Here, `maxsize` is a multiple of the fwhm, and can be given as a scalar or as a tuple for each axis.
 
-The output type can be specified, and will default to `Float64`. The amplitude is unnormalized, meaning the maximum value will always be 1. This is distinct from the probability distribution (pdf) of a bivariate Gaussian which assures the kernel *sums* to 1.
+The output type can be specified, and will default to `Float64`. The amplitude is unnormalized, meaning the maximum value will always be 1. This is distinct from the probability distribution (pdf) of a bivariate Gaussian which assures the kernel *sums* to 1. This means the kernels act like a transmission weighting instead of a probability weighting.
 
-# Extended help
-## Functional form
+# Functional form
 ```
-f(x̂ | x, FWHM) = exp(-4ln2 * ⟨x̂ - x⟩ / FWHM^2)
+f(x̂ | x, FWHM) = exp(-4ln2 * ||x̂ - x|| / FWHM^2)
 ```
-where `x̂` and `x` are position vectors (indices) `⟨⋅,⋅⟩` represents a dot product, and `FWHM` is the full width at half-maximum.
+where `x̂` and `x` are position vectors (indices) `||⋅||` represents the square-distance, and `FWHM` is the full width at half-maximum.
 
 The FWHM can be unique for each axis, or include a cross-term. In this case, the functional form becomes
 ```
@@ -203,7 +202,7 @@ Gaussian{T}(fwhm; kwargs...) where {T} = Gaussian{T}(SA[0, 0], fwhm; kwargs...)
 Gaussian{T}(x::Number, y::Number, fwhm; kwargs...) where {T} = Gaussian{T}(SA[x, y], fwhm; kwargs...)
 Gaussian{T}(xy::Tuple, fwhm; kwargs...) where {T} = Gaussian{T}(SVector(xy), fwhm; kwargs...)
 # # translate polar coordinates to cartesian, optionally recentering
-Gaussian{T}(p::Polar, fwhm; origin=SA[0, 0], kwargs...) where {T} = Gaussian(CartesianFromPolar()(p) .+ origin, fwhm; kwargs...)
+Gaussian{T}(p::Polar, fwhm; origin=SA[0, 0], kwargs...) where {T} = Gaussian{T}(CartesianFromPolar()(p) .+ origin, fwhm; kwargs...)
 
 Base.size(g::Gaussian) = map(length, g.indices)
 Base.axes(g::Gaussian) = g.indices
@@ -231,8 +230,13 @@ function Base.getindex(g::Gaussian{T,<:AbstractMatrix}, idx::Vararg{<:Integer,2}
 end
 
 # Alias Normal -> Gaussian
+
+"""
+    Kernels.Normal
+
+An alias for [`Kernels.Gaussian`](@ref)
+"""
 const Normal = Gaussian
-@doc (@doc Gaussian) Normal
 
 
 ############
