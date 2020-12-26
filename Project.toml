@@ -1,7 +1,7 @@
 name = "Photometry"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 authors = ["Miles Lucas <mdlucas@hawaii.edu>"]
-version = "0.7.6"
+version = "0.7.7"
 
 [deps]
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
@@ -27,7 +27,7 @@ LazySets = "1.37"
 NearestNeighbors = "0.4"
 Parameters = "0.12"
 RecipesBase = "1"
-Reexport = "0.2"
+Reexport = "0.2, 1.0"
 Rotations = "0.13,1"
 StaticArrays = "0.12, 1.0"
 StatsBase = "0.28,0.29,0.30,0.31,0.32,0.33"
