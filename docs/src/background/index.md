@@ -14,13 +14,17 @@ using FITSIO
 using Plots
 
 # Download our image, courtesy of astropy
-hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
-image = read(hdu[1])'
+hdu = FITS(download("https://rawcdn.githack.com/astropy/photutils-datasets/8c97b4fa3a6c9e6ea072faeed2d49a20585658ba/data/M6707HH.fits"))
+image = read(hdu[1])
 
-default(aspect_ratio=1, size=(600, 600),
-    xlims=(1, size(image, 2)), ylims=(1, size(image, 1)))
+# Plot
+function imshow(image; kwargs...)
+    xs, ys = axes(image)
+    data = transpose(image)
+    heatmap(xs, ys, data; aspect_ratio=1, xlim=extrema(xs), ylim=extrema(ys), kwargs...)
+end
 
-heatmap(image, size=(500, 500))
+imshow(image)
 ```
 
 Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
@@ -34,11 +38,13 @@ clipped = sigma_clip(image, 1, fill=NaN)
 bkg, bkg_rms = estimate_background(clipped, 50)
 
 # plot
-plot(layout=(2, 2), ticks=false)
-heatmap!(image, title="Original", subplot=1)
-heatmap!(clipped, title="Sigma-Clipped", subplot=2)
-heatmap!(bkg, title="Background", subplot=3)
-heatmap!(bkg_rms, title="Background RMS", subplot=4)
+plot(
+    imshow(image, title="Original"),
+    imshow(clipped, title="Sigma-Clipped"),
+    imshow(bkg, title="Background"),
+    imshow(bkg_rms, title="Background RMS"),
+    layout=(2, 2), ticks=false
+)
 ```
 
 We could apply a median filter, too, by specifying `filter_size`
@@ -48,25 +54,27 @@ We could apply a median filter, too, by specifying `filter_size`
 bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
 
 # plot
-plot(layout=(2, 2), ticks=false)
-heatmap!(bkg, title="Unfiltered", ylabel="Background", subplot=1)
-heatmap!(bkg_f, title="Filtered", subplot=2)
-heatmap!(bkg_rms, ylabel="RMS", subplot=3)
-heatmap!(bkg_rms_f, subplot=4)
+plot(
+    imshow(bkg, title="Unfiltered", ylabel="Background"),
+    imshow(bkg_f, title="Filtered"),
+    imshow(bkg_rms, ylabel="RMS"),
+    imshow(bkg_rms_f);
+    layout=(2, 2), ticks=false
+)
 ```
 
 Now we can see our image after subtracting the filtered background and ready for [Aperture Photometry](@ref)!
 
 ```@example bkg
 subt = image .- bkg_f[axes(image)...]
-plot(layout=(1, 2),
-    size=(600, 260),
-    xlims=(400, 800),
-    ylims=(400, 800),
+plot(
+    imshow(image, title="Original", colorbar=false),
+    imshow(subt, title="Subtracted");
+    layout=(1, 2), size=(600, 260),
+    xlims=(400, 800), ylims=(400, 800),
     clims=(minimum(subt), maximum(image)),
-    ticks=false)
-heatmap!(image, title="Original", colorbar=false, subplot=1)
-heatmap!(subt, title="Subtracted", subplot=2)
+    ticks=false, aspect_ratio=1
+)
 ```
 
 ### IDW Interpolator
@@ -77,11 +85,13 @@ Here is a quick example using the [`IDWInterpolator`](@ref)
 b1, r1 = estimate_background(clipped, 50, filter_size=5)
 b2, r2 = estimate_background(clipped, 50, itp=IDWInterpolator(50), filter_size=5)
 
-plot(layout=(2, 2), ticks=false)
-heatmap!(b1, title="ZoomInterpolator", ylabel="Background", subplot=1)
-heatmap!(b2, title="IDWInterpolator", subplot=2)
-heatmap!(r1, ylabel="RMS", subplot=3)
-heatmap!(r2, subplot=4)
+plot(
+    imshow(b1, title="ZoomInterpolator", ylabel="Background"),
+    imshow(b2, title="IDWInterpolator"),
+    imshow(r1, ylabel="RMS"),
+    imshow(r2);
+    layout=(2, 2), ticks=false
+)
 ```
 
 ## API/Reference

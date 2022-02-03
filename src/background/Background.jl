@@ -245,12 +245,12 @@ If `fill === :clamp`, this will clamp values in `x` lower than `center - sigma_l
 julia> x = randn(100_000);
 
 julia> extrema(x)
-(-4.1021902325835065, 4.412450322548759)
+(-4.496308951466683, 4.080724496910187)
 
 julia> x_clip = sigma_clip(x, 1);
 
 julia> extrema(x_clip) # should be close to (-1, 1)
-(-1.0027694187006557, 1.0012811399621082)
+(-1.0042721545326967, 0.9957463910682249)
 ```
 """
 sigma_clip(x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low; fill = :clamp, center = median(x), std = std(x)) where T = sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)

@@ -41,7 +41,7 @@ julia> data = fill(2, 5, 5);
 julia> idxs = map(intersect, axes(ap), axes(data)) |> CartesianIndices;
 
 julia> weighted_cutout = data[idxs] .* ap[idxs]
-5×5 Array{Float64,2}:
+5×5 Matrix{Float64}:
  0.273713  1.53865  1.96646  1.53865  0.273713
  1.53865   2.0      2.0      2.0      1.53865
  1.96646   2.0      2.0      2.0      1.96646
@@ -69,7 +69,7 @@ julia> ap[-10, -10] # out-of-bounds, but calculated on the fly
 0.0
 
 julia> ap .* ones(5, 7) # broadcasts to eachindex(data), regardless of ap bound
-5×7 Array{Float64,2}:
+5×7 Matrix{Float64}:
  0.136857  0.769325  0.983232  0.769325  0.136857  0.0  0.0
  0.769325  1.0       1.0       1.0       0.769325  0.0  0.0
  0.983232  1.0       1.0       1.0       0.983232  0.0  0.0
@@ -137,7 +137,7 @@ julia> ap = CircularAperture(3, 3, 2.5)
  0.136857  0.769325  0.983232  0.769325  0.136857
 
 julia> sub_ap = Subpixel(ap, 5)
-5×5 Subpixel{Float64,CircularAperture{Float64}} with indices 1:5×1:5:
+5×5 Subpixel{Float64, CircularAperture{Float64}} with indices 1:5×1:5:
  0.12  0.76  1.0  0.76  0.12
  0.76  1.0   1.0  1.0   0.76
  1.0   1.0   1.0  1.0   1.0
