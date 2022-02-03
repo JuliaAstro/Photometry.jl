@@ -167,12 +167,12 @@ Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
 
 @enum OverlapFlag Inside Outside Partial
 
-function Base.getindex(ap::AbstractAperture, idx::Vararg{2,Int})
-    flag = overlap(ap, i, j)
-    flag === Outside && return 0.0
-    flag === Inside && return 1.0
-    cx, cy = center(ap)
+function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int,2}) where T
     i, j = idx
+    flag = overlap(ap, i, j)
+    flag === Outside && return zero(T)
+    flag === Inside && return one(T)
+    cx, cy = center(ap)
     return partial(ap, i - cx, j - cy)
 end
 
@@ -196,7 +196,7 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
-    
+
     aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
     aperture_sum_var = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
     aperture_sum_err = sqrt(aperture_sum_var)
