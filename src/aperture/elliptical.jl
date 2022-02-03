@@ -51,13 +51,13 @@ end
 function overlap(ap::EllipticalAperture, i, j)
     cxx, cyy, cxy = oblique_coefficients(ap)
     flags = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy)
     )
     all(flags) && return Inside
-    all(!, flags) && return Outside
+    !any(flags) && return Outside
 
     return Partial
 end
@@ -156,22 +156,22 @@ end
 function overlap(ap::EllipticalAnnulus, i, j)
     coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
     flags_out = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_out...)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_out...)
     )
 
     coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
     flags_in = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_in...)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_in...)
     )
 
-   all(flags_out) && all(!, flags_in) && return Inside
-   all(flags_in) || all(!, flags_out) && return Outside
+   all(flags_out) && !any(flags_in) && return Inside
+   all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end

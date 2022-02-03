@@ -48,7 +48,7 @@ CircularAperture(center, r) = CircularAperture(center..., r)
 CircularAperture(x, y, r) = CircularAperture(promote(x, y, r)...)
 
 function overlap(ap::CircularAperture, i, j)
-    dist = sqrt((i - ap.y)^2 + (j - ap.x)^2)
+    dist = sqrt((i - ap.x)^2 + (j - ap.y)^2)
     dr = sqrt(2) / 2 # corner-center distance of pixel
     dist > ap.r + dr && return Outside
     dist < ap.r - dr && return Inside
@@ -125,7 +125,7 @@ end
 
 
 function overlap(ap::CircularAnnulus, i, j)
-    dist = sqrt((i - ap.y)^2 + (j - ap.x)^2)
+    dist = sqrt((i - ap.x)^2 + (j - ap.y)^2)
     dr = sqrt(2) / 2 # corner-center distance of pixel
     ap.r_in - dr < dist < ap.r_out + dr || return Outside
     ap.r_in + dr < dist < ap.r_out - dr && return Inside

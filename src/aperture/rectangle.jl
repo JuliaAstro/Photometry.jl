@@ -62,8 +62,8 @@ function bounds(ap::RectangularAperture)
 end
 
 function overlap(ap::RectangularAperture, i, j)
-    y = i - ap.y
-    x = j - ap.x
+    x = i - ap.x
+    y = j - ap.y
     flags = (
         inside_rectangle(x - 0.5, y - 0.5, ap.w, ap.h, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w, ap.h, ap.theta),
@@ -71,7 +71,7 @@ function overlap(ap::RectangularAperture, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
     )
     all(flags) && return Inside
-    all(!, flags) && return Outside
+    !any(flags) && return Outside
 
     return Partial
 end
@@ -126,8 +126,8 @@ end
 
 
 function overlap(ap::RectangularAnnulus, i, j)
-    y = i - ap.y
-    x = j - ap.x
+    x = i - ap.x
+    y = j - ap.y
     flags_out = (
         inside_rectangle(x - 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta),
@@ -142,8 +142,8 @@ function overlap(ap::RectangularAnnulus, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
     )
 
-   all(flags_out) && all(!, flags_in) && return Inside
-   all(flags_in) || all(!, flags_out) && return Outside
+   all(flags_out) && !any(flags_in) && return Inside
+   all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end

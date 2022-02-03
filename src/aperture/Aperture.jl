@@ -107,12 +107,12 @@ Return (`ny`, `nx`) of the aperture.
 """
 function Base.size(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
-    return ymax - ymin + 1, xmax - xmin + 1
+    return xmax - xmin + 1, ymax - ymin + 1
 end
 
 function Base.axes(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
-    return ymin:ymax, xmin:xmax
+    return xmin:xmax, ymin:ymax
 end
 
 """
@@ -167,13 +167,13 @@ Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
 
 @enum OverlapFlag Inside Outside Partial
 
-function Base.getindex(ap::AbstractAperture, i::Int, j::Int)
+function Base.getindex(ap::AbstractAperture, idx::Vararg{2,Int})
     flag = overlap(ap, i, j)
     flag === Outside && return 0.0
     flag === Inside && return 1.0
-    cy, cx = center(ap)
-
-    return partial(ap, j - cx, i - cy)
+    cx, cy = center(ap)
+    i, j = idx
+    return partial(ap, i - cx, j - cy)
 end
 
 # This bypasses checking aperture axes for broadcasting
@@ -192,7 +192,7 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
     This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
-    cy, cx = center(ap)
+    cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
@@ -206,7 +206,7 @@ end
 
 
 function photometry(ap::AbstractAperture, data::AbstractMatrix)
-    cy, cx = center(ap)
+    cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
