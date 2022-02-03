@@ -41,7 +41,7 @@ julia> data = fill(2, 5, 5);
 julia> idxs = map(intersect, axes(ap), axes(data)) |> CartesianIndices;
 
 julia> weighted_cutout = data[idxs] .* ap[idxs]
-5×5 Array{Float64,2}:
+5×5 Matrix{Float64}:
  0.273713  1.53865  1.96646  1.53865  0.273713
  1.53865   2.0      2.0      2.0      1.53865
  1.96646   2.0      2.0      2.0      1.96646
@@ -69,7 +69,7 @@ julia> ap[-10, -10] # out-of-bounds, but calculated on the fly
 0.0
 
 julia> ap .* ones(5, 7) # broadcasts to eachindex(data), regardless of ap bound
-5×7 Array{Float64,2}:
+5×7 Matrix{Float64}:
  0.136857  0.769325  0.983232  0.769325  0.136857  0.0  0.0
  0.769325  1.0       1.0       1.0       0.769325  0.0  0.0
  0.983232  1.0       1.0       1.0       0.983232  0.0  0.0
@@ -107,12 +107,12 @@ Return (`ny`, `nx`) of the aperture.
 """
 function Base.size(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
-    return ymax - ymin + 1, xmax - xmin + 1
+    return xmax - xmin + 1, ymax - ymin + 1
 end
 
 function Base.axes(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)
-    return ymin:ymax, xmin:xmax
+    return xmin:xmax, ymin:ymax
 end
 
 """
@@ -137,7 +137,7 @@ julia> ap = CircularAperture(3, 3, 2.5)
  0.136857  0.769325  0.983232  0.769325  0.136857
 
 julia> sub_ap = Subpixel(ap, 5)
-5×5 Subpixel{Float64,CircularAperture{Float64}} with indices 1:5×1:5:
+5×5 Subpixel{Float64, CircularAperture{Float64}} with indices 1:5×1:5:
  0.12  0.76  1.0  0.76  0.12
  0.76  1.0   1.0  1.0   0.76
  1.0   1.0   1.0  1.0   1.0
@@ -167,13 +167,13 @@ Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
 
 @enum OverlapFlag Inside Outside Partial
 
-function Base.getindex(ap::AbstractAperture, i::Int, j::Int)
+function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int,2}) where T
+    i, j = idx
     flag = overlap(ap, i, j)
-    flag === Outside && return 0.0
-    flag === Inside && return 1.0
-    cy, cx = center(ap)
-
-    return partial(ap, j - cx, i - cy)
+    flag === Outside && return zero(T)
+    flag === Inside && return one(T)
+    cx, cy = center(ap)
+    return partial(ap, i - cx, j - cy)
 end
 
 # This bypasses checking aperture axes for broadcasting
@@ -192,11 +192,11 @@ Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-w
     This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
-    cy, cx = center(ap)
+    cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
-    
+
     aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
     aperture_sum_var = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
     aperture_sum_err = sqrt(aperture_sum_var)
@@ -206,7 +206,7 @@ end
 
 
 function photometry(ap::AbstractAperture, data::AbstractMatrix)
-    cy, cx = center(ap)
+    cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)

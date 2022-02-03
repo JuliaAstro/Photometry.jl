@@ -16,14 +16,14 @@ Use a cubic-spline interpolation scheme to increase resolution of a mesh.
 # Examples
 ```jldoctest
 julia> ZoomInterpolator(2)([1 0; 0 1])
-4×4 Array{Float64,2}:
+4×4 Matrix{Float64}:
   1.0          0.75   0.25   -2.77556e-17
   0.75         0.625  0.375   0.25
   0.25         0.375  0.625   0.75
  -5.55112e-17  0.25   0.75    1.0
 
 julia> ZoomInterpolator(3, 1)([1 0; 0 1])
-6×2 Array{Float64,2}:
+6×2 Matrix{Float64}:
   1.0          -2.77556e-17
   1.0          -2.77556e-17
   0.666667      0.333333
@@ -61,19 +61,19 @@ The interpolator can be called with some additional parameter being, `leaf_size`
 # Examples
 ```jldoctest
 julia> IDWInterpolator(2, k=2)([1 0; 0 1])
-4×4 Array{Float64,2}:
+4×4 Matrix{Float64}:
  1.0   0.75      0.25      0.0
  0.75  0.690983  0.309017  0.25
  0.25  0.309017  0.690983  0.75
  0.0   0.25      0.75      1.0
 
 julia> IDWInterpolator(3, 1; k=2, power=4)([1 0; 0 1])
-6×2 Array{Float64,2}:
- 1.0        0.0      
- 1.0        0.0      
+6×2 Matrix{Float64}:
+ 1.0        0.0
+ 1.0        0.0
  0.941176   0.0588235
- 0.0588235  0.941176 
- 0.0        1.0      
+ 0.0588235  0.941176
+ 0.0        1.0
  0.0        1.0
 ```
 """

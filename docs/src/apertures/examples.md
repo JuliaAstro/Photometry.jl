@@ -27,14 +27,17 @@ using Plots
 using FITSIO
 
 # Load data in
-hdu = FITS(download("https://github.com/astropy/photutils-datasets/raw/master/data/M6707HH.fits"))
-image = read(hdu[1])'
-chunk = image[71:150, 81:155]
+hdu = FITS(download("https://rawcdn.githack.com/astropy/photutils-datasets/8c97b4fa3a6c9e6ea072faeed2d49a20585658ba/data/M6707HH.fits"))
+chunk = read(hdu[1], 81:155, 71:150)
 
 # Plot
-default(aspect_ratio=1, xlims=(1, size(chunk, 2)), ylims=(1, size(chunk, 1)))
+function imshow(image; kwargs...)
+    xs, ys = axes(image)
+    data = transpose(image)
+    heatmap(xs, ys, data; aspect_ratio=1, xlim=extrema(xs), ylim=extrema(ys), kwargs...)
+end
 
-heatmap(chunk)
+imshow(chunk)
 ```
 
 Now let's add some apertures!
@@ -57,7 +60,7 @@ aps = CircularAperture.(positions, radii)
 now let's plot them up
 
 ```@example stars
-heatmap(chunk)
+imshow(chunk)
 plot!(aps, c=:white)
 ```
 
@@ -76,23 +79,23 @@ clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
 
-plot(layout=(2, 2), size=(600, 600), ticks=false)
-heatmap!(chunk, title="Original", subplot=1)
-heatmap!(clipped, title="Sigma-Clipped", subplot=2)
-heatmap!(bkg, title="Background", subplot=3)
-heatmap!(bkg_rms, title="Background RMS", subplot=4)
+plot(
+    imshow(chunk, title="Original"),
+    imshow(clipped, title="Sigma-Clipped"),
+    imshow(bkg, title="Background"),
+    imshow(bkg_rms, title="Background RMS");
+    layout=(2, 2), size=(600, 600), ticks=false
+)
 ```
 
 Now, using the same apertures, let's find the output using the background-subtracted image
 
 ```@example stars
-plot(layout=(1, 2),
-    clims=(minimum(chunk .- bkg),
-    maximum(chunk)),
-    size=(600, 260),
-    ticks=false)
-heatmap!(chunk, title="Original", colorbar=false, subplot=1)
-heatmap!(chunk .- bkg, title="Subtracted", subplot=2)
+plot(
+    imshow(chunk, title="Original"),
+    imshow(chunk .- bkg, title="Subtracted");
+    layout=2, size=(600, 260), ticks=false, colorbar=false
+)
 plot!(aps, c=:white, subplot=1)
 plot!(aps, c=:white, subplot=2)
 ```

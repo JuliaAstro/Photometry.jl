@@ -14,12 +14,18 @@ A rectangular aperture with width `w`, height `h`, and position angle `θ` in de
 # Examples
 ```jldoctest
 julia> ap = RectangularAperture(0, 0, 10, 4, 0)
-5×11 RectangularAperture{Int64} with indices -2:2×-5:5:
- 0.25  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.25
- 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
- 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
- 0.5   1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  0.5
- 0.25  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.5  0.25
+11×5 RectangularAperture{Int64} with indices -5:5×-2:2:
+ 0.25  0.5  0.5  0.5  0.25
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.5   1    1    1    0.5
+ 0.25  0.5  0.5  0.5  0.25
 ```
 """
 struct RectangularAperture{T <: Number} <: AbstractAperture{T}
@@ -62,8 +68,8 @@ function bounds(ap::RectangularAperture)
 end
 
 function overlap(ap::RectangularAperture, i, j)
-    y = i - ap.y
-    x = j - ap.x
+    x = i - ap.x
+    y = j - ap.y
     flags = (
         inside_rectangle(x - 0.5, y - 0.5, ap.w, ap.h, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w, ap.h, ap.theta),
@@ -71,7 +77,7 @@ function overlap(ap::RectangularAperture, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
     )
     all(flags) && return Inside
-    all(!, flags) && return Outside
+    !any(flags) && return Outside
 
     return Partial
 end
@@ -91,19 +97,19 @@ A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height
 ```jldoctest
 julia> ap = RectangularAnnulus(0, 0, 5, 10, 8, 45)
 13×13 RectangularAnnulus{Float64} with indices -6:6×-6:6:
- 0.0         0.0         0.0         …  0.0         0.0         0.0
- 0.0         0.0         0.0            0.0         0.0         0.0
- 0.0         0.0         0.00252532     0.0         0.0         0.0
- 0.0         0.00252532  0.568542       0.0         0.0         0.0
- 0.00252532  0.568542    1.0            0.215729    0.0         0.0
- 0.528175    1.0         1.0         …  0.941125    0.0         0.0
- 0.0         0.941125    1.0            1.0         0.941125    0.0
- 0.0         0.0         0.941125       1.0         1.0         0.528175
- 0.0         0.0         0.215729       1.0         0.568542    0.00252532
- 0.0         0.0         0.0            0.568542    0.00252532  0.0
- 0.0         0.0         0.0         …  0.00252532  0.0         0.0
- 0.0         0.0         0.0            0.0         0.0         0.0
- 0.0         0.0         0.0            0.0         0.0         0.0
+ 0.0       0.0       0.0         …  0.0         0.0       0.0
+ 0.0       0.0       0.0            0.0         0.0       0.0
+ 0.0       0.0       0.00252532     0.0         0.0       0.0
+ 0.0       0.0       0.568542       0.0         0.0       0.0
+ 0.0       0.568542  1.0            0.215729    0.0       0.0
+ 0.528175  1.0       1.0         …  1.0         0.215729  0.0
+ 0.215729  1.0       1.0            1.0         1.0       0.215729
+ 0.0       0.215729  1.0            1.0         1.0       0.528175
+ 0.0       0.0       0.215729       1.0         0.568542  0.0
+ 0.0       0.0       0.0            0.568542    0.0       0.0
+ 0.0       0.0       0.0         …  0.00252532  0.0       0.0
+ 0.0       0.0       0.0            0.0         0.0       0.0
+ 0.0       0.0       0.0            0.0         0.0       0.0
 ```
 """
 struct RectangularAnnulus{T <: Number} <: AbstractAperture{T}
@@ -126,8 +132,8 @@ end
 
 
 function overlap(ap::RectangularAnnulus, i, j)
-    y = i - ap.y
-    x = j - ap.x
+    x = i - ap.x
+    y = j - ap.y
     flags_out = (
         inside_rectangle(x - 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta),
@@ -142,8 +148,8 @@ function overlap(ap::RectangularAnnulus, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
     )
 
-   all(flags_out) && all(!, flags_in) && return Inside
-   all(flags_in) || all(!, flags_out) && return Outside
+   all(flags_out) && !any(flags_in) && return Inside
+   all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end

@@ -5,16 +5,16 @@ using Photometry.Aperture: bounds
     @test bounds(ap_circ) == (40, 60, 30, 50)
     @test size(ap_circ) == map(length, axes(ap_circ)) == (21, 21)
     @test size(ap_circ, 1) == 21
-    @test all(axes(ap_circ) .== (30:50, 40:60))
-    @test eachindex(ap_circ) == CartesianIndex(30, 40):CartesianIndex(50, 60)
+    @test all(axes(ap_circ) .== (40:60, 30:50))
+    @test eachindex(ap_circ) == CartesianIndex(40, 30):CartesianIndex(60, 50)
 
     @test CircularAperture([50, 40], 10) == ap_circ
 
     ap_ann = CircularAnnulus(50, 40, 5, 10)
     @test bounds(ap_ann) == (40, 60, 30, 50)
     @test size(ap_ann) == (21, 21)
-    @test all(axes(ap_ann) .== (30:50, 40:60))
-    @test eachindex(ap_ann) == CartesianIndex(30, 40):CartesianIndex(50, 60)
+    @test all(axes(ap_ann) .== (40:60, 30:50))
+    @test eachindex(ap_ann) == CartesianIndex(40, 30):CartesianIndex(60, 50)
 
     @test CircularAnnulus([50, 40], 5, 10) == ap_ann
 end

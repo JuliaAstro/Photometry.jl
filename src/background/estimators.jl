@@ -26,7 +26,7 @@ julia> SourceExtractorBackground()(data)
 1.0
 
 julia> SourceExtractorBackground()(data, dims=1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
@@ -63,7 +63,7 @@ julia> MMMBackground()(x)
 1.0
 
 julia> MMMBackground(median_factor=4, mean_factor=3)(x, dims = 1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  1.0  1.0  1.0  1.0  1.0
 ```
 
@@ -96,7 +96,7 @@ julia> BiweightLocationBackground()(x)
 1.0
 
 julia> BiweightLocationBackground(c=5.5)(x; dims = 1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  1.0  1.0  1.0  1.0  1.0
 ```
 """
@@ -145,7 +145,7 @@ julia> StdRMS()(data)
 0.0
 
 julia> StdRMS()(data, dims=1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
@@ -170,7 +170,7 @@ julia> MADStdRMS()(data)
 0.0
 
 julia> MADStdRMS()(data, dims=1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """
@@ -202,7 +202,7 @@ julia> BiweightScaleRMS()(data)
 0.0
 
 julia> BiweightScaleRMS(c=3.0)(data, dims=1)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  0.0  0.0  0.0  0.0  0.0
 ```
 """

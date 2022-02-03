@@ -11,12 +11,14 @@ An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and positi
 # Examples
 ```jldoctest
 julia> ap = EllipticalAperture(0, 0, 4, 2, 35)
-5×7 EllipticalAperture{Int64} with indices -2:2×-3:3:
- 0.873382  1.0       1.0       0.796137  0.23968   0.0       0.0
- 0.844185  1.0       1.0       1.0       0.990119  0.435284  0.0
- 0.324917  0.997821  1.0       1.0       1.0       0.997821  0.324917
- 0.0       0.435284  0.990119  1.0       1.0       1.0       0.844185
- 0.0       0.0       0.23968   0.796137  1.0       1.0       0.873382
+7×5 EllipticalAperture{Int64} with indices -3:3×-2:2:
+ 0.873382  0.844185  0.324917  0         0
+ 1         1         0.997821  0.435284  0
+ 1         1         1         0.990119  0.23968
+ 0.796137  1         1         1         0.796137
+ 0.23968   0.990119  1         1         1
+ 0         0.435284  0.997821  1         1
+ 0         0         0.324917  0.844185  0.873382
 ```
 """
 struct EllipticalAperture{T <: Number} <: AbstractAperture{T}
@@ -51,13 +53,13 @@ end
 function overlap(ap::EllipticalAperture, i, j)
     cxx, cyy, cxy = oblique_coefficients(ap)
     flags = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, cxx, cyy, cxy)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy)
     )
     all(flags) && return Inside
-    all(!, flags) && return Outside
+    !any(flags) && return Outside
 
     return Partial
 end
@@ -156,22 +158,22 @@ end
 function overlap(ap::EllipticalAnnulus, i, j)
     coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
     flags_out = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_out...)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_out...)
     )
 
     coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
     flags_in = (
-        inside_ellipse(j - 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j - 0.5, i + 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j + 0.5, i - 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(j + 0.5, i + 0.5, ap.x, ap.y, coeffs_in...)
+        inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_in...)
     )
 
-   all(flags_out) && all(!, flags_in) && return Inside
-   all(flags_in) || all(!, flags_out) && return Outside
+   all(flags_out) && !any(flags_in) && return Inside
+   all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end

@@ -4,10 +4,10 @@ using Photometry.Aperture: bounds,
 @testset "Apertures" begin
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
     @test bounds(ap_ellipse) == (-20, 20, -10, 10)
-    @test size(ap_ellipse) == (21, 41)
-    @test size(ap_ellipse, 1) == 21
-    @test all(axes(ap_ellipse) .== (-10:10, -20:20))
-    @test eachindex(ap_ellipse) == CartesianIndex(-10, -20):CartesianIndex(10, 20)
+    @test size(ap_ellipse) == (41, 21)
+    @test size(ap_ellipse, 1) == 41
+    @test all(axes(ap_ellipse) .== (-20:20, -10:10))
+    @test eachindex(ap_ellipse) == CartesianIndex(-20, -10):CartesianIndex(20, 10)
 
     @test EllipticalAperture([0, 0], 20, 10, 0) == ap_ellipse
 
@@ -36,9 +36,9 @@ end
     e = EllipticalAnnulus(0, 0, 8, 16, 4, 0)
 
     @test bounds(e) == (-16, 16, -4, 4)
-    @test size(e) == (9, 33)
-    @test all(axes(e) .== (-4:4, -16:16))
-    @test eachindex(e) == CartesianIndex(-4, -16):CartesianIndex(4, 16)
+    @test size(e) == (33, 9)
+    @test all(axes(e) .== (-16:16, -4:4))
+    @test eachindex(e) == CartesianIndex(-16, -4):CartesianIndex(16, 4)
 end
 
 @testset "regression circular ellipse" begin
