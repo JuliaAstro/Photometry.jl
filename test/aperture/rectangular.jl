@@ -2,6 +2,7 @@ using Photometry.Aperture: bounds
 
 @testset "Apertures" begin
     ap_rect = RectangularAperture(50, 40, 10, 10, 0)
+    @test center(ap_rect) == (50, 40)
     @test bounds(ap_rect) == (45, 55, 35, 45)
     @test size(ap_rect) == (11, 11)
     @test size(ap_rect, 1) == 11
@@ -26,6 +27,6 @@ end
 @testset "Rectangle Annulus" begin
 
     ap1 = RectangularAnnulus(0, 0, 1, 1, 1, 0)
-
+    @test center(ap1) == (0, 0)
     @test sprint(show, ap1) == "RectangularAnnulus(0.0, 0.0, w_in=1.0, w_out=1.0, h_in=1.0, h_out=1.0, θ=0.0°)"
 end

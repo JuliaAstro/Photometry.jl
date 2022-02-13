@@ -1,8 +1,9 @@
-using Photometry.Aperture: bounds,
+using Photometry.Aperture: bounds, center,
                            oblique_coefficients
 
 @testset "Apertures" begin
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
+    @test center(ap_ellipse) == (0, 0)
     @test bounds(ap_ellipse) == (-20, 20, -10, 10)
     @test size(ap_ellipse) == (41, 21)
     @test size(ap_ellipse, 1) == 41
@@ -34,7 +35,7 @@ end
 
 @testset "Elliptical Annulus bounding box" begin
     e = EllipticalAnnulus(0, 0, 8, 16, 4, 0)
-
+    @test center(e) == (0, 0)
     @test bounds(e) == (-16, 16, -4, 4)
     @test size(e) == (33, 9)
     @test all(axes(e) .== (-16:16, -4:4))
