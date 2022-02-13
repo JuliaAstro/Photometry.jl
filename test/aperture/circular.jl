@@ -1,7 +1,8 @@
-using Photometry.Aperture: bounds
+using Photometry.Aperture: bounds, center
 
 @testset "Apertures" begin
     ap_circ = CircularAperture(50, 40, 10)
+    @test center(ap_circ) == (50, 40)
     @test bounds(ap_circ) == (40, 60, 30, 50)
     @test size(ap_circ) == map(length, axes(ap_circ)) == (21, 21)
     @test size(ap_circ, 1) == 21
@@ -11,6 +12,7 @@ using Photometry.Aperture: bounds
     @test CircularAperture([50, 40], 10) == ap_circ
 
     ap_ann = CircularAnnulus(50, 40, 5, 10)
+    @test center(ap_ann) == (50, 40)
     @test bounds(ap_ann) == (40, 60, 30, 50)
     @test size(ap_ann) == (21, 21)
     @test all(axes(ap_ann) .== (40:60, 30:50))

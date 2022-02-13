@@ -98,7 +98,7 @@ Return the (`xlow`, `xhigh`, `ylow`, `yhigh`) bounds for a given Aperture.
 """
 bounds(::AbstractAperture)
 
-center(ap::AbstractAperture) = ap.y, ap.x # greedy
+center(ap::AbstractAperture) = ap.x, ap.y # greedy
 
 """
     size(::AbstractAperture)
