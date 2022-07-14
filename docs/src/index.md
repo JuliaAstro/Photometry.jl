@@ -6,8 +6,8 @@ DocTestSetup = :(using Photometry)
 # Photometry.jl
 
 [![GitHub](https://img.shields.io/badge/Code-GitHub-black.svg)](https://github.com/juliaastro/Photometry.jl)
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
-[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ## Installation
@@ -50,4 +50,4 @@ If you're interested in contributing, go ahead and check out the [issues](https:
 
 ## License
 
-The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT expat. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](https://github.com/JuliaAstro/Photometry.jl/blob/master/LICENSE) contains all licenses and any files using derived work are noted at the top of the file.
+The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT expat. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](https://github.com/JuliaAstro/Photometry.jl/blob/main/LICENSE) contains all licenses and any files using derived work are noted at the top of the file.

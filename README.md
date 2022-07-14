@@ -1,8 +1,8 @@
 # Photometry.jl
 
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaAstro/Photometry.jl/actions)
+[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaAstro/Photometry.jl/actions)
 [![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/P/Photometry.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
-[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
+[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
