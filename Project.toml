@@ -1,7 +1,7 @@
 name = "Photometry"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 authors = ["Miles Lucas <mdlucas@hawaii.edu>"]
-version = "0.8.2"
+version = "0.9.0"
 
 [deps]
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
@@ -33,4 +33,4 @@ StaticArrays = "0.12,1"
 StatsBase = "0.28,0.29,0.30,0.31,0.32,0.33"
 Transducers = "0.4"
 TypedTables = "1"
-julia = "1.5"
+julia = "1.6"
