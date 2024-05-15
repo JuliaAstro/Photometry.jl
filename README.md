@@ -29,8 +29,10 @@ results = photometry([ap1, ap2], data, err)
 @assert results.aperture_sum[2] ≈ 25π / 4
 
 results
+```
 
-# output
+Output:
+```plain
 Table with 4 columns and 2 rows:
      xcenter  ycenter  aperture_sum  aperture_sum_err
    ┌─────────────────────────────────────────────────

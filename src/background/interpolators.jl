@@ -1,4 +1,4 @@
-#= 
+#=
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
@@ -11,7 +11,9 @@ using NearestNeighbors: knn, KDTree, MinkowskiMetric
 
 Use a cubic-spline interpolation scheme to increase resolution of a mesh.
 
-`factors` represents the level of "zoom", so an input mesh of size `(10, 10)` with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer is provided, it will be used as the factor for every axis.
+`factors` represents the level of "zoom", so an input mesh of size `(10, 10)`
+with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer
+is provided, it will be used as the factor for every axis.
 
 # Examples
 ```jldoctest
@@ -47,11 +49,14 @@ function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
 end
 
 """
-    IDWInterpolator(factors; leafsize=10,  k=8, power=1, reg=0, conf_dist=1e-12)
+    IDWInterpolator(factors; leafsize=10, k=8, power=1, reg=0, conf_dist=1e-12)
 
-Use Shepard Inverse Distance Weighing interpolation scheme to increase resolution of a mesh.
+Use Shepard Inverse Distance Weighing interpolation scheme to increase
+resolution of a mesh.
 
-`factors` represents the level of "zoom", so an input mesh of size `(10, 10)` with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer is provided, it will be used as the factor for every axis.
+`factors` represents the level of "zoom", so an input mesh of size `(10, 10)`
+with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer
+is provided, it will be used as the factor for every axis.
 
 The interpolator can be called with some additional parameter being, `leaf_size` determines at what number of points to stop splitting the tree further,
 ` k` which is the number of nearest neighbors to be considered, `power` is the exponent for distance in the weighing factor,
@@ -88,8 +93,10 @@ end
 
 IDWInterpolator(factors; leafsize = 10, k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
 # convenience constructors
-IDWInterpolator(factor::Integer; kwargs...) = IDWInterpolator((factor, factor); kwargs...)
-IDWInterpolator(factor::Integer, args...; kwargs...) = IDWInterpolator((factor, args...); kwargs...)
+IDWInterpolator(factor::Integer; kwargs...) =
+    IDWInterpolator((factor, factor); kwargs...)
+IDWInterpolator(factor::Integer, args...; kwargs...) =
+    IDWInterpolator((factor, args...); kwargs...)
 
 function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
     knots = Array{Float64}(undef, 2, length(mesh))
@@ -98,7 +105,8 @@ function (IDW::IDWInterpolator)(mesh::AbstractArray{T}) where T
         @inbounds knots[:, i] .= idx.I
     end
 
-    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.k, IDW.power, IDW.reg, IDW.conf_dist)
+    itp = ShepardIDWInterpolator(knots, float(mesh), IDW.leafsize, IDW.k,
+                                 IDW.power, IDW.reg, IDW.conf_dist)
     out = similar(mesh, float(T), size(mesh) .* IDW.factors)
     return imresize!(out, itp)
 end
@@ -118,7 +126,7 @@ struct ShepardIDWInterpolator{T <: AbstractFloat,N} <: AbstractInterpolation{T,N
     conf_dist::Real
 end
 
-#= Warning! These are not accurate for use as a standard interpolator, 
+#= Warning! These are not accurate for use as a standard interpolator,
    but are what we need for our use with images =#
 Base.axes(itp::ShepardIDWInterpolator) = axes(itp.values)
 Base.size(itp::ShepardIDWInterpolator) = size(itp.values)

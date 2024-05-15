@@ -2,7 +2,7 @@ module Detection
 
 using Parameters
 using ImageFiltering
-using TypedTables 
+using TypedTables
 
 export PeakMesh, extract_sources
 
@@ -17,11 +17,15 @@ abstract type SourceFinder end
 """
     extract_sources(::SourceFinder, data, [error]; sorted=true)
 
-Uses `method` to find and extract point-like sources. 
+Uses `method` to find and extract point-like sources.
 
-Returns a `TypedTables.Table` with positions and information related to the `method`. For instance, using `PeakMesh` returns a table a column for the peak values.
+Returns a `TypedTables.Table` with positions and information related to the
+`method`. For instance, using `PeakMesh` returns a table a column for the peak
+values.
 
-`data` is assumed to be background-subtracted. If `error` is provided it will be propagated into the detection algorithm. If `sorted` is `true` the sources will be sorted by their amplitude.
+`data` is assumed to be background-subtracted. If `error` is provided it will be
+propagated into the detection algorithm. If `sorted` is `true` the sources will
+be sorted by their amplitude.
 
 # See Also
 * [Source Detection Algorithms](@ref)
@@ -34,8 +38,11 @@ extract_sources
 
 Detect sources by finding peaks above a threshold in grids across the image.
 
-This creates a pixel-wise threshold for sources by calculating `error * nsigma` when used with [`extract_sources`](@ref)
-The peaks are found by searching the image in boxes of size `box_size`. If the maximum value in that box is greater than the threshold set above, the point is extracted.
+This creates a pixel-wise threshold for sources by calculating `error * nsigma`
+when used with [`extract_sources`](@ref).
+The peaks are found by searching the image in boxes of size `box_size`. If the
+maximum value in that box is greater than the threshold set above, the point is
+extracted.
 """
 @with_kw struct PeakMesh <: SourceFinder
     box_size::NTuple{2,<:Integer} = (3, 3)

@@ -9,7 +9,8 @@ are considered under a BSD 3-clause license. =#
 
 A rectangular aperture.
 
-A rectangular aperture with width `w`, height `h`, and position angle `θ` in degrees.
+A rectangular aperture with width `w`, height `h`,
+and position angle `θ` in degrees.
 
 # Examples
 ```jldoctest
@@ -91,7 +92,9 @@ partial(sub_ap::Subpixel{T,<:RectangularAperture}, x, y) where {T} = rectangular
     RectangularAnnulus(x, y, w_in, w_out, h_out, θ=0)
     RectangularAnnulus(position, w_in, w_out, h_out, θ=0)
 
-A rectangular annulus with inner width `w_in`, outer width `w_out`, outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in > 0`.
+A rectangular annulus with inner width `w_in`, outer width `w_out`,
+outer height `h_out`, and position angle `θ` in degrees. `h_in` is automatically
+calculated from `w_in / w_out * h_out`. Note that `w_out ≥ w_in > 0`.
 
 # Examples
 ```jldoctest
@@ -148,8 +151,8 @@ function overlap(ap::RectangularAnnulus, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
     )
 
-   all(flags_out) && !any(flags_in) && return Inside
-   all(flags_in) || !any(flags_out) && return Outside
+    all(flags_out) && !any(flags_in) && return Inside
+    all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end
@@ -175,14 +178,18 @@ function bounds(ap::RectangularAnnulus)
 end
 
 function partial(ap::RectangularAnnulus, x, y)
-    f1 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta)
-    f2 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+    f1 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+                                   ap.w_out, ap.h_out, ap.theta)
+    f2 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+                                   ap.w_in, ap.h_in, ap.theta)
     return f1 - f2
 end
 
 function partial(sub_ap::Subpixel{T,<:RectangularAnnulus}, x, y) where T
     ap = sub_ap.ap
-    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta, sub_ap.N)
-    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta, sub_ap.N)
+    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+                                             ap.w_out, ap.h_out, ap.theta, sub_ap.N)
+    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+                                             ap.w_in, ap.h_in, ap.theta, sub_ap.N)
     return f1 - f2
 end

@@ -14,7 +14,7 @@ DocTestSetup = :(using Photometry)
 
 To install from the REPL, enter Pkg-mode (`]`)
 
-```julia
+```julia-repl
 pkg> add Photometry
 ```
 

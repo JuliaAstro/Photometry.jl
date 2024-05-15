@@ -26,7 +26,7 @@ end
 
     # interface
 
-    #= Warning! These are not accurate for use as a standard interpolator, 
+    #= Warning! These are not accurate for use as a standard interpolator,
        but are what we need for our use with images =#
     @test size(it) == (10000,)
     @test axes(it) == axes(y)

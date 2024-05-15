@@ -21,7 +21,9 @@ export photometry,
 
 The abstract super-type for Apertures.
 
-Apertures can be thought of as a cutout or stamp of a geometric shape with shading applied. For example, a circular aperture with a diameter of 3 pixels will require a 5x5 pixel grid (when perfectly on-grid) to represent.
+Apertures can be thought of as a cutout or stamp of a geometric shape with
+shading applied. For example, a circular aperture with a diameter of 3 pixels
+will require a 5x5 pixel grid (when perfectly on-grid) to represent.
 
 ```jldoctest ap1
 julia> ap = CircularAperture(3, 3, 2.5)
@@ -33,7 +35,8 @@ julia> ap = CircularAperture(3, 3, 2.5)
  0.136857  0.769325  0.983232  0.769325  0.136857
 ```
 
-This is a useful way of thinking about apertures: if we have some data, we can weight the data with the aperture
+This is a useful way of thinking about apertures: if we have some data,
+we can weight the data with the aperture.
 
 ```jldoctest ap1
 julia> data = fill(2, 5, 5);
@@ -59,7 +62,9 @@ julia> flux ≈ (π * 2.5^2) * 2 # area of circle times intensity of 2
 true
 ```
 
-What's interesting about the implementation of apertures, though, is they are lazy. This means there is no stored matrix of aperture values; rather, they are calculated on the fly as needed.
+What's interesting about the implementation of apertures, though,
+is they are lazy. This means there is no stored matrix of aperture values;
+rather, they are calculated on the fly as needed.
 
 ```jldoctest ap1
 julia> axes(ap)
@@ -77,9 +82,10 @@ julia> ap .* ones(5, 7) # broadcasts to eachindex(data), regardless of ap bound
  0.136857  0.769325  0.983232  0.769325  0.136857  0.0  0.0
 ```
 
-This allows extremely efficient computation of aperture photometry from small to medium sized apertures.
+This allows extremely efficient computation of aperture photometry from small to
+medium sized apertures.
 
-```julia
+```julia-repl
 julia> using BenchmarkTools
 
 julia> @btime sum(idx -> \$ap[idx] * \$data[idx], \$idxs)
@@ -87,7 +93,8 @@ julia> @btime sum(idx -> \$ap[idx] * \$data[idx], \$idxs)
 39.26990816987243
 ```
 
-This is essentially the full implementation of [`photometry`](@ref), save for the packing of additional information into a tabular form.
+This is essentially the full implementation of [`photometry`](@ref), save for
+the packing of additional information into a tabular form.
 """
 abstract type AbstractAperture{T}  <: AbstractMatrix{T} end
 
@@ -118,11 +125,17 @@ end
 """
     Subpixel(ap, N=1) <: AbstractAperture
 
-Use a subpixel quadrature approximation for pixel shading instead of exact geometric methods.
+Use a subpixel quadrature approximation for pixel shading instead of exact
+geometric methods.
 
-For any pixel laying on the border of `ap`, this alters the shading algorithm by breaking the border pixel up into `(N, N)` subpixels. The shading value is the fraction of these subpixels within the geometric border of `ap`.
+For any pixel laying on the border of `ap`, this alters the shading algorithm by
+breaking the border pixel up into `(N, N)` subpixels. The shading value is the
+fraction of these subpixels within the geometric border of `ap`.
 
-Using a subpixel shading method is sometimes faster than exact methods at the cost of accuracy. For [`CircularAperture`](@ref) the subpixel method is only faster than the exact method for `N` ~ 7. for [`EllipticalAperture`](@ref) the cutoff is `N` ~ 12, and for [`RectangularAperture`](@ref) the cutoff is `N` ~ 20.
+Using a subpixel shading method is sometimes faster than exact methods at the
+cost of accuracy. For [`CircularAperture`](@ref) the subpixel method is only
+faster than the exact method for `N` ~ 7. for [`EllipticalAperture`](@ref) the
+cutoff is `N` ~ 12, and for [`RectangularAperture`](@ref) the cutoff is `N` ~ 20.
 
 
 # Examples
@@ -146,7 +159,9 @@ julia> sub_ap = Subpixel(ap, 5)
 ```
 
 !!! note
-    `photutils` offers a `center` shading method which is equivalent to using the `Subpixel` method with 1 subpixel. To avoid unneccessary namespace cluttering, we simply instruct users to use `Subpixel(ap)` instead.
+    `photutils` offers a `center` shading method which is equivalent to using
+    the `Subpixel` method with 1 subpixel. To avoid unneccessary namespace
+    cluttering, we simply instruct users to use `Subpixel(ap)` instead.
 """
 struct Subpixel{T,AP<:AbstractAperture{T}} <: AbstractAperture{T}
     ap::AP
@@ -186,10 +201,14 @@ Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
     photometry(::AbstractAperture, data::AbstractMatrix, [error])
     photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error])
 
-Perform aperture photometry on `data` given aperture(s). If `error` (the pixel-wise standard deviation) is provided, will calculate sum error. If a list of apertures is provided the output will be a `TypedTables.Table`, otherwise a `NamedTuple`.
+Perform aperture photometry on `data` given aperture(s). If `error` (the
+pixel-wise standard deviation) is provided, will calculate sum error. If a list
+of apertures is provided the output will be a `TypedTables.Table`, otherwise a
+`NamedTuple`.
 
 !!! tip
-    This code is automatically multi-threaded. To take advantage of this please make sure `JULIA_NUM_THREADS` is set before starting your runtime.
+    This code is automatically multi-threaded. To take advantage of this please
+    make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
     cx, cy = center(ap)
@@ -231,4 +250,3 @@ include("overlap.jl")
 include("plotting.jl")
 
 end
-

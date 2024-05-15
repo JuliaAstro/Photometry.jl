@@ -96,7 +96,8 @@ end
 # Some geometric helpers
 
 """Area of a triangle defined by three vertices"""
-area_triangle(x0, y0, x1, y1, x2, y2) = 0.5abs(x0 * (y1 - y2) + x1 * (y2 - y0) + x2 * (y0 - y1))
+area_triangle(x0, y0, x1, y1, x2, y2) =
+    0.5abs(x0 * (y1 - y2) + x1 * (y2 - y0) + x2 * (y0 - y1))
 
 
 """
@@ -139,7 +140,8 @@ If point inside ellipse: Returns true else returns false
 General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
-@inline inside_ellipse(x, y, h, k, cxx, cyy, cxy) = cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
+@inline inside_ellipse(x, y, h, k, cxx, cyy, cxy) =
+    cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
 
 function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cxy, subpixels)
     frac = 0

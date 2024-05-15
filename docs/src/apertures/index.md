@@ -48,8 +48,7 @@ photometry
 
 Below are some benchmarks comparing the aperture photometry capabilities of `Photometry.jl` with the [photutils](https://github.com/astropy/photutils) asropy package. The benchmark code can be found in the [`bench` folder](https://github.com/JuliaAstro/Photometry.jl/blob/master/bench/). Note that for the multi-threaded examples my machine has 4 physical cores with 8 threads.
 
-
-```julia
+```julia-repl
 julia> versioninfo()
 Julia Version 1.5.0
 Commit 96786e22cc (2020-08-01 23:44 UTC)

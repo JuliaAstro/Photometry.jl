@@ -1,5 +1,4 @@
-using Photometry.Aperture: bounds, center,
-                           oblique_coefficients
+using Photometry.Aperture: bounds, center, oblique_coefficients
 
 @testset "Apertures" begin
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)

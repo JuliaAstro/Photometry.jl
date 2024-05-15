@@ -21,14 +21,16 @@ image = read(hdu[1])
 function imshow(image; kwargs...)
     xs, ys = axes(image)
     data = transpose(image)
-    heatmap(xs, ys, data; aspect_ratio=1, xlim=extrema(xs), ylim=extrema(ys), kwargs...)
+    heatmap(xs, ys, data;
+            aspect_ratio=1,
+            xlim=extrema(xs), ylim=extrema(ys),
+            kwargs...)
 end
 
 imshow(image)
 ```
 
-Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll si
-gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size `(50, 50)`. Within each box, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
+Now let's try and estimate the background using [`estimate_background`](@ref). First, we'll sigma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size `(50, 50)`. Within each box, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](@ref) and [`StdRMS`](@ref). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via [`ZoomInterpolator`](@ref). The end result is a smooth estimate of the spatially varying background and background RMS.
 
 ```@example bkg
 # sigma-clip
@@ -43,7 +45,7 @@ plot(
     imshow(clipped, title="Sigma-Clipped"),
     imshow(bkg, title="Background"),
     imshow(bkg_rms, title="Background RMS"),
-    layout=(2, 2), ticks=false
+    layout=(2, 2), ticks=false,
 )
 ```
 
@@ -59,7 +61,7 @@ plot(
     imshow(bkg_f, title="Filtered"),
     imshow(bkg_rms, ylabel="RMS"),
     imshow(bkg_rms_f);
-    layout=(2, 2), ticks=false
+    layout=(2, 2), ticks=false,
 )
 ```
 
@@ -73,7 +75,7 @@ plot(
     layout=(1, 2), size=(600, 260),
     xlims=(400, 800), ylims=(400, 800),
     clims=(minimum(subt), maximum(image)),
-    ticks=false, aspect_ratio=1
+    ticks=false, aspect_ratio=1,
 )
 ```
 
@@ -90,7 +92,7 @@ plot(
     imshow(b2, title="IDWInterpolator"),
     imshow(r1, ylabel="RMS"),
     imshow(r2);
-    layout=(2, 2), ticks=false
+    layout=(2, 2), ticks=false,
 )
 ```
 

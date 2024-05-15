@@ -26,9 +26,11 @@ export estimate_background,
 """
     Background.LocationEstimator
 
-This abstract type embodies the possible background estimation algorithms for dispatch with [`estimate_background`](@ref).
+This abstract type embodies the possible background estimation algorithms for
+dispatch with [`estimate_background`](@ref).
 
-To implement a new estimator, you must define the struct and define a method like `(::MyEstimator)(data::AbstractArray; dims=:)`.
+To implement a new estimator, you must define the struct and define a method
+like `(::MyEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
 * [Location Estimators](@ref)
@@ -38,9 +40,11 @@ abstract type LocationEstimator end
 """
     Background.RMSEstimator
 
-This abstract type embodies the possible background RMS estimation algorithms for dispatch with [`estimate_background`](@ref).
+This abstract type embodies the possible background RMS estimation algorithms
+for dispatch with [`estimate_background`](@ref).
 
-To implement a new estimator, you must define the struct and define a method like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
+To implement a new estimator, you must define the struct and define a method
+like `(::MyRMSEstimator)(data::AbstractArray; dims=:)`.
 
 # See Also
 * [RMS Estimators](@ref)
@@ -55,9 +59,12 @@ include("estimators.jl")
 """
     Background.BackgroundInterpolator
 
-This abstract type embodies the different ways of converting a low-resolution mesh into a high-resolution image, especially for dispatch with [`estimate_background`](@ref)
+This abstract type embodies the different ways of converting a low-resolution
+mesh into a high-resolution image, especially for dispatch with
+[`estimate_background`](@ref)
 
-To implement a new interpolation scheme, you must define the struct and define a method like `(::MyInterpolator)(mesh)`
+To implement a new interpolation scheme, you must define the struct and define a
+method like `(::MyInterpolator)(mesh)`
 
 # See Also
 * [Interpolators](@ref)
@@ -77,9 +84,12 @@ include("interpolators.jl")
 
 Perform scalar background estimation using the given estimators.
 
-The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the `dims` keyword.
+The value returned will be two values corresponding to the estimated background
+and the estimated background RMS. The dimensionality will depend on the `dims`
+keyword.
 
-`location` and `rms` can be anything that is callable, for example `median`, or one of the estimators we provide in [Background Estimators](@ref).
+`location` and `rms` can be anything that is callable, for example `median`,
+or one of the estimators we provide in [Background Estimators](@ref).
 
 # Examples
 ```jldoctest
@@ -112,18 +122,31 @@ end
         edge_method=:pad,
         [filter_size])
 
-Perform 2D background estimation using the given estimators mapped over windows of the data..
+Perform 2D background estimation using the given estimators mapped over windows
+of the data.
 
-This function will estimate backgrounds in boxes of size `box_size`. When `size(data)` is not an integer multiple of the box size, there are two edge methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid losing image data). If `box_size` is an integer, the implicit shape will be square (eg. `box_size=4` is equivalent to `box_size=(4,4)`).
+This function will estimate backgrounds in boxes of size `box_size`. When
+`size(data)` is not an integer multiple of the box size, there are two edge
+methods: `:pad` and `:crop`. The default is to pad (and is recommend to avoid
+losing image data). If `box_size` is an integer, the implicit shape will be
+square (eg. `box_size=4` is equivalent to `box_size=(4,4)`).
 
-For evaluating the meshes, each box will be passed into `location` to estimate the background and then into `rms` to estimate the background root-mean-square value. These can be anything that is callable, like `median` or one of our [Background Estimators](@ref).
+For evaluating the meshes, each box will be passed into `location` to estimate
+the background and then into `rms` to estimate the background root-mean-square
+value. These can be anything that is callable, like `median` or one of our
+[Background Estimators](@ref).
 
-Once the meshes are created they will be median filtered if `filter_size` is given. `filter_size` can be either an integer or a tuple, with the integer being converted to a tuple the same way `box_size` is. Filtering is done via `ImageFiltering.MapWindow.mapwindow`. `filter_size` must be odd.
+Once the meshes are created they will be median filtered if `filter_size` is
+given. `filter_size` can be either an integer or a tuple, with the integer being
+converted to a tuple the same way `box_size` is. Filtering is done via
+`ImageFiltering.MapWindow.mapwindow`. `filter_size` must be odd.
 
-After filtering (if applicable), the meshes are passed to the `itp` to recreate a low-order estimate of the background at the same resolution as the input.
+After filtering (if applicable), the meshes are passed to the `itp` to recreate
+a low-order estimate of the background at the same resolution as the input.
 
 !!! note
-    If your `box_size` is not an integer multiple of the input size, the output background and rms arrays will not have the same size.
+    If your `box_size` is not an integer multiple of the input size, the output
+    background and rms arrays will not have the same size.
 
 # See Also
 * [Location Estimators](@ref), [RMS Estimators](@ref), [Interpolators](@ref)
@@ -211,10 +234,13 @@ _filter(bkg, bkg_rms, f::Integer) = _filter(bkg, bkg_rms, (f, f))
 In-place version of [`sigma_clip`](@ref)
 
 !!! warning
-    `sigma_clip!` mutates the element in place and mutation cannot lead to change in type.
-    Please be considerate of your input type, because if you are using `Int64` and we try to clip it to `0.5` an `InexactError` will be thrown.
+    `sigma_clip!` mutates the element in place and mutation cannot lead to
+    change in type.
+    Please be considerate of your input type, because if you are using `Int64`
+    and we try to clip it to `0.5` an `InexactError` will be thrown.
 
-    To avoid this, we recommend converting to float before clipping, or using [`sigma_clip`](@ref) which does this internally.
+    To avoid this, we recommend converting to float before clipping, or using
+    [`sigma_clip`](@ref) which does this internally.
 """
 function sigma_clip!(x::AbstractArray{T},
     sigma_low::Real,
@@ -236,9 +262,13 @@ end
 
 This function returns sigma-clipped values of the input `x`.
 
-Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise assume they are equal. `center` and `std` are optional keyword arguments which are functions for finding central element and standard deviation.
+Specify the upper and lower bounds with `sigma_low` and `sigma_high`, otherwise
+assume they are equal. `center` and `std` are optional keyword arguments which
+are functions for finding central element and standard deviation.
 
-If `fill === :clamp`, this will clamp values in `x` lower than `center - sigma_low * std` and values higher than `center + sigma_high * std`. Otherwise, they will be replaced with `fill`.
+If `fill === :clamp`, this will clamp values in `x` lower than
+`center - sigma_low * std` and values higher than `center + sigma_high * std`.
+Otherwise, they will be replaced with `fill`.
 
 # Examples
 ```jldoctest

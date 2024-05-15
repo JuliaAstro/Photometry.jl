@@ -36,7 +36,6 @@ end
     fillcolor --> nothing
     label --> ""
 
-
     t = range(0, 2pi, length = npoints)
     # outer ring
     @series begin
@@ -137,7 +136,7 @@ end
     linecolor --> :match
     fillcolor --> nothing
     label --> ""
-    
+
     for ap in aps
         @series begin ap end
     end

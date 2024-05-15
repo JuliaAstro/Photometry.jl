@@ -6,7 +6,9 @@ are considered under a BSD 3-clause license. =#
     EllipticalAperture(x, y, a, b, θ=0)
     EllipticalAperture(position, a, b, θ=0)
 
-An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and position angle `θ`. `a` and `b` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
+An elliptical aperture with semi-major axis `a`, semi-minor axis `b`, and
+position angle `θ`. `a` and `b` must be ≥ 0, `θ` is measured in degrees
+counter-clockwise the standard x-axis.
 
 # Examples
 ```jldoctest
@@ -69,7 +71,7 @@ function elliptical_bounds(cx, cy, a, b, theta)
     sintheta, costheta = sincosd(theta)
 
     t = atan(-b * tand(theta), a)
-    
+
     sint, cost = sincos(t)
     xmin = cx + a * cost * costheta - b * sint * sintheta
     xmax = xmin
@@ -112,10 +114,13 @@ partial(sub_ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T} = elliptical_o
 """
     EllipticalAnnulus(x, y, a_in, a_out, b_out, θ=0)
     EllipticalAnnulus(position, a_in, a_out, b_out, θ=0)
-An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis `a_out`, outer semi-minor axis `b_out`, and position angle `θ`.
-`a_out` ≥ `a_in` ≥ 0 and `b_out` must be ≥ 0, `θ` is measured in degrees counter-clockwise the standard x-axis.
+An elliptical annulus with inner semi-major axis `a_in`, outer semi-major axis
+`a_out`, outer semi-minor axis `b_out`, and position angle `θ`.
+`a_out` ≥ `a_in` ≥ 0 and `b_out` must be ≥ 0, `θ` is measured in degrees
+counter-clockwise the standard x-axis.
 
-`b_in` will automatically be calculated from `(a_in / a_out) * b_out`. Note this may cause a type instability.
+`b_in` will automatically be calculated from `(a_in / a_out) * b_out`. Note
+this may cause a type instability.
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)

@@ -18,9 +18,10 @@ makedocs(
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://juliaastro.github.io/Photometry.jl",
     ),
-    pages=pages
+    pages = pages,
 )
 
 deploydocs(
     repo = "github.com/JuliaAstro/Photometry.jl",
-    push_preview = true)
+    push_preview = true,
+)
