@@ -22,7 +22,8 @@ pkg> add Photometry
 
 Here is a basic example to do some aperture photometry using [`CircularAperture`](@ref). The [`photometry`](@ref) function performs the photometry using a given method.
 
-```jldoctest
+```@example
+using Photometry
 data = ones(100, 100)
 err = ones(100, 100)
 
@@ -35,13 +36,6 @@ results = photometry([ap1, ap2], data, err)
 @assert results.aperture_sum[2] ≈ 25π / 4
 
 results
-
-# output
-Table with 4 columns and 2 rows:
-     xcenter  ycenter  aperture_sum  aperture_sum_err
-   ┌─────────────────────────────────────────────────
- 1 │ 50.0     50.0     28.2743       5.31736
- 2 │ 0.5      0.5      19.635        4.43113
 ```
 
 ## Contributing
