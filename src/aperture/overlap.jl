@@ -127,11 +127,11 @@ end
 """
     inside_ellipse(x, y, h, k, cxx, cyy, cxy)
 
-x: x coordinate of the test point
-y: y coordinate of the test point
-h: x coordinate of the center of ellipse
-k: y coordinate of the center of ellipse
-cxx, cyy, cxy: coefficients of equation of ellipse
+- x: x coordinate of the test point
+- y: y coordinate of the test point
+- h: x coordinate of the center of ellipse
+- k: y coordinate of the center of ellipse
+- cxx, cyy, cxy: coefficients of equation of ellipse
 
 Utility function to find whether a point is inside ellipse or not.
 

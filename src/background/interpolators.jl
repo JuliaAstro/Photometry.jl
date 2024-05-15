@@ -58,9 +58,12 @@ resolution of a mesh.
 with factors `(2, 2)` will have an output size of `(20, 20)`. If only an integer
 is provided, it will be used as the factor for every axis.
 
-The interpolator can be called with some additional parameter being, `leaf_size` determines at what number of points to stop splitting the tree further,
-` k` which is the number of nearest neighbors to be considered, `power` is the exponent for distance in the weighing factor,
-`reg` is the offset for the weighing factor in denominator, `conf_dist` is the distance below which two points would be considered as the same point.
+The interpolator can be called with some additional parameters:
+- `leaf_size` determines at what number of points to stop splitting the tree further,
+- `k` which is the number of nearest neighbors to be considered,
+- `power` is the exponent for distance in the weighing factor,
+- `reg` is the offset for the weighing factor in denominator,
+- `conf_dist` is the distance below which two points would be considered as the same point.
 
 
 # Examples
