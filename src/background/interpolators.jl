@@ -2,7 +2,7 @@
 Part of this work is derived from astropy/photutils and astropy/astropy. The relevant derivations
 are considered under a BSD 3-clause license. =#
 
-using Interpolations: InterpolationType, CubicSplineInterpolation, AbstractInterpolation
+using Interpolations: InterpolationType, AbstractInterpolation, cubic_spline_interpolation
 using ImageTransformations: imresize!
 using NearestNeighbors: knn, KDTree, MinkowskiMetric
 
@@ -43,7 +43,7 @@ ZoomInterpolator(factor::Integer) = ZoomInterpolator((factor, factor))
 ZoomInterpolator(f1::Integer, args...) = ZoomInterpolator((f1, args...))
 
 function (z::ZoomInterpolator)(mesh::AbstractArray{T}) where T
-    itp = CubicSplineInterpolation(axes(mesh), mesh)
+    itp = cubic_spline_interpolation(axes(mesh), mesh)
     out = similar(mesh, float(T), size(mesh) .* z.factors)
     return imresize!(out, itp)
 end
