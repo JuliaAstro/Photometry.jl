@@ -55,8 +55,13 @@ function overlap(ap::CircularAperture, i, j)
     return Partial
 end
 
-partial(ap::CircularAperture, x, y) = circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
-partial(sub_ap::Subpixel{T,<:CircularAperture}, x, y) where {T} = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N)
+function partial(ap::CircularAperture, x, y)
+    return circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
+end
+function partial(sub_ap::Subpixel{T,<:CircularAperture}, x, y) where {T}
+    return circular_overlap_single_subpixel(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N)
+end
 
 function Base.show(io::IO, c::CircularAperture)
     print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")

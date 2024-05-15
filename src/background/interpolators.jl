@@ -91,7 +91,11 @@ struct IDWInterpolator <: BackgroundInterpolator
     conf_dist::Real
 end
 
-IDWInterpolator(factors; leafsize = 10, k = 8, power = 1.0, reg = 0.0, conf_dist = 1e-12) = IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
+function IDWInterpolator(factors;
+                         leafsize = 10, k = 8, power = 1.0,
+                         reg = 0.0, conf_dist = 1e-12)
+    return IDWInterpolator(factors, leafsize,  k, power, reg, conf_dist)
+end
 # convenience constructors
 IDWInterpolator(factor::Integer; kwargs...) =
     IDWInterpolator((factor, factor); kwargs...)

@@ -105,8 +105,19 @@ end
 
 bounds(e::EllipticalAperture) = elliptical_bounds(e.x, e.y, e.a, e.b, e.theta)
 
-partial(ap::EllipticalAperture, x, y) = elliptical_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.a, ap.b, ap.theta)
-partial(sub_ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T} = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, oblique_coefficients(sub_ap.ap)..., sub_ap.N)
+function partial(ap::EllipticalAperture, x, y)
+    return elliptical_overlap_exact(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        ap.a, ap.b, ap.theta,
+    )
+end
+function partial(sub_ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T}
+    return elliptical_overlap_single_subpixel(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        oblique_coefficients(sub_ap.ap)...,
+        sub_ap.N,
+    )
+end
 
 
 #######################################################
@@ -152,8 +163,16 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture{T}
     theta::T
 end
 
-EllipticalAnnulus(x::Number, y::Number, a_in, a_out, b_out, theta=0) = EllipticalAnnulus(promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...)
-EllipticalAnnulus(center, a_in, a_out, b_out, theta=0) = EllipticalAnnulus(center..., a_in, a_out, b_out, theta)
+function EllipticalAnnulus(x::Number, y::Number, a_in, a_out, b_out, theta=0)
+    return EllipticalAnnulus(
+        promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...
+    )
+end
+function EllipticalAnnulus(center, a_in, a_out, b_out, theta=0)
+    return EllipticalAnnulus(
+        center..., a_in, a_out, b_out, theta
+    )
+end
 
 function Base.show(io::IO, e::EllipticalAnnulus)
     print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")

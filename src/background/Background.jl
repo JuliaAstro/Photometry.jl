@@ -188,12 +188,17 @@ function estimate_background(data::AbstractArray{T},
     return bkg, bkg_rms
 end
 
-estimate_background(data,
-    box_size::Int;
-    location = SourceExtractorBackground(),
-    rms = StdRMS(),
-    itp = ZoomInterpolator(box_size),
-    edge_method = :pad, kwargs...) = estimate_background(data, (box_size, box_size); location = location, rms = rms, itp = itp, edge_method = edge_method, kwargs...)
+function estimate_background(data,
+        box_size::Int;
+        location = SourceExtractorBackground(),
+        rms = StdRMS(),
+        itp = ZoomInterpolator(box_size),
+        edge_method = :pad, kwargs...)
+    return estimate_background(
+        data, (box_size, box_size);
+        location = location, rms = rms, itp = itp,
+        edge_method = edge_method, kwargs...)
+end
 
 # pad array
 function _craft_array(::Val{:pad}, data, box_size)
@@ -283,7 +288,10 @@ julia> extrema(x_clip) # should be close to (-1, 1)
 (-1.0042721545326967, 0.9957463910682249)
 ```
 """
-sigma_clip(x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low; fill = :clamp, center = median(x), std = std(x)) where T = sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)
-
+function sigma_clip(
+        x::AbstractArray{T}, sigma_low::Real, sigma_high::Real = sigma_low;
+        fill = :clamp, center = median(x), std = std(x)) where T
+    return sigma_clip!(float(x), sigma_low, sigma_high; fill = fill, center = center, std = std)
+end
 
 end # Background
