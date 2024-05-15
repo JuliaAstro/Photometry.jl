@@ -144,7 +144,7 @@ function ShepardIDWInterpolator(knots::AbstractArray,
     k::Integer = 8,
     power::Real = 1,
     reg::Real = 0,
-    conf_dist::Real = 1e-12) where T
+    conf_dist::Real = 1e-12)
 
     length(values) <  k && error("k ($k) must be less than or equal to the number of points ($(length(values))).")
     tree = KDTree(knots, leafsize = leafsize)
