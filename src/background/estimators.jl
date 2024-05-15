@@ -90,11 +90,15 @@ end
 
 Estimate the background using the robust biweight location statistic.
 
-``\\xi_{biloc}=M + \\frac{\\sum_{|u_i|<1}{(x_i - M)(1 - u_i^2)^2}}{\\sum_{|u_i|<1}{(1-u_i^2)^2}}``
+```math
+ξ_{biloc} = M + \\frac{∑_{|uᵢ|<1}{(xᵢ - M)(1 - uᵢ²)²}}{∑_{|uᵢ|<1}{(1-uᵢ²)²}}
+```
 
-``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
+```math
+u_i = \\frac{(x_i - M)}{c⋅\\mathrm{MAD}(x)}
+```
 
-Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
+Where ``\\mathrm{MAD}(x)`` is median absolute deviation of `x`.
 
 # Examples
 ```jldoctest
@@ -170,7 +174,7 @@ Uses the standard median absolute deviation (MAD) statistic for background RMS e
 
 This is typically given as
 
-``\\sigma \\approx 1.4826 \\cdot \\text{MAD}``
+``σ ≈ 1.4826 ⋅ \\mathrm{MAD}``
 
 # Examples
 ```jldoctest
@@ -200,11 +204,15 @@ The biweight scale is the square root of the biweight midvariance. The biweight
 midvariance uses a tuning constant, `c`, and an optional initial guess of the
 central value `M`.
 
-``\\zeta^2_{biscl}= \\frac{n\\sum_{|u_i|<1}{(x_i - M)^2(1 - u_i^2)^4}}{\\left[\\sum_{|u_i|<1}{(1-u_i^2)(1-5u_i^2)}\\right]^2}``
+```math
+ζ²_{biscl} = \\frac{n ∑_{|uᵢ|<1}{(xᵢ - M)²(1 - uᵢ²)⁴}}{\\left[∑_{|uᵢ|<1}{(1-uᵢ²)(1-5uᵢ²)}\\right]²}
+```
 
-``u_i = \\frac{(x_i - M)}{c\\cdot\\text{MAD}(x)}``
+```math
+uᵢ = \\frac{(xᵢ - M)}{c⋅\\mathrm{MAD}(x)}
+```
 
-Where ``\\text{MAD}(x)`` is median absolute deviation of `x`.
+Where ``\\mathrm{MAD}(x)`` is median absolute deviation of `x`.
 
 # Examples
 ```jldoctest
