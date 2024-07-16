@@ -103,4 +103,5 @@ plot(
 estimate_background
 sigma_clip
 sigma_clip!
+Background.validate_SE
 ```

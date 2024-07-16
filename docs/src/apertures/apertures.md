@@ -22,6 +22,14 @@ The position can be pixels or sky coordinates. The sky coordinate positions util
 ```@docs
 Aperture.AbstractAperture
 Subpixel
+Aperture.area_arc
+Aperture.circular_overlap_core
+Aperture.circular_overlap_single_exact
+Aperture.inside_ellipse
+Base.size(::Aperture.AbstractAperture)
+Aperture.area_triangle
+Aperture.inside_rectangle
+Aperture.bounds
 ```
 
 ### Circular Apertures

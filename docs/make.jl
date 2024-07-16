@@ -1,5 +1,6 @@
 using Photometry
 using Documenter
+using Documenter.Remotes: GitHub
 
 setup = quote
     using Photometry
@@ -12,7 +13,7 @@ include("pages.jl")
 makedocs(
     modules = [Photometry],
     authors = "Miles Lucas <mdlucas@hawaii.edu>",
-    repo = "https://github.com/JuliaAstro/Photometry.jl/blob/{commit}{path}#L{line}",
+    repo = GitHub("JuliaAstro/Photometry.jl"),
     sitename = "Photometry.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
