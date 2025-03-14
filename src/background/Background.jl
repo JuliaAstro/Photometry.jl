@@ -280,12 +280,12 @@ Otherwise, they will be replaced with `fill`.
 julia> x = randn(100_000);
 
 julia> extrema(x)
-(-4.496308951466683, 4.080724496910187)
+(-4.65966935309312, 3.9422613516325216)
 
 julia> x_clip = sigma_clip(x, 1);
 
 julia> extrema(x_clip) # should be close to (-1, 1)
-(-1.0042721545326967, 0.9957463910682249)
+(-1.0041231879487236, 0.9956450634240993)
 ```
 """
 function sigma_clip(
