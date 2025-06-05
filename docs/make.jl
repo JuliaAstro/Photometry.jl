@@ -17,7 +17,7 @@ makedocs(
     sitename = "Photometry.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://juliaastro.github.io/Photometry.jl",
+        canonical = "https://juliaastro.org/Photometry/stable",
     ),
     pages = pages,
 )
@@ -25,4 +25,5 @@ makedocs(
 deploydocs(
     repo = "github.com/JuliaAstro/Photometry.jl",
     push_preview = true,
+    versions = ["stable" => "v^", "v#.#"], # Restrict to minor releases
 )

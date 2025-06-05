@@ -1,12 +1,12 @@
 # Photometry.jl
 
-[![Build Status](https://github.com/JuliaAstro/Photometry.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaAstro/Photometry.jl/actions)
-[![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/P/Photometry.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
-[![Coverage](https://codecov.io/gh/JuliaAstro/Photometry.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaastro.org/Photometry/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaastro.org/Photometry.jl/dev)
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaAstro.github.io/Photometry.jl/dev)
+[![CI](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci.yml)
+[![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/P/Photometry.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
+[![codecov](https://codecov.io/gh/JuliaAstro/Photometry.jl/graph/badge.svg?token=lqTjxxg5dg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 This is a package for performing astronomical photometry using modern and efficient algorithms.
 
