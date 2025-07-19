@@ -224,13 +224,18 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
 end
 
 
-function photometry(ap::AbstractAperture, data::AbstractMatrix)
+function photometry(ap::AbstractAperture, data::AbstractMatrix; f::Function = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
-    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-    return (meta..., aperture_sum = aperture_sum)
+    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    aperture_f = f(img_ap)
+    if f == sum
+        return (meta..., aperture_sum = aperture_f)
+    else
+        return (meta..., aperture_f = aperture_f)
+    end
 end
 
 function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error)
@@ -238,8 +243,8 @@ function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatri
     return Table(rows)
 end
 
-function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data)))
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f::Function = sum)
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data; f)))
     return Table(rows)
 end
 
