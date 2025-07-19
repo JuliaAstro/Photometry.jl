@@ -14,6 +14,12 @@
 
     @test sum(sigma_clip(y, 1, fill = NaN) .=== NaN) == 2
     @test sum(sigma_clip(y, 1, fill = NaN) .=== NaN) == 2
+
+    # `sigma_clip` should not mutate
+    z1 = [0.1, 0.2, 3.0, 4.0, 0.2, 0.1]
+    z2 = copy(z1)
+    sigma_clip(z1, 1)
+    @test z1 == z2
 end
 
 @testset "estimate_background interface" begin
