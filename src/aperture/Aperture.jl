@@ -210,40 +210,51 @@ of apertures is provided the output will be a `TypedTables.Table`, otherwise a
     This code is automatically multi-threaded. To take advantage of this please
     make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
-function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
+function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    img_ap_var = CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2)
 
-    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-    aperture_sum_var = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
+    aperture_sum = sum(img_ap)
+    aperture_sum_var = sum(img_ap_var)
     aperture_sum_err = sqrt(aperture_sum_var)
 
-    return (meta..., aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
+    if f == sum
+        return (; meta..., aperture_sum, aperture_sum_err)
+    else
+        aperture_f = f(img_ap)
+        aperture_f_var = f(img_ap_var)
+        aperture_f_err = sqrt(aperture_f_var)
+        return (; meta..., aperture_sum, aperture_sum_err, aperture_f, aperture_f_var, aperture_f_err)
+    end
 end
 
-
-function photometry(ap::AbstractAperture, data::AbstractMatrix; f::Function = sum)
+function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
+
     img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
-    aperture_f = f(img_ap)
+    aperture_sum = sum(img_ap)
+
     if f == sum
-        return (meta..., aperture_sum = aperture_f)
+        return (; meta..., aperture_sum)
     else
-        return (meta..., aperture_f = aperture_f)
+        aperture_f = f(img_ap)
+        return (; meta..., aperture_sum, aperture_f)
     end
 end
 
-function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error)))
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error; f = sum)
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error; f)))
     return Table(rows)
 end
 
-function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f::Function = sum)
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f = sum)
     rows = tcollect(aps |> Map(ap -> photometry(ap, data; f)))
     return Table(rows)
 end
