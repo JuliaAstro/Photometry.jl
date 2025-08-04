@@ -6,6 +6,7 @@ module Aperture
 
 using TypedTables
 using Transducers
+using TestItems
 
 export photometry,
        Subpixel,
