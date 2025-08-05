@@ -191,7 +191,8 @@ end
     data = ones(5, 7)
     weighted = ap .* data
     @test weighted == data .* ap # commutative
-    @test sum(weighted) == sum(ap) == photometry(ap, data).aperture_sum
+    # TODO: Investigate float precision issue in REPL vs. run from script
+    @test sum(weighted) ≈ sum(ap) == photometry(ap, data).aperture_sum
     @test all(iszero, weighted[:, 6:7])
 end
 
