@@ -2,6 +2,7 @@ module Background
 
 using Statistics
 using ImageFiltering: padarray, Fill, mapwindow
+using TestItems
 
 export estimate_background,
        sigma_clip,

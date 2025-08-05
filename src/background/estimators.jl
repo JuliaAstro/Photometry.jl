@@ -252,3 +252,81 @@ end
 _biweight_scale(x::AbstractArray, c, M, ::Colon) = biweight_scale(x, c, M)
 _biweight_scale(x::AbstractArray, c, M, dims) = mapslices(x->biweight_scale(x, c, M), x, dims=dims)
 (alg::BiweightScaleRMS)(data; dims = :) = _biweight_scale(data, alg.c, alg.M, dims)
+
+@testsnippet estimators begin
+    using Photometry.Background: MMMBackground, SourceExtractorBackground, BiweightLocationBackground,
+                                 StdRMS, MADStdRMS, BiweightScaleRMS
+    using StatsBase: mad, median, std
+end
+
+@testitem "background/estimators: Trivial estimator" setup=[estimators] begin
+    @testset "Trivial $E"  for E in [MMMBackground, SourceExtractorBackground, BiweightLocationBackground]
+        estimator = E()
+
+        @test estimator(ones(1)) == 1
+
+        data = ones(10, 10)
+
+        @test estimator(data) ≈ 1.0
+        @test estimator(data, dims = 1) ≈ ones(1, 10)
+        @test estimator(data, dims = 2) ≈ ones(10)
+
+        data = zeros(10, 10)
+
+        @test estimator(data) ≈ 0.0
+        @test estimator(data, dims = 1) ≈ zeros(1, 10)
+        @test estimator(data, dims = 2) ≈ zeros(10)
+
+        data = randn(100, 100)
+    end
+end
+
+@testitem "background/estimators: SourceExtractorBackground" setup=[estimators] begin
+    # test skewed distribution
+    data = float(collect(1:100))
+    data[71:end] .= 1e7
+
+    @test SourceExtractorBackground()(data) ≈ median(data)
+end
+
+@testitem "background/estimators: BiweightLocationBackground" setup=[estimators] begin
+    b = BiweightLocationBackground()
+    @test b([1, 3, 5, 500, 2]) ≈ 2.745 atol = 1e-3
+end
+
+###############################################################################
+# RMS Estimators
+
+@testitem "background/estimators: Trivial RMS estimator" setup=[estimators] begin
+    @testset "Trivial $E"  for E in [StdRMS, MADStdRMS, BiweightScaleRMS]
+        estimator = E()
+
+        @test estimator(ones(1)) == 0
+
+        data = ones(10, 10)
+        @test estimator(data) ≈ 0.0
+        @test estimator(data, dims = 1) ≈ zeros(1, 10)
+        @test estimator(data, dims = 2) ≈ zeros(10)
+
+
+        data = randn(10000, 10000)
+        @test estimator(data) ≈ 1 atol = 3e-2
+    end
+end
+
+@testitem "background/estimators: StdRMS" setup=[estimators] begin
+    s = StdRMS()
+    data = randn(100)
+    @test s(data) == std(data, corrected = false)
+end
+
+@testitem "background/estimators: MADStdRMS" setup=[estimators] begin
+    s = MADStdRMS()
+    data = randn(100)
+    @test s(data) == mad(data, normalize = true)
+end
+
+@testitem "background/estimators: BiweightScaleRMS" setup=[estimators] begin
+    s = BiweightScaleRMS()
+    @test s([1, 3, 5, 500, 2]) ≈ 1.70992562072
+end
