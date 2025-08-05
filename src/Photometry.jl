@@ -1,5 +1,6 @@
 module Photometry
 
+using TestItems
 using Reexport
 
 include("aperture/Aperture.jl")
