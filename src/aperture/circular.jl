@@ -161,6 +161,8 @@ end
 @testsnippet circular begin
     using Photometry.Aperture: CircularAperture, CircularAnnulus, Subpixel,
                                bounds, center, photometry
+    import Random
+    Random.seed!(8462852)
 end
 
 @testitem "aperture/circular: Apertures" setup=[circular] begin
@@ -189,8 +191,7 @@ end
     data = ones(5, 7)
     weighted = ap .* data
     @test weighted == data .* ap # commutative
-    # TODO: Investigate floating point inconsitency
-    @test sum(weighted) ≈ sum(ap) ≈ photometry(ap, data).aperture_sum
+    @test sum(weighted) == sum(ap) == photometry(ap, data).aperture_sum
     @test all(iszero, weighted[:, 6:7])
 end
 
