@@ -214,7 +214,13 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
-    any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+    if any(isempty, idxs)
+        if f == sum
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+        else
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0, aperture_f_err = NaN)
+        end
+    end
     img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
     img_ap_var = CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2)
 
@@ -236,7 +242,13 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
-    any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
+    if any(isempty, idxs)
+        if f == sum
+            return (meta..., aperture_sum = 0.0)
+        else
+            return (meta..., aperture_sum = 0.0, aperture_f = 0.0)
+        end
+    end
 
     img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
     aperture_sum = sum(img_ap)

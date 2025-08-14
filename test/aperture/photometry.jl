@@ -29,6 +29,7 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
     data = ones(10, 10)
     aperture = AP(-60, 60, params...)
     @test photometry(aperture, data).aperture_sum ≈ 0
+    @test photometry(aperture, data; f = maximum).aperture_f ≈ 0
 end
 
 @testset "inside zeros - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -39,11 +40,18 @@ end
     table_sub = photometry(Subpixel(aperture, 10), data)
     table_ex = photometry(aperture, data)
 
+    f = maximum
+    table_cent_f = photometry(Subpixel(aperture), data; f)
+    table_sub_f = photometry(Subpixel(aperture, 10), data; f)
+    table_ex_f = photometry(aperture, data; f)
 
     @test table_ex.aperture_sum ≈ 0
     @test table_sub.aperture_sum ≈ 0
     @test table_cent.aperture_sum ≈ 0
 
+    @test table_ex_f.aperture_sum ≈ 0
+    @test table_sub_f.aperture_sum ≈ 0
+    @test table_cent_f.aperture_sum ≈ 0
 end
 
 @testset "inside ones - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -54,12 +62,17 @@ end
     table_sub = photometry(Subpixel(aperture, 10), data)
     table_ex = photometry(aperture, data)
 
+    f = sum
+    table_cent_f = photometry(Subpixel(aperture), data; f)
+    table_sub_f = photometry(Subpixel(aperture, 10), data; f)
+
     true_flux = area(aperture)
 
     @test table_ex.aperture_sum ≈ true_flux
     @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
+    @test table_sub_f.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
     @test table_cent.aperture_sum ≤ table_ex.aperture_sum
-
+    @test table_cent_f.aperture_sum ≤ table_ex.aperture_sum
 end
 
 
@@ -69,21 +82,30 @@ end
     err = zeros(40, 40)
     aperture = CircularAperture(20.0, 20.0, 5.0)
 
+    f = maximum
     t1 = photometry(aperture, data)
+    t1_f = photometry(aperture, data; f)
     t2 = photometry(aperture, data, err)
+    t2_f = photometry(aperture, data, err; f)
 
     # 1.0 compat (no hasproperty function)
     hasfunc = VERSION < v"1.1" ? haskey : hasproperty
 
     @test !hasfunc(t1, :aperture_sum_err)
     @test t2.aperture_sum_err == 0
+    @test !hasfunc(t1_f, :aperture_sum_err)
+    @test t2_f.aperture_sum_err == 0
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
     t1 = photometry(apertures, data)
+    t1_f = photometry(apertures, data; f)
     t2 = photometry(apertures, data, err)
+    t2_f = photometry(apertures, data, err; f)
 
     @test !hasfunc(t1, :aperture_sum_err)
+    @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
+    @test t2_f.aperture_sum_err == zeros(3)
 end
 
 # @testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)
