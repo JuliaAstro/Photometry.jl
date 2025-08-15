@@ -92,9 +92,13 @@ end
     hasfunc = VERSION < v"1.1" ? haskey : hasproperty
 
     @test !hasfunc(t1, :aperture_sum_err)
-    @test t2.aperture_sum_err == 0
     @test !hasfunc(t1_f, :aperture_sum_err)
+    @test t2.aperture_sum_err == 0
     @test t2_f.aperture_sum_err == 0
+    @test keys(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test keys(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test keys(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test keys(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
     t1 = photometry(apertures, data)
@@ -106,6 +110,10 @@ end
     @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
     @test t2_f.aperture_sum_err == zeros(3)
+    @test columnnames(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test columnnames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test columnnames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test columnnames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 end
 
 # @testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)

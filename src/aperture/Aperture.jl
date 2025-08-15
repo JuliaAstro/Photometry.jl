@@ -198,14 +198,14 @@ Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 ###########
 
 """
-    photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f])
-    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; [f])
+    photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f = sum])
+    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; [f = sum])
 
 Perform aperture photometry on `data` given aperture(s). If `error` (the
 pixel-wise standard deviation) is provided, will calculate sum error. If a list
 of apertures is provided the output will be a `TypedTables.Table`, otherwise a
 `NamedTuple`. An optional function `f` can be passed to return additional statistics
-within each aperture. This can be useful for, e.g., computing the PSF of each source.
+within each aperture. This can be useful for, e.g., computing the PSF of each source. By default, just the sum within each aperture is returned.
 
 !!! tip
     This code is automatically multi-threaded. To take advantage of this please
