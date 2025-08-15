@@ -2,6 +2,7 @@ using Photometry
 using Test
 using Random
 using Statistics
+using TypedTables
 
 Random.seed!(8462852)
 
