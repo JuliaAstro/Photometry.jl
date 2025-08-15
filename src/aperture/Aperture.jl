@@ -198,13 +198,14 @@ Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 ###########
 
 """
-    photometry(::AbstractAperture, data::AbstractMatrix, [error])
-    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error])
+    photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f])
+    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; [f])
 
 Perform aperture photometry on `data` given aperture(s). If `error` (the
 pixel-wise standard deviation) is provided, will calculate sum error. If a list
 of apertures is provided the output will be a `TypedTables.Table`, otherwise a
-`NamedTuple`.
+`NamedTuple`. An optional function `f` can be passed to return additional statistics
+within each aperture. This can be useful for, e.g., computing the PSF of each source.
 
 !!! tip
     This code is automatically multi-threaded. To take advantage of this please
@@ -218,7 +219,7 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
         if f == sum
             return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
         else
-            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0, aperture_f_err = NaN)
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
         end
     end
     img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
@@ -232,9 +233,10 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
         return (; meta..., aperture_sum, aperture_sum_err)
     else
         aperture_f = f(img_ap)
-        aperture_f_var = f(img_ap_var)
-        aperture_f_err = sqrt(aperture_f_var)
-        return (; meta..., aperture_sum, aperture_sum_err, aperture_f, aperture_f_var, aperture_f_err)
+        # Note: not supported if f returns a Tuple
+        #aperture_f_var = f(img_ap_var)
+        #aperture_f_err = sqrt(aperture_f_var)
+        return (; meta..., aperture_sum, aperture_sum_err, aperture_f)
     end
 end
 
