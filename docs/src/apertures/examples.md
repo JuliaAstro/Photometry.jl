@@ -71,9 +71,9 @@ and finally let's get our output table for the photometry
 table = photometry(aps, chunk)
 ```
 
-## Stars with Spatial Background Subtraction
+## Stars with Spatial Background Subtraction and PSF Fitting
 
-This example will be the same as [Simple Stars](@ref) but will add background estimation using the tools in [Background Estimation](@ref)
+This example will be the same as [Simple Stars](@ref) but will add background and PSF estimation using the tools in [Background Estimation](@ref) and [PSFModels.jl](https://juliaastro.org/PSFModels).
 
 ```@example stars
 clipped = sigma_clip(chunk, 1, fill=NaN)
@@ -102,5 +102,25 @@ plot!(aps, c=:white, subplot=2)
 ```
 
 ```@example stars
-table = photometry(aps, chunk .- bkg, bkg_rms)
+using PSFModels
+
+function fit_psf(img_ap)
+    # Normalize
+    psf_data = collect(Float32, img_ap)
+    psf_data ./= maximum(psf_data)
+
+    # Set params
+    y, x = Tuple(argmax(psf_data))
+    fwhm = 5.0
+    params = (; x, y, fwhm)
+
+    # Fit
+    psf_params, psf_model = PSFModels.fit(gaussian, params, psf_data; x_abstol = 2e-6)
+
+    # Could also return a Tuple to display more information.
+    # Just returning fitted FWHM here for simplicity.
+    return psf_params.fwhm
+end
+
+table = photometry(aps, chunk .- bkg, bkg_rms; f = fit_psf)
 ```

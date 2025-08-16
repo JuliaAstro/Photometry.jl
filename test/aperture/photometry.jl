@@ -27,8 +27,29 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = ones(10, 10)
+    err = zeros(10, 10)
     aperture = AP(-60, 60, params...)
-    @test photometry(aperture, data).aperture_sum ≈ 0
+    t = photometry(aperture, data)
+    t_err = photometry(aperture, data, err)
+    t_f = photometry(aperture, data; f = maximum)
+    t_f_err = photometry(aperture, data, err; f = maximum)
+
+    # TODO: Only return aperture_sum_err when err is passed
+    @test t.aperture_sum ≈ 0
+    @test isnan(t.aperture_sum_err)
+    @test propertynames(t) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+
+    @test t_err.aperture_sum ≈ 0
+    @test isnan(t_err.aperture_sum_err)
+    @test propertynames(t_err) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+
+    @test t_f.aperture_f ≈ 0
+    @test isnan(t_f.aperture_sum_err)
+    @test propertynames(t_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
+
+    @test t_f_err.aperture_f ≈ 0
+    @test isnan(t_f_err.aperture_sum_err)
+    @test propertynames(t_f_err) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 end
 
 @testset "inside zeros - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -39,11 +60,18 @@ end
     table_sub = photometry(Subpixel(aperture, 10), data)
     table_ex = photometry(aperture, data)
 
+    f = maximum
+    table_cent_f = photometry(Subpixel(aperture), data; f)
+    table_sub_f = photometry(Subpixel(aperture, 10), data; f)
+    table_ex_f = photometry(aperture, data; f)
 
     @test table_ex.aperture_sum ≈ 0
     @test table_sub.aperture_sum ≈ 0
     @test table_cent.aperture_sum ≈ 0
 
+    @test table_ex_f.aperture_sum ≈ 0
+    @test table_sub_f.aperture_sum ≈ 0
+    @test table_cent_f.aperture_sum ≈ 0
 end
 
 @testset "inside ones - $AP" for (AP, params) in zip(APERTURES, PARAMS)
@@ -54,12 +82,17 @@ end
     table_sub = photometry(Subpixel(aperture, 10), data)
     table_ex = photometry(aperture, data)
 
+    f = sum
+    table_cent_f = photometry(Subpixel(aperture), data; f)
+    table_sub_f = photometry(Subpixel(aperture, 10), data; f)
+
     true_flux = area(aperture)
 
     @test table_ex.aperture_sum ≈ true_flux
     @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
+    @test table_sub_f.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
     @test table_cent.aperture_sum ≤ table_ex.aperture_sum
-
+    @test table_cent_f.aperture_sum ≤ table_ex.aperture_sum
 end
 
 
@@ -69,21 +102,38 @@ end
     err = zeros(40, 40)
     aperture = CircularAperture(20.0, 20.0, 5.0)
 
+    f = maximum
     t1 = photometry(aperture, data)
+    t1_f = photometry(aperture, data; f)
     t2 = photometry(aperture, data, err)
+    t2_f = photometry(aperture, data, err; f)
 
     # 1.0 compat (no hasproperty function)
     hasfunc = VERSION < v"1.1" ? haskey : hasproperty
 
     @test !hasfunc(t1, :aperture_sum_err)
+    @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == 0
+    @test t2_f.aperture_sum_err == 0
+    @test propertynames(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test propertynames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test propertynames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test propertynames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
     t1 = photometry(apertures, data)
+    t1_f = photometry(apertures, data; f)
     t2 = photometry(apertures, data, err)
+    t2_f = photometry(apertures, data, err; f)
 
     @test !hasfunc(t1, :aperture_sum_err)
+    @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
+    @test t2_f.aperture_sum_err == zeros(3)
+    @test propertynames(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test propertynames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test propertynames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test propertynames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 end
 
 # @testset "type stability - $AP" for (AP, params) in zip(APERTURES, PARAMS)

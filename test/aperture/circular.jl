@@ -27,6 +27,7 @@ end
     weighted = ap .* data
     @test weighted == data .* ap # commutative
     @test sum(weighted) == sum(ap) == photometry(ap, data).aperture_sum
+    @test maximum(weighted) == maximum(ap) == photometry(ap, data; f = maximum).aperture_f
     @test all(iszero, weighted[:, 6:7])
 
 end
