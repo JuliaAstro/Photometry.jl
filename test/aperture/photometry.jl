@@ -30,13 +30,21 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
     err = zeros(10, 10)
     aperture = AP(-60, 60, params...)
     t = photometry(aperture, data)
-    t_f = photometry(aperture, data, err; f = maximum)
+    t_f = photometry(aperture, data; f = maximum)
+    t_f_err = photometry(aperture, data, err; f = maximum)
+
     @test t.aperture_sum ≈ 0
     @test isnan(t.aperture_sum_err)
+    @test propertynames(t) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+
+    # TODO: Only return aperture_sum_err when err is passed
     @test t_f.aperture_f ≈ 0
     @test isnan(t_f.aperture_sum_err)
-    @test propertynames(t) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
     @test propertynames(t_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
+
+    @test t_f_err.aperture_f ≈ 0
+    @test isnan(t_f_err.aperture_sum_err)
+    @test propertynames(t_f_err) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 end
 
 @testset "inside zeros - $AP" for (AP, params) in zip(APERTURES, PARAMS)
