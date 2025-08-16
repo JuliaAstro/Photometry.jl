@@ -27,9 +27,10 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
 @testset "outside - $AP" for (AP, params) in zip(APERTURES, PARAMS)
     data = ones(10, 10)
+    err = zeros(10, 10)
     aperture = AP(-60, 60, params...)
     t = photometry(aperture, data)
-    t_f = photometry(aperture, data; f = maximum)
+    t_f = photometry(aperture, data, err; f = maximum)
     @test t.aperture_sum ≈ 0
     @test isnan(t.aperture_sum_err)
     @test t_f.aperture_f ≈ 0
