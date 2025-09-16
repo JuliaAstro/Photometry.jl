@@ -199,48 +199,78 @@ Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 ###########
 
 """
-    photometry(::AbstractAperture, data::AbstractMatrix, [error])
-    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error])
+    photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f = sum])
+    photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; [f = sum])
 
 Perform aperture photometry on `data` given aperture(s). If `error` (the
 pixel-wise standard deviation) is provided, will calculate sum error. If a list
 of apertures is provided the output will be a `TypedTables.Table`, otherwise a
-`NamedTuple`.
+`NamedTuple`. An optional function `f` can be passed to return additional statistics
+within each aperture. This can be useful for, e.g., computing the PSF of each source. By default, just the sum within each aperture is returned.
 
 !!! tip
     This code is automatically multi-threaded. To take advantage of this please
     make sure `JULIA_NUM_THREADS` is set before starting your runtime.
 """
-function photometry(ap::AbstractAperture, data::AbstractMatrix, error)
+function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data), axes(error))
-    any(isempty, idxs) && return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+    if any(isempty, idxs)
+        if f == sum
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+        else
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
+        end
+    end
+    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    img_ap_var = CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2)
 
-    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-    aperture_sum_var = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2))
+    aperture_sum = sum(img_ap)
+    aperture_sum_var = sum(img_ap_var)
     aperture_sum_err = sqrt(aperture_sum_var)
 
-    return (meta..., aperture_sum = aperture_sum, aperture_sum_err = aperture_sum_err)
+    if f == sum
+        return (; meta..., aperture_sum, aperture_sum_err)
+    else
+        aperture_f = f(img_ap)
+        # Note: not supported if f returns a Tuple
+        #aperture_f_var = f(img_ap_var)
+        #aperture_f_err = sqrt(aperture_f_var)
+        return (; meta..., aperture_sum, aperture_sum_err, aperture_f)
+    end
 end
 
-
-function photometry(ap::AbstractAperture, data::AbstractMatrix)
+function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
-    any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
-    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-    return (meta..., aperture_sum = aperture_sum)
+    if any(isempty, idxs)
+        if f == sum
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+        else
+            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
+        end
+    end
+
+    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    aperture_sum = sum(img_ap)
+
+    if f == sum
+        return (; meta..., aperture_sum)
+    else
+        aperture_f = f(img_ap)
+        return (; meta..., aperture_sum, aperture_f)
+    end
 end
 
-function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error)))
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error; f = sum)
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error; f)))
     return Table(rows)
 end
 
-function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data)))
+function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f = sum)
+    rows = tcollect(aps |> Map(ap -> photometry(ap, data; f)))
     return Table(rows)
 end
 
