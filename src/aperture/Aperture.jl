@@ -185,7 +185,8 @@ Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
 function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int,2}) where T
     i, j = idx
     flag = overlap(ap, i, j)
-    flag === Outside && return zero(T)
+    # TODO: revisit a better way to handle subpixel apertures
+    #flag === Outside && return zero(T)
     flag === Inside && return one(T)
     cx, cy = center(ap)
     return partial(ap, i - cx, j - cy)
