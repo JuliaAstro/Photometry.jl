@@ -36,7 +36,6 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
 
     # TODO: Only return aperture_sum_err when err is passed
     @test t.aperture_sum ≈ 0
-    @test isnan(t.aperture_sum_err)
     @test propertynames(t) == (:xcenter, :ycenter, :aperture_sum)
 
     @test t_err.aperture_sum ≈ 0
@@ -44,7 +43,6 @@ area(ap::RectangularAnnulus) = ap.w_out * ap.h_out - ap.w_in * ap.h_in
     @test propertynames(t_err) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
 
     @test t_f.aperture_f ≈ 0
-    @test isnan(t_f.aperture_sum_err)
     @test propertynames(t_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
 
     @test t_f_err.aperture_f ≈ 0
