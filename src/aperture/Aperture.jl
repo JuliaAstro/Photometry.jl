@@ -247,9 +247,9 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     idxs = map(intersect, axes(ap), axes(data))
     if any(isempty, idxs)
         if f == sum
-            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+            return (meta..., aperture_sum = 0.0)
         else
-            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
+            return (meta..., aperture_sum = 0.0, aperture_f = 0.0)
         end
     end
 
@@ -356,21 +356,38 @@ end
     err = zeros(40, 40)
     aperture = CircularAperture(20.0, 20.0, 5.0)
 
+    f = maximum
     t1 = photometry(aperture, data)
+    t1_f = photometry(aperture, data; f)
     t2 = photometry(aperture, data, err)
+    t2_f = photometry(aperture, data, err; f)
 
     # 1.0 compat (no hasproperty function)
     hasfunc = VERSION < v"1.1" ? haskey : hasproperty
 
     @test !hasfunc(t1, :aperture_sum_err)
+    @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == 0
+    @test t2_f.aperture_sum_err == 0
+    @test propertynames(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test propertynames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test propertynames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test propertynames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 
     apertures = CircularAperture.(20, 20, [1, 2, 3])
     t1 = photometry(apertures, data)
+    t1_f = photometry(apertures, data; f)
     t2 = photometry(apertures, data, err)
+    t2_f = photometry(apertures, data, err; f)
 
     @test !hasfunc(t1, :aperture_sum_err)
+    @test !hasfunc(t1_f, :aperture_sum_err)
     @test t2.aperture_sum_err == zeros(3)
+    @test t2_f.aperture_sum_err == zeros(3)
+    @test propertynames(t1) == (:xcenter, :ycenter, :aperture_sum)
+    @test propertynames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
+    @test propertynames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
+    @test propertynames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
 end
 
 @testitem "aperture/Aperture: type stability" setup=[photometry] begin
