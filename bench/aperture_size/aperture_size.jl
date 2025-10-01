@@ -1,28 +1,110 @@
 using Photometry
-using BenchmarkTools
+using Chairmarks
 using CSV
-using DataFrames
-using ProgressLogging
+using DataFramesMeta
+using ProgressMeter
 using Random
+using PythonCall
 
 rng = Random.seed!(11256)
 
 data = randn(rng, 512, 512) .+ 10
 
-rows = []
-using Statistics
-@progress for r in 1:5:200
+rows = @showprogress map(1:5:200) do r
     ap = CircularAperture(256.5, 256.5, r)
-    time = @belapsed photometry($ap, $data)
-    push!(rows, (nt=Threads.nthreads(), r=r, time=time))
+    bench = @b photometry($ap, $data)
+    (nt=Threads.nthreads(), r=r, time=bench.time)
 end
 
 path = joinpath(@__DIR__, "julia_aperture_size.csv")
-results = CSV.File(path)
+results = CSV.read(path, DataFrame)
 
-rows_to_update = @. results[:nt] == Threads.nthreads()
-results[rows_to_update] = DataFrame(rows)
+rows_to_update = @. results.nt == Threads.nthreads()
+results[rows_to_update, :] .= DataFrame(rows)
 
 CSV.write(path, results)
 
-nothing
+@info :Updated path
+
+rows = @showprogress map(1:5:200) do r
+    ap = EllipticalAperture(256.5, 256.5, r, r, 20)
+    bench = @b photometry($ap, $data)
+    (nt=Threads.nthreads(), r=r, time=bench.time)
+end
+
+path = joinpath(@__DIR__, "julia_aperture_size-ellipse.csv")
+results = CSV.read(path, DataFrame)
+
+rows_to_update = @. results.nt == Threads.nthreads()
+results[rows_to_update, :] .= DataFrame(rows)
+
+CSV.write(path, results)
+
+@info :Updated path
+
+@info "Running Python benchmark"
+py_script = """
+from photutils.aperture import (
+    CircularAperture,
+    CircularAnnulus,
+    EllipticalAperture,
+    EllipticalAnnulus,
+    RectangularAperture,
+    RectangularAnnulus,
+    aperture_photometry,
+)
+from datetime import datetime
+import pandas as pd
+import numpy as np
+from tqdm import tqdm, trange
+from itertools import repeat
+import os
+
+rng = np.random.seed(11256)
+
+data = np.random.randn(512, 512) + 10
+
+rows = []
+for r in trange(1, 201, 5):
+    ap = CircularAperture((255.5, 255.5), r)
+
+    ts = []
+    for i in range(5):
+        t0 = datetime.now()
+        t = aperture_photometry(data, ap, method="exact")
+        t1 = datetime.now()
+        time = (t1 - t0).total_seconds()
+        ts.append(time)
+
+    time = sum(ts) / 5
+    rows.append((r, time))
+
+df = pd.DataFrame(rows, columns=["r", "time"])
+
+path = os.path.dirname(__file__)
+df.to_csv(os.path.join(path, "python_aperture_size.csv"), index=False)
+
+## Ellipse
+
+rows = []
+for r in trange(1, 201, 5):
+    ap = EllipticalAperture((255.5, 255.5), r, r, 20)
+
+    ts = []
+    for i in range(5):
+        t0 = datetime.now()
+        t = aperture_photometry(data, ap, method="exact")
+        t1 = datetime.now()
+        time = (t1 - t0).total_seconds()
+        ts.append(time)
+
+    time = sum(ts) / 5
+    rows.append((r, time))
+
+df = pd.DataFrame(rows, columns=["r", "time"])
+
+path = os.path.dirname(__file__)
+df.to_csv(os.path.join(path, "python_aperture_size-ellipse.csv"), index=False)
+"""
+
+@info "Complete"
