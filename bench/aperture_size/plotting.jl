@@ -1,14 +1,14 @@
 using StatsPlots
 using CSV
-using DataFrames
+using DataFramesMeta
 
-jt = CSV.read(joinpath(@__DIR__, "julia_aperture_size.csv")) |> DataFrame
-pt = CSV.read(joinpath(@__DIR__, "python_aperture_size.csv")) |> DataFrame
+jt = CSV.read(joinpath(@__DIR__, "julia_aperture_size.csv"), DataFrame)
+pt = CSV.read(joinpath(@__DIR__, "python_aperture_size.csv"), DataFrame)
 
-jt_ell = CSV.read(joinpath(@__DIR__, "julia_aperture_size-ellipse.csv")) |> DataFrame
-pt_ell = CSV.read(joinpath(@__DIR__, "python_aperture_size-ellipse.csv")) |> DataFrame
+jt_ell = CSV.read(joinpath(@__DIR__, "julia_aperture_size-ellipse.csv"), DataFrame)
+pt_ell = CSV.read(joinpath(@__DIR__, "python_aperture_size-ellipse.csv"), DataFrame)
 
-plot(markerstrokealpha=0, yscale=:log10, link=:y, legend=:bottomright, layout=2, size=(800, 300), dpi=100, bottom_margin=5StatsPlots.mm)
+plot(xticks=0:50:200, yticks=logrange(1e-6, 1e-2, 5), ylims=(exp10(-6.5), exp10(-1.5)), markerstrokealpha=0, yscale=:log10, link=:y, legend=:bottomright, layout=2, size=(800, 300), dpi=100, bottom_margin=5StatsPlots.mm)
 
 @df pt plot!(:r, :time, c=2, label="", sp=1)
 jt_groups = groupby(jt, :nt)
@@ -29,5 +29,3 @@ title!("EllipticalAperture", sp=2)
 xlabel!("aperture radius [px]", sp=2)
 
 savefig(joinpath(@__DIR__, "..", "..", "docs", "src", "assets", "aperture_size_benchmark.png"))
-
-nothing

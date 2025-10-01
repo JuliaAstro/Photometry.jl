@@ -1,0 +1,5 @@
+[deps]
+tqdm = ""
+pandas = ""
+numpy = ""
+photutils = ""
