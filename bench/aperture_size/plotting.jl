@@ -8,7 +8,7 @@ pt = CSV.read(joinpath(@__DIR__, "python_aperture_size.csv"), DataFrame)
 jt_ell = CSV.read(joinpath(@__DIR__, "julia_aperture_size-ellipse.csv"), DataFrame)
 pt_ell = CSV.read(joinpath(@__DIR__, "python_aperture_size-ellipse.csv"), DataFrame)
 
-plot(markerstrokealpha=0, yscale=:log10, link=:y, legend=:bottomright, layout=2, size=(800, 300), dpi=100, bottom_margin=5StatsPlots.mm)
+plot(xticks=0:50:200, yticks=logrange(1e-6, 1e-2, 5), markerstrokealpha=0, yscale=:log10, link=:y, legend=:bottomright, layout=2, size=(800, 300), dpi=100, bottom_margin=5StatsPlots.mm)
 
 @df pt plot!(:r, :time, c=2, label="", sp=1)
 jt_groups = groupby(jt, :nt)
