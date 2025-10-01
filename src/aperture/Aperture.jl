@@ -246,9 +246,9 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     idxs = map(intersect, axes(ap), axes(data))
     if any(isempty, idxs)
         if f == sum
-            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
+            return (meta..., aperture_sum = 0.0)
         else
-            return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
+            return (meta..., aperture_sum = 0.0, aperture_f = 0.0)
         end
     end
 
