@@ -4,6 +4,7 @@
 /docs/build/
 Manifest.toml
 .vscode
+.CondaPkg/
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python

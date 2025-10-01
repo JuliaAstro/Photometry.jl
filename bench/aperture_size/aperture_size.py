@@ -1,4 +1,4 @@
-from photutils import (
+from photutils.aperture import (
     CircularAperture,
     CircularAnnulus,
     EllipticalAperture,
