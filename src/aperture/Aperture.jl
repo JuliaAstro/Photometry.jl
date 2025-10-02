@@ -188,7 +188,7 @@ function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int,2}) where T
     flag = overlap(ap, i, j)
     # TODO: revisit a better way to handle subpixel apertures
     #flag === Outside && return zero(T)
-    flag === Inside && return one(T)
+    flag === Inside && return one(T) / one(T)
     cx, cy = center(ap)
     return partial(ap, i - cx, j - cy)
 end
