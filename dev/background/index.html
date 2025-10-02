@@ -18,7 +18,7 @@ function imshow(image; kwargs...)
             kwargs...)
 end
 
-imshow(image)</code></pre><img src="index-d134c1b3.svg" alt="Example block output"/><p>Now let&#39;s try and estimate the background using <a href="#Photometry.Background.estimate_background"><code>estimate_background</code></a>. First, we&#39;ll sigma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size <code>(50, 50)</code>. Within each box, the given statistical estimators get the background value and RMS. By default, we use <a href="estimators/#Photometry.Background.SourceExtractorBackground"><code>SourceExtractorBackground</code></a> and <a href="estimators/#Photometry.Background.StdRMS"><code>StdRMS</code></a>. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via <a href="interpolators/#Photometry.Background.ZoomInterpolator"><code>ZoomInterpolator</code></a>. The end result is a smooth estimate of the spatially varying background and background RMS.</p><pre><code class="language-julia hljs"># sigma-clip
+imshow(image)</code></pre><img src="index-30bfb7d9.svg" alt="Example block output"/><p>Now let&#39;s try and estimate the background using <a href="#Photometry.Background.estimate_background"><code>estimate_background</code></a>. First, we&#39;ll sigma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size <code>(50, 50)</code>. Within each box, the given statistical estimators get the background value and RMS. By default, we use <a href="estimators/#Photometry.Background.SourceExtractorBackground"><code>SourceExtractorBackground</code></a> and <a href="estimators/#Photometry.Background.StdRMS"><code>StdRMS</code></a>. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via <a href="interpolators/#Photometry.Background.ZoomInterpolator"><code>ZoomInterpolator</code></a>. The end result is a smooth estimate of the spatially varying background and background RMS.</p><pre><code class="language-julia hljs"># sigma-clip
 clipped = sigma_clip(image, 1, fill=NaN)
 
 # get background and background rms with box-size (50, 50)
@@ -31,7 +31,7 @@ plot(
     imshow(bkg, title=&quot;Background&quot;),
     imshow(bkg_rms, title=&quot;Background RMS&quot;),
     layout=(2, 2), ticks=false,
-)</code></pre><img src="index-94102cef.svg" alt="Example block output"/><p>We could apply a median filter, too, by specifying <code>filter_size</code></p><pre><code class="language-julia hljs"># get background and background rms with box-size (50, 50) and filter_size (5, 5)
+)</code></pre><img src="index-d27dd1ae.svg" alt="Example block output"/><p>We could apply a median filter, too, by specifying <code>filter_size</code></p><pre><code class="language-julia hljs"># get background and background rms with box-size (50, 50) and filter_size (5, 5)
 bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5)
 
 # plot
@@ -41,7 +41,7 @@ plot(
     imshow(bkg_rms, ylabel=&quot;RMS&quot;),
     imshow(bkg_rms_f);
     layout=(2, 2), ticks=false,
-)</code></pre><img src="index-a1033251.svg" alt="Example block output"/><p>Now we can see our image after subtracting the filtered background and ready for <a href="../apertures/#Aperture-Photometry">Aperture Photometry</a>!</p><pre><code class="language-julia hljs">subt = image .- bkg_f[axes(image)...]
+)</code></pre><img src="index-bf0b2445.svg" alt="Example block output"/><p>Now we can see our image after subtracting the filtered background and ready for <a href="../apertures/#Aperture-Photometry">Aperture Photometry</a>!</p><pre><code class="language-julia hljs">subt = image .- bkg_f[axes(image)...]
 plot(
     imshow(image, title=&quot;Original&quot;, colorbar=false),
     imshow(subt, title=&quot;Subtracted&quot;);
@@ -49,7 +49,7 @@ plot(
     xlims=(400, 800), ylims=(400, 800),
     clims=(minimum(subt), maximum(image)),
     ticks=false, aspect_ratio=1,
-)</code></pre><img src="index-635a129b.svg" alt="Example block output"/><h3 id="IDW-Interpolator"><a class="docs-heading-anchor" href="#IDW-Interpolator">IDW Interpolator</a><a id="IDW-Interpolator-1"></a><a class="docs-heading-anchor-permalink" href="#IDW-Interpolator" title="Permalink"></a></h3><p>Here is a quick example using the <a href="interpolators/#Photometry.Background.IDWInterpolator"><code>IDWInterpolator</code></a></p><pre><code class="language-julia hljs">b1, r1 = estimate_background(clipped, 50, filter_size=5)
+)</code></pre><img src="index-2bb4f1ce.svg" alt="Example block output"/><h3 id="IDW-Interpolator"><a class="docs-heading-anchor" href="#IDW-Interpolator">IDW Interpolator</a><a id="IDW-Interpolator-1"></a><a class="docs-heading-anchor-permalink" href="#IDW-Interpolator" title="Permalink"></a></h3><p>Here is a quick example using the <a href="interpolators/#Photometry.Background.IDWInterpolator"><code>IDWInterpolator</code></a></p><pre><code class="language-julia hljs">b1, r1 = estimate_background(clipped, 50, filter_size=5)
 b2, r2 = estimate_background(clipped, 50, itp=IDWInterpolator(50), filter_size=5)
 
 plot(
@@ -58,7 +58,7 @@ plot(
     imshow(r1, ylabel=&quot;RMS&quot;),
     imshow(r2);
     layout=(2, 2), ticks=false,
-)</code></pre><img src="index-2d188605.svg" alt="Example block output"/><h2 id="API/Reference"><a class="docs-heading-anchor" href="#API/Reference">API/Reference</a><a id="API/Reference-1"></a><a class="docs-heading-anchor-permalink" href="#API/Reference" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Photometry.Background.estimate_background" href="#Photometry.Background.estimate_background"><code>Photometry.Background.estimate_background</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">estimate_background(data;
+)</code></pre><img src="index-4f2a947c.svg" alt="Example block output"/><h2 id="API/Reference"><a class="docs-heading-anchor" href="#API/Reference">API/Reference</a><a id="API/Reference-1"></a><a class="docs-heading-anchor-permalink" href="#API/Reference" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Photometry.Background.estimate_background" href="#Photometry.Background.estimate_background"><code>Photometry.Background.estimate_background</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">estimate_background(data;
     location=SourceExtractorBackground(),
     rms=StdRMS(),
     dims=:)</code></pre><p>Perform scalar background estimation using the given estimators.</p><p>The value returned will be two values corresponding to the estimated background and the estimated background RMS. The dimensionality will depend on the <code>dims</code> keyword.</p><p><code>location</code> and <code>rms</code> can be anything that is callable, for example <code>median</code>, or one of the estimators we provide in <a href="estimators/#Background-Estimators">Background Estimators</a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; data = ones(3, 5);

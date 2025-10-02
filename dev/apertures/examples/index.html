@@ -7,7 +7,7 @@ plot!(CircularAnnulus(5, 5, 2.1, 3), c=2)
 plot!(EllipticalAperture(0, 0, 10, 1, 32), c=3)
 plot!(EllipticalAnnulus(5, 5, 4, 5, 2, -32), c=4)
 plot!(RectangularAperture(0, 0, 4, 4, 4), c=5)
-plot!(RectangularAnnulus(5, 1, 3, 4, 4, 4), c=6)</code></pre><img src="b74df1d3.svg" alt="Example block output"/><h2 id="Simple-Stars"><a class="docs-heading-anchor" href="#Simple-Stars">Simple Stars</a><a id="Simple-Stars-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Stars" title="Permalink"></a></h2><p>Here is an example where we will find aperture fluxes for stars from M67. The dataset is provided as part of the <a href="https://github.com/astropy/photutils-datasets">astropy/photutils-datasets</a> repository.</p><p>Let&#39;s start by downloading and showing our image</p><pre><code class="language-julia hljs">using Photometry
+plot!(RectangularAnnulus(5, 1, 3, 4, 4, 4), c=6)</code></pre><img src="ceee69ae.svg" alt="Example block output"/><h2 id="Simple-Stars"><a class="docs-heading-anchor" href="#Simple-Stars">Simple Stars</a><a id="Simple-Stars-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Stars" title="Permalink"></a></h2><p>Here is an example where we will find aperture fluxes for stars from M67. The dataset is provided as part of the <a href="https://github.com/astropy/photutils-datasets">astropy/photutils-datasets</a> repository.</p><p>Let&#39;s start by downloading and showing our image</p><pre><code class="language-julia hljs">using Photometry
 using Plots
 using FITSIO
 
@@ -23,7 +23,7 @@ function imshow(image; kwargs...)
     heatmap(xs, ys, data; aspect_ratio=1, xlim=extrema(xs), ylim=extrema(ys), kwargs...)
 end
 
-imshow(chunk)</code></pre><img src="94a75cda.svg" alt="Example block output"/><p>Now let&#39;s add some apertures!</p><pre><code class="language-julia hljs">positions = [
+imshow(chunk)</code></pre><img src="c34a84e4.svg" alt="Example block output"/><p>Now let&#39;s add some apertures!</p><pre><code class="language-julia hljs">positions = [
     [47.5 , 67.5],
     [29.5 , 62.5],
     [23.5 , 48.5],
@@ -41,7 +41,7 @@ aps = CircularAperture.(positions, radii)</code></pre><pre class="documenter-exa
  CircularAperture(17.5, 29.5, r=2.0)
  CircularAperture(13.25, 10.5, r=2.7)
  CircularAperture(65.5, 14.0, r=3.0)</code></pre><p>now let&#39;s plot them up</p><pre><code class="language-julia hljs">imshow(chunk)
-plot!(aps, c=:white)</code></pre><img src="8bb27423.svg" alt="Example block output"/><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-julia hljs">table = photometry(aps, chunk)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Table with 3 columns and 6 rows:
+plot!(aps, c=:white)</code></pre><img src="289188aa.svg" alt="Example block output"/><p>and finally let&#39;s get our output table for the photometry</p><pre><code class="language-julia hljs">table = photometry(aps, chunk)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Table with 3 columns and 6 rows:
      xcenter  ycenter  aperture_sum
    ┌───────────────────────────────
  1 │ 47.5     67.5     2.48267e5
@@ -59,13 +59,13 @@ plot(
     imshow(bkg, title=&quot;Background&quot;),
     imshow(bkg_rms, title=&quot;Background RMS&quot;);
     layout=(2, 2), size=(600, 600), ticks=false
-)</code></pre><img src="3273eec6.svg" alt="Example block output"/><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-julia hljs">plot(
+)</code></pre><img src="4d07efa6.svg" alt="Example block output"/><p>Now, using the same apertures, let&#39;s find the output using the background-subtracted image</p><pre><code class="language-julia hljs">plot(
     imshow(chunk, title=&quot;Original&quot;),
     imshow(chunk .- bkg, title=&quot;Subtracted&quot;);
     layout=2, size=(600, 260), ticks=false, colorbar=false
 )
 plot!(aps, c=:white, subplot=1)
-plot!(aps, c=:white, subplot=2)</code></pre><img src="b6f8e4ca.svg" alt="Example block output"/><pre><code class="language-julia hljs">using PSFModels
+plot!(aps, c=:white, subplot=2)</code></pre><img src="3e29700a.svg" alt="Example block output"/><pre><code class="language-julia hljs">using PSFModels
 
 function fit_psf(img_ap)
     # Normalize
