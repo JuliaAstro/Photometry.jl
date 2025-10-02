@@ -286,20 +286,50 @@ end
                                photometry
     const APERTURES = [
         CircularAperture,
+        CircularAperture,
+        CircularAperture,
+        CircularAnnulus,
+        CircularAnnulus,
         CircularAnnulus,
         EllipticalAperture,
+        EllipticalAperture,
+        EllipticalAperture,
+        EllipticalAnnulus,
+        EllipticalAnnulus,
         EllipticalAnnulus,
         RectangularAperture,
-        RectangularAnnulus
+        RectangularAperture,
+        RectangularAperture,
+        RectangularAnnulus,
+        RectangularAnnulus,
+        RectangularAnnulus,
     ]
 
     const PARAMS = [
+        # CircularAperture
+        (0.3),
+        (1),
         (3),
+        # CircularAnnulus,
+        (0.3, 0.5),
+        (0.5, 1.0),
         (3, 5),
+        # EllipticalAperture
+        (0.3, 0.3, 0),
+        (1, 1, 0),
         (3, 3, 0),
+        # EllipticalAnnulus
+        (0.3, 0.5, 0.5, 0),
+        (0.5, 1.0, 0.5, 0),
         (3, 5, 4, 0),
+        # RectangularAperture
+        (0.3, 0.5, 0),
+        (0.5, 1.0, 0),
         (3, 5, 0),
-        (3, 5, 4, 0)
+        # RectangularAnnulus
+        (0.3, 0.5, 1.0, 0),
+        (0.5, 1.0, 1.0, 0),
+        (3, 5, 4, 0),
     ]
 
     # Some helpers for testing
@@ -348,7 +378,10 @@ end
 
         @test table_ex.aperture_sum ≈ true_flux
         @test table_sub.aperture_sum ≈ table_ex.aperture_sum atol = 0.1
-        @test table_cent.aperture_sum ≤ table_ex.aperture_sum
+
+        if any(>(1), params)
+            @test table_cent.aperture_sum ≤ table_ex.aperture_sum
+        end
     end
 end
 
