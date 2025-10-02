@@ -15,7 +15,7 @@ A circular aperture with radius `r`. `r` must be greater than or equal to 0.
 # Examples
 ```jldoctest
 julia> ap = CircularAperture(0, 0, 10)
- 21×21 CircularAperture{Int64} with indices -10:10×-10:10:
+21×21 CircularAperture{Int64} with indices -10:10×-10:10:
  0.0        0.0       0.0         …  0.0         0.0       0.0
  0.0        0.0       0.0            0.0         0.0       0.0
  0.0        0.0       0.0            0.0         0.0       0.0
@@ -90,7 +90,7 @@ A circular annulus with inner radius `r_in` and outer radius `r_out`. 0 ≤ `r_i
 # Examples
 ```jldoctest
 julia> ap = CircularAnnulus(0, 0, 5, 10)
- 21×21 CircularAnnulus{Int64} with indices -10:10×-10:10:
+21×21 CircularAnnulus{Int64} with indices -10:10×-10:10:
  0.0        0.0       0.0         …  0.0         0.0       0.0
  0.0        0.0       0.0            0.0         0.0       0.0
  0.0        0.0       0.0            0.0         0.0       0.0
