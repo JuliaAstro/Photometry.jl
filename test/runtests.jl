@@ -1,8 +1,8 @@
 using Photometry
 using Random
 using Statistics
-using TestItemRunner
+using ParallelTestRunner
 
 Random.seed!(8462852)
 
-@run_package_tests
+runtests(Photometry, ARGS)
