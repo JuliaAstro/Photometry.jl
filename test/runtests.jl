@@ -3,6 +3,11 @@ using Random
 using Statistics
 using ParallelTestRunner
 
-Random.seed!(8462852)
+const init_code = quote
+    import StatsBase: median, mean, std, mad
 
-runtests(Photometry, ARGS)
+    const DATA_DIR = joinpath(@__DIR__, "data")
+end
+
+
+runtests(Photometry, ["--verbose"]; init_code)
