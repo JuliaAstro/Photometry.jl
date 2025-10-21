@@ -45,6 +45,62 @@ Table with 4 columns and 2 rows:
 
 Please see the to-do list above for project ideas as well as any open issues! If you add new functionality, please add appropriate documentation and testing. In addition, please increment the minor version of the package to reflect the new changes!
 
+Tests are run with [ParallelTestRunner.jl](https://github.com/JuliaTesting/ParallelTestRunner.jl). See below for some brief usage examples:
+
+**`Pkg.test()` workflow in root directory:**
+
+```julia-repl
+julia --proj --threads=auto
+
+(Photometry) pkg> test
+```
+**Interactive workflow in `test` directory:**
+
+```julia-repl
+julia --proj --threads=auto
+
+julia> using Photometry, ParallelTestRunner
+```
+
+```julia-repl
+# List available testsets
+
+julia> runtests(Photometry, ["--list"])
+Available tests:
+ - aperture/circular
+ - aperture/elliptical
+ - aperture/overlap
+ - aperture/photometry
+ - aperture/plotting
+ - aperture/rectangle
+ - backgroud/background
+ - backgroud/estimators
+ - backgroud/interpolators
+ - detection/detection
+```
+
+```julia-repl
+# Run a subset of tests
+
+julia> const init_code = quote
+           import StatsBase: median, mean, std, mad
+
+           const DATA_DIR = joinpath(@__DIR__, "data")
+       end
+
+julia> runtests(Photometry, ["--verbose"]; init_code, test_filter = test -> occursin("aperture", test))
+
+Test Summary:           | Pass  Total   Time
+  Overall               | 9478   9478  24.8s
+    aperture/plotting   |   27     27   6.4s
+    aperture/circular   |   21     21   1.6s
+    aperture/overlap    | 9226   9226   9.9s
+    aperture/elliptical |   20     20   1.2s
+    aperture/rectangle  |   12     12   0.3s
+    aperture/photometry |  172    172  19.9s
+    SUCCESS
+```
+
 ## License
 
 The work derived from `astropy/photutils` is BSD 3-clause and the work derived from `kbarbary/sep` is BSD 3-clause. All other work is considered MIT expat. Therefore this work as a whole is BSD 3-clause. [`LICENSE`](LICENSE) contains all licenses and any files using derived work are noted at the top of the file.
