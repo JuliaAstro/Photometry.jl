@@ -73,7 +73,7 @@ Available tests:
      Testing Photometry tests passed
 ```
 
-**Run a subset of testsets and enable default threading:**
+**Run a subset of testsets in verbose mode, and enable default threading:**
 
 ```julia-repl
 julia> Pkg.test("Photometry"; test_args=`--verbose aperture`, julia_args=`--threads=auto`);
