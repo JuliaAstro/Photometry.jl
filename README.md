@@ -50,7 +50,7 @@ Tests are run with [ParallelTestRunner.jl](https://github.com/JuliaTesting/Paral
 ```julia-repl
 julia --proj
 
-julia> using Photometry, Pkg
+julia> using Pkg
 ```
 
 **List available testsets:**
