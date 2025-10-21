@@ -10,4 +10,4 @@ const init_code = quote
 end
 
 
-runtests(Photometry, ["--verbose"]; init_code)
+runtests(Photometry, Base.ARGS; init_code)
