@@ -1,4 +1,4 @@
-name: CI (pre)
+name: CI
 
 on:
   push:
@@ -19,6 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - "min"
+          - "1"
           - "pre"
         os:
           - ubuntu-latest
