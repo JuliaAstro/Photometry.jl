@@ -3,8 +3,7 @@
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaastro.org/Photometry/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaastro.org/Photometry.jl/dev)
 
-[![CI (stable)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci_stable.yml/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci_stable.yml)
-[![CI (pre)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci_pre.yml/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/ci_pre.yml)
+[![CI](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaAstro/Photometry.jl/actions/workflows/CI.yml)
 [![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/P/Photometry.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
 [![codecov](https://codecov.io/gh/JuliaAstro/Photometry.jl/graph/badge.svg?token=lqTjxxg5dg)](https://codecov.io/gh/JuliaAstro/Photometry.jl)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
