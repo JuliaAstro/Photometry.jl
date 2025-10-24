@@ -1,8 +1,10 @@
-using Photometry
-using Random
-using Statistics
-using TestItemRunner
+using ParallelTestRunner: runtests
+import Photometry
 
-Random.seed!(8462852)
+const init_code = quote
+    import StatsBase: median, mean, std, mad
 
-@run_package_tests
+    const DATA_DIR = joinpath(@__DIR__, "data")
+end
+
+runtests(Photometry, Base.ARGS; init_code)
