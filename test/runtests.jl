@@ -1,4 +1,4 @@
-using ParallelTestRunner: runtests
+using ParallelTestRunner: runtests, parse_args
 import Photometry
 
 const init_code = quote
@@ -7,4 +7,6 @@ const init_code = quote
     const DATA_DIR = joinpath(@__DIR__, "data")
 end
 
-runtests(Photometry, Base.ARGS; init_code)
+args = parse_args(Base.ARGS)
+
+runtests(Photometry, args; init_code)
