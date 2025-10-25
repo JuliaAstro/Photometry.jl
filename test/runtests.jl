@@ -1,5 +1,4 @@
 using ParallelTestRunner: runtests, parse_args
-using Base.Filesystem: path_separator
 import Photometry
 
 const init_code = quote
