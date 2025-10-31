@@ -20,9 +20,6 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
-[sources]
-BackgroundMeshes = {url = "https://github.com/JuliaAstro/BackgroundMeshes.jl"}
-
 [compat]
 BackgroundMeshes = "0.1.0"
 ImageFiltering = "0.6,0.7"
