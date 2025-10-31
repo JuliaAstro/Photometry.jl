@@ -1,4 +1,4 @@
-using ParallelTestRunner: runtests, parse_args
+using ParallelTestRunner: runtests, find_tests, parse_args
 import Photometry
 
 const init_code = quote
@@ -8,5 +8,6 @@ const init_code = quote
 end
 
 args = parse_args(Base.ARGS)
+testsuite = find_tests(@__DIR__)
 
-runtests(Photometry, args; init_code)
+runtests(Photometry, args; testsuite, init_code)
