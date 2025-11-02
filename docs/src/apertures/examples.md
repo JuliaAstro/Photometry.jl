@@ -73,9 +73,10 @@ table = photometry(aps, chunk)
 
 ## Stars with Spatial Background Subtraction and PSF Fitting
 
-This example will be the same as [Simple Stars](@ref) but will add background and PSF estimation using the tools in [Background Estimation](@ref) and [PSFModels.jl](https://juliaastro.org/PSFModels).
+This example will be the same as [Simple Stars](@ref) but will add background estimation with [BackgroundMeshes.jl](https://juliaastro.org/BackgroundMeshes) and PSF fitting with [PSFModels.jl](https://juliaastro.org/PSFModels).
 
 ```@example stars
+# `sigma_clip` and `estimate_background` are reexported from BackgroundMeshes.jl for convenience
 clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
