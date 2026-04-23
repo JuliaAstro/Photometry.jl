@@ -35,8 +35,9 @@ If `nothing` is provided, any local maximum is returned. The default is `zero`, 
 
 # Example
 ```jldoctest
+julia> using Random: Xoshiro
 
-julia> data = rand(2048, 2048);
+julia> data = rand(Xoshiro(1234), 2048, 2048);
 
 julia> pm = PeakMesh((7, 7), 3.0)
 PeakMesh
@@ -93,23 +94,16 @@ PeakMesh
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = zero(T), sort = true) where T
-        sm = findlocalmaxima(data; window = alg.box_size)
-        to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
-        sm = to_nt.(sm)
-        if !(isnothing(error))
-            if isa(error, Number)
-                    threshold = (error * alg.nsigma)
-                    is_above_n(s) = s.value > threshold
-                    sm = sm[is_above_n.(sm)]
-            else
-                    threshold = (error .* alg.nsigma)
-                    is_above(s) = s.value > threshold[s.y, s.x]
-                    sm = sm[is_above.(sm)]
-            end
-        end
-        sort && sort!(sm, by = row->row.value, rev = true)
-        return Table(sm)
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where T
+    sm = findlocalmaxima(data; window = alg.box_size)
+    to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
+    sm = Table(map(to_nt, sm))
+    if !(isnothing(error))
+        threshold = (error .* alg.nsigma)
+        sm = filter(row -> row.value > threshold[row.y, row.x], sm)
+    end
+    sort && sort!(sm, by = row -> row.value, rev = true)
+    return sm
 end
 
 end # module Detection
