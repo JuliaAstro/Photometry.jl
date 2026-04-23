@@ -3,6 +3,7 @@ module Detection
 using Parameters
 using ImageFiltering
 using TypedTables
+using FillArrays: Zeros
 
 export PeakMesh, extract_sources
 
@@ -27,15 +28,15 @@ values.
 propagated into the detection algorithm. If `sorted` is `true` the sources will
 be sorted by their amplitude.
 
-`error` can be a scalar or an AbstractArray, defining the expected error in each pixel overall or individually.
-If `nothing` is provided, any local maximum is returned. The default is `zero`, which means only positive pixels are returned.
+`error` should be `nothing` or an `AbstractArray` defining the expected error in each pixel.
+If `nothing` is provided, any local maximum is returned, including negative values. 
+The default is `zeros(data)`, which means only positive pixels are returned.
 
 # See Also
 * [Source Detection Algorithms](@ref)
 
 # Example
 ```jldoctest
-
 julia> data = rand(2048, 2048);
 
 julia> pm = PeakMesh((7, 7), 3.0)
@@ -43,24 +44,27 @@ PeakMesh
   box_size: Tuple{Int64, Int64}
   nsigma: Float64 3.0
 
-
 julia> sources = extract_sources(pm, data)
-Table with 3 columns and 85668 rows:
+Table with 3 columns and 86004 rows:
       x     y     value
     ┌─────────────────────
- 1  │ 1200  1203  1.0
- 2  │ 704   827   1.0
- 3  │ 1345  1285  1.0
- 4  │ 875   1762  0.999999
- 5  │ 298   1017  0.999999
- 6  │ 580   508   0.999999
- 7  │ 654   236   0.999999
- 8  │ 237   1287  0.999999
- 9  │ 380   725   0.999998
- 10 │ 1113  337   0.999998
- 11 │ 596   1397  0.999998
- 12 │ 1351  744   0.999997
- 13 │ 643   1471  0.999997
+ 1  │ 1120  1285  1.0
+ 2  │ 1751  845   1.0
+ 3  │ 1670  506   1.0
+ 4  │ 1792  666   1.0
+ 5  │ 314   1456  0.999999
+ 6  │ 1723  432   0.999999
+ 7  │ 209   322   0.999999
+ 8  │ 1872  334   0.999999
+ 9  │ 940   1269  0.999999
+ 10 │ 1624  493   0.999998
+ 11 │ 436   1202  0.999998
+ 12 │ 363   107   0.999998
+ 13 │ 1355  617   0.999998
+ 14 │ 1355  179   0.999998
+ 15 │ 1916  165   0.999997
+ 16 │ 931   1963  0.999997
+ 17 │ 1246  215   0.999996
  ⋮  │  ⋮     ⋮       ⋮
 ```
 """
@@ -93,23 +97,16 @@ PeakMesh
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = zero(T), sort = true) where T
-        sm = findlocalmaxima(data; window = alg.box_size)
-        to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
-        sm = to_nt.(sm)
-        if !(isnothing(error))
-            if isa(error, Number)
-                    threshold = (error * alg.nsigma)
-                    is_above_n(s) = s.value > threshold
-                    sm = sm[is_above_n.(sm)]
-            else
-                    threshold = (error .* alg.nsigma)
-                    is_above(s) = s.value > threshold[s.y, s.x]
-                    sm = sm[is_above.(sm)]
-            end
-        end
-        sort && sort!(sm, by = row->row.value, rev = true)
-        return Table(sm)
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where T
+    sm = findlocalmaxima(data; window = alg.box_size)
+    to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
+    sm = Table(map(to_nt, sm))
+    if !(isnothing(error))
+        threshold = (error .* alg.nsigma)
+        sm = filter(row -> row.value > threshold[row.y, row.x], sm)
+    end
+    sort && sort!(sm, by = row -> row.value, rev = true)
+    return sm
 end
 
 end # module Detection
