@@ -27,8 +27,42 @@ values.
 propagated into the detection algorithm. If `sorted` is `true` the sources will
 be sorted by their amplitude.
 
+`error` can be a scalar or an AbstractArray, defining the expected error in each pixel overall or individually.
+If `nothing` is provided, any local maximum is returned. The default is `zero`, which means only positive pixels are returned.
+
 # See Also
 * [Source Detection Algorithms](@ref)
+
+# Example
+```jldoctest
+
+julia> data = rand(2048, 2048);
+
+julia> pm = PeakMesh((7, 7), 3.0)
+PeakMesh
+  box_size: Tuple{Int64, Int64}
+  nsigma: Float64 3.0
+
+
+julia> sources = extract_sources(pm, data)
+Table with 3 columns and 85668 rows:
+      x     y     value
+    ┌─────────────────────
+ 1  │ 1200  1203  1.0
+ 2  │ 704   827   1.0
+ 3  │ 1345  1285  1.0
+ 4  │ 875   1762  0.999999
+ 5  │ 298   1017  0.999999
+ 6  │ 580   508   0.999999
+ 7  │ 654   236   0.999999
+ 8  │ 237   1287  0.999999
+ 9  │ 380   725   0.999998
+ 10 │ 1113  337   0.999998
+ 11 │ 596   1397  0.999998
+ 12 │ 1351  744   0.999997
+ 13 │ 643   1471  0.999997
+ ⋮  │  ⋮     ⋮       ⋮
+```
 """
 extract_sources
 
@@ -43,6 +77,14 @@ when used with [`extract_sources`](@ref).
 The peaks are found by searching the image in boxes of size `box_size`. If the
 maximum value in that box is greater than the threshold set above, the point is
 extracted.
+
+# Example
+```jldoctest
+julia> pm = PeakMesh((7, 7), 3.0)
+PeakMesh
+  box_size: Tuple{Int64, Int64}
+  nsigma: Float64 3.0
+```
 """
 @with_kw struct PeakMesh <: SourceFinder
     box_size::NTuple{2,<:Integer} = (3, 3)
@@ -51,18 +93,23 @@ extracted.
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = zeros(T, size(data)), sort = true) where T
-    threshold = @. error * alg.nsigma
-    data_max = mapwindow(maximum, data, alg.box_size, border = Fill(zero(T)))
-
-    rows = NamedTuple{(:x, :y, :value),Tuple{Int,Int,T}}[]
-    @inbounds for idx in CartesianIndices(data)
-        if data[idx] > threshold[idx] && data[idx] == data_max[idx]
-            push!(rows, (x = idx.I[2], y = idx.I[1], value = data[idx]))
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = zero(T), sort = true) where T
+        sm = findlocalmaxima(data; window = alg.box_size)
+        to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
+        sm = to_nt.(sm)
+        if !(isnothing(error))
+            if isa(error, Number)
+                    threshold = (error * alg.nsigma)
+                    is_above_n(s) = s.value > threshold
+                    sm = sm[is_above_n.(sm)]
+            else
+                    threshold = (error .* alg.nsigma)
+                    is_above(s) = s.value > threshold[s.y, s.x]
+                    sm = sm[is_above.(sm)]
+            end
         end
-    end
-    sort && sort!(rows, by = row->row.value, rev = true)
-    return Table(rows)
+        sort && sort!(sm, by = row->row.value, rev = true)
+        return Table(sm)
 end
 
 end # module Detection
