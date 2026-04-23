@@ -55,8 +55,7 @@ julia> weighted_cutout = data[idxs] .* ap[idxs]
 Performing aperture photometry is merely summing the weighted cutout shown above.
 
 ```jldoctest ap1
-julia> flux = sum(weighted_cutout)
-39.269908169872416
+julia> flux = sum(weighted_cutout);
 
 julia> flux ≈ (π * 2.5^2) * 2 # area of circle times intensity of 2
 true
