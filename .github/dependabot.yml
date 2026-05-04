@@ -13,3 +13,5 @@ updates:
       all-julia-packages:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "Photometry" # Ignore package itself
