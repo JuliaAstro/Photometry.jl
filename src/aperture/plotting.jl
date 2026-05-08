@@ -1,4 +1,6 @@
 using RecipesBase
+using RecipesBase: @recipe
+using Makie
 
 function circle(x, y, r, θ)
     u = x + r * cos(θ) + 0.5
@@ -15,6 +17,12 @@ function ellipse(x, y, a, b, θ, t = 0)
 end
 
 ellipse(ap::EllipticalAperture, θ) = ellipse(ap.x, ap.y, ap.a, ap.b, θ, ap.theta)
+
+function Makie.convert_arguments(::PointBased, c::CircularAperture, npoints = 100)
+    t = range(0, 2pi, length = npoints)
+    points = Point2.(circle.((c,), t))
+    return (points,)
+end
 
 @recipe function f(c::CircularAperture, npoints = 100)
     seriestype := :shape
