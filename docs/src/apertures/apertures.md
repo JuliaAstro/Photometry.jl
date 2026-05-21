@@ -30,6 +30,7 @@ Base.size(::Aperture.AbstractAperture)
 Aperture.area_triangle
 Aperture.inside_rectangle
 Aperture.bounds
+Aperture.WeightedApertureCutout
 ```
 
 ### Circular Apertures
