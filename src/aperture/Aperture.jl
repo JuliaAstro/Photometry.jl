@@ -195,14 +195,14 @@ end
 Broadcast.combine_axes(ap::AbstractAperture, arrs...) = Broadcast.combine_axes(arrs...)
 Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 
-function _intersect_axes(axs...)
-    lo = maximum(first, axs)
-    hi = minimum(last, axs)
-    return ceil(Int, lo):floor(Int, hi)
-end
-
 ###########
 
+"""
+    WeightedApertureCutout(ap::AbstractAperture, data::AbstractMatrix, idxs::Tuple, f = *)
+A lazy cutout of `data` weighted by `ap` and sliced by `idxs`. Indexing into this cutout applies
+the function `f` to the corresponding aperture and data values. By default, `f` is multiplication
+so that the cutout represents data weighted by the aperture.
+"""
 struct WeightedApertureCutout{T,AP,D,I,F} <: AbstractMatrix{T}
     ap::AP
     data::D
@@ -226,9 +226,9 @@ function Base.getindex(cutout::WeightedApertureCutout, i::Int, j::Int)
     idx = CartesianIndex(cutout.idxs[1][i], cutout.idxs[2][j])
     return _cutout_value(cutout, idx)
 end
-
 Base.getindex(cutout::WeightedApertureCutout, idx::CartesianIndex{2}) = cutout[Tuple(idx)...]
 
+# Custom mapreduce for sum() speed
 function Base.mapreduce(f, op, cutout::WeightedApertureCutout; kwargs...)
     return mapreduce(idx -> f(_cutout_value(cutout, idx)), op, CartesianIndices(cutout.idxs); kwargs...)
 end
@@ -250,7 +250,7 @@ within each aperture. This can be useful for, e.g., computing the PSF of each so
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(_intersect_axes, axes(ap), axes(data), axes(error))
+    idxs = map(intersect, axes(ap), axes(data), axes(error))::Tuple{UnitRange{Int64}, UnitRange{Int64}}
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
@@ -279,7 +279,7 @@ end
 function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(_intersect_axes, axes(ap), axes(data))
+    idxs = map(intersect, axes(ap), axes(data))::Tuple{UnitRange{Int64}, UnitRange{Int64}}
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0)
