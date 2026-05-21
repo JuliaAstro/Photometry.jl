@@ -195,6 +195,12 @@ end
 Broadcast.combine_axes(ap::AbstractAperture, arrs...) = Broadcast.combine_axes(arrs...)
 Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 
+function _intersect_axes(axs...)
+    lo = maximum(first, axs)
+    hi = minimum(last, axs)
+    return ceil(Int, lo):floor(Int, hi)
+end
+
 ###########
 
 struct WeightedApertureCutout{T,AP,D,I,F} <: AbstractMatrix{T}
@@ -211,13 +217,21 @@ end
 
 Base.size(cutout::WeightedApertureCutout) = map(length, cutout.idxs)
 
-function Base.getindex(cutout::WeightedApertureCutout, i::Int, j::Int)
-    @boundscheck checkbounds(cutout, i, j)
-    idx = CartesianIndex(cutout.idxs[1][i], cutout.idxs[2][j])
+@inline function _cutout_value(cutout::WeightedApertureCutout, idx::CartesianIndex{2})
     return cutout.f(cutout.ap[idx], cutout.data[idx])
 end
 
+function Base.getindex(cutout::WeightedApertureCutout, i::Int, j::Int)
+    @boundscheck checkbounds(cutout, i, j)
+    idx = CartesianIndex(cutout.idxs[1][i], cutout.idxs[2][j])
+    return _cutout_value(cutout, idx)
+end
+
 Base.getindex(cutout::WeightedApertureCutout, idx::CartesianIndex{2}) = cutout[Tuple(idx)...]
+
+function Base.mapreduce(f, op, cutout::WeightedApertureCutout; kwargs...)
+    return mapreduce(idx -> f(_cutout_value(cutout, idx)), op, CartesianIndices(cutout.idxs); kwargs...)
+end
 
 """
     photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f = sum])
@@ -236,7 +250,7 @@ within each aperture. This can be useful for, e.g., computing the PSF of each so
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(intersect, axes(ap), axes(data), axes(error))
+    idxs = map(_intersect_axes, axes(ap), axes(data), axes(error))
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
@@ -265,7 +279,7 @@ end
 function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(intersect, axes(ap), axes(data))
+    idxs = map(_intersect_axes, axes(ap), axes(data))
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0)
