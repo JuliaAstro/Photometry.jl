@@ -228,8 +228,6 @@ function Base.getindex(cutout::WeightedApertureCutout, i::Int, j::Int)
 end
 Base.getindex(cutout::WeightedApertureCutout, idx::CartesianIndex{2}) = cutout[Tuple(idx)...]
 
-# Custom mapreduce for sum() speed
-Base.reduce(op, cutout::WeightedApertureCutout; init) = mapreduce(idx -> _cutout_value(cutout, idx), op, CartesianIndices(cutout.idxs); init)
 function Base.mapreduce(f, op, cutout::WeightedApertureCutout; kwargs...)
     return mapreduce(idx -> f(_cutout_value(cutout, idx)), op, CartesianIndices(cutout.idxs); kwargs...)
 end
