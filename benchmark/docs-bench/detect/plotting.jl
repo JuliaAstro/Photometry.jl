@@ -28,4 +28,4 @@ title!("PeakMesh source detection")
 ylabel!("time [s]")
 xlabel!("box size [px]")
 
-savefig(joinpath(@__DIR__, "..", "..", "docs", "src", "assets", "extract_sources_benchmark.png"))
+savefig(joinpath(@__DIR__, "..", "..", "..", "docs", "src", "assets", "extract_sources_benchmark.png"))
