@@ -145,6 +145,21 @@ end
     @test propertynames(t1_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_f)
     @test propertynames(t2) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)
     @test propertynames(t2_f) == (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)
+
+    # Test that the custom function gets an object with matrix properties
+    matrix_f = img_ap -> (
+        size = size(img_ap),
+        axes = axes(img_ap),
+        first = img_ap[begin, begin],
+        sum = sum(img_ap),
+    )
+    t1_matrix_f = photometry(aperture, data; f = matrix_f)
+    t2_matrix_f = photometry(aperture, data, err; f = matrix_f)
+
+    @test t1_matrix_f.aperture_f.axes == (Base.OneTo(t1_matrix_f.aperture_f.size[1]), Base.OneTo(t1_matrix_f.aperture_f.size[2]))
+    @test t1_matrix_f.aperture_f.sum == t1_matrix_f.aperture_sum
+    @test t2_matrix_f.aperture_f.axes == t1_matrix_f.aperture_f.axes
+    @test t2_matrix_f.aperture_f.sum == t2_matrix_f.aperture_sum
 end
 
 @testset "aperture/Aperture: type stability" begin

@@ -198,6 +198,41 @@ Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
 ###########
 
 """
+    WeightedApertureCutout(ap::AbstractAperture, data::AbstractMatrix, idxs::Tuple, f = *)
+A lazy cutout of `data` weighted by `ap` and sliced by `idxs`. Indexing into this cutout applies
+the function `f` to the corresponding aperture and data values. By default, `f` is multiplication
+so that the cutout represents data weighted by the aperture.
+"""
+struct WeightedApertureCutout{T,AP,D,I,F} <: AbstractMatrix{T}
+    ap::AP
+    data::D
+    idxs::I
+    f::F
+end
+
+function WeightedApertureCutout(ap::AbstractAperture, data::AbstractMatrix, idxs::Tuple, f = *)
+    T = Base.promote_op(f, eltype(ap), eltype(data))
+    return WeightedApertureCutout{T,typeof(ap),typeof(data),typeof(idxs),typeof(f)}(ap, data, idxs, f)
+end
+
+Base.size(cutout::WeightedApertureCutout) = map(length, cutout.idxs)
+
+@inline function _cutout_value(cutout::WeightedApertureCutout, idx::CartesianIndex{2})
+    return @inbounds cutout.f(cutout.ap[idx], cutout.data[idx])
+end
+
+function Base.getindex(cutout::WeightedApertureCutout, i::Int, j::Int)
+    @boundscheck checkbounds(cutout, i, j)
+    idx = CartesianIndex(cutout.idxs[1][i], cutout.idxs[2][j])
+    return _cutout_value(cutout, idx)
+end
+Base.getindex(cutout::WeightedApertureCutout, idx::CartesianIndex{2}) = cutout[Tuple(idx)...]
+
+function Base.mapreduce(f, op, cutout::WeightedApertureCutout; kwargs...)
+    return mapreduce(idx -> f(_cutout_value(cutout, idx)), op, CartesianIndices(cutout.idxs); kwargs...)
+end
+
+"""
     photometry(::AbstractAperture, data::AbstractMatrix, [error]; [f = sum])
     photometry(::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, [error]; [f = sum])
 
@@ -214,7 +249,7 @@ within each aperture. This can be useful for, e.g., computing the PSF of each so
 function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(intersect, axes(ap), axes(data), axes(error))
+    idxs = map(intersect, axes(ap), axes(data), axes(error))::Tuple{UnitRange{Int64}, UnitRange{Int64}}
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN)
@@ -222,8 +257,8 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix, error; f = sum)
             return (meta..., aperture_sum = 0.0, aperture_sum_err = NaN, aperture_f = 0.0)
         end
     end
-    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
-    img_ap_var = CartesianIndices(idxs) |> Map(idx -> ap[idx] * error[idx]^2)
+    img_ap = WeightedApertureCutout(ap, data, idxs)
+    img_ap_var = WeightedApertureCutout(ap, error, idxs, (ap_val, err_val) -> ap_val * err_val^2)
 
     aperture_sum = sum(img_ap)
     aperture_sum_var = sum(img_ap_var)
@@ -243,7 +278,7 @@ end
 function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
     cx, cy = center(ap)
     meta = (xcenter = cx, ycenter = cy)
-    idxs = map(intersect, axes(ap), axes(data))
+    idxs = map(intersect, axes(ap), axes(data))::Tuple{UnitRange{Int64}, UnitRange{Int64}}
     if any(isempty, idxs)
         if f == sum
             return (meta..., aperture_sum = 0.0)
@@ -252,7 +287,7 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
         end
     end
 
-    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    img_ap = WeightedApertureCutout(ap, data, idxs)
     aperture_sum = sum(img_ap)
 
     if f == sum
