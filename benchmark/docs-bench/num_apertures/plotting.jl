@@ -27,4 +27,4 @@ jt_ell_group = groupby(jt, :nt)
 title!("EllipticalAperture(a=10, b=10)", sp=2)
 xlabel!("number of apertures", sp=2)
 
-savefig(joinpath(@__DIR__, "..", "..", "docs", "src", "assets", "num_apertures_benchmark.png"))
+savefig(joinpath(@__DIR__, "..", "..", "..", "docs", "src", "assets", "num_apertures_benchmark.png"))

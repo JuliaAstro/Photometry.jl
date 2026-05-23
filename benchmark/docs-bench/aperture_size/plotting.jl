@@ -28,4 +28,4 @@ jt_ell_groups = groupby(jt_ell, :nt)
 title!("EllipticalAperture", sp=2)
 xlabel!("aperture radius [px]", sp=2)
 
-savefig(joinpath(@__DIR__, "..", "..", "docs", "src", "assets", "aperture_size_benchmark.png"))
+savefig(joinpath(@__DIR__, "..", "..", "..", "docs", "src", "assets", "aperture_size_benchmark.png"))
