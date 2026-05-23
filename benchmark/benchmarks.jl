@@ -1,21 +1,20 @@
 using BenchmarkTools
 using StableRNGs
-using PrettyTables: pretty_table
 using Photometry
 
 const SUITE = BenchmarkGroup()
 const IMG_SIZE = 512
-const RNG_SEED = StableRNG(1234)
-const DATA = randn(RNG_SEED, IMG_SIZE, IMG_SIZE) .+ 10
+const RNG = StableRNG(1234)
+const DATA = randn(RNG, IMG_SIZE, IMG_SIZE) .+ 10
 const ERR = fill(1.0, size(DATA))
 
 SUITE["circular_aperture"] = BenchmarkGroup()
 
 cx = cy = (IMG_SIZE + 1) / 2
-for r in range(1, 100; length = 10)
+for r in range(1, 100; step = 11)
     circ_ap = CircularAperture(cx, cy, r)
-    SUITE["circular_aperture"][string(r)] = @benchmarkable photometry($circ_ap, $DATA)
-    SUITE["circular_aperture"][string(r, " + error")] = @benchmarkable photometry($circ_ap, $DATA, $ERR)
+    SUITE["circular_aperture"][lpad(string(r), 3)] = @benchmarkable photometry($circ_ap, $DATA)
+    SUITE["circular_aperture"][lpad(string(r, " + error"), 11)] = @benchmarkable photometry($circ_ap, $DATA, $ERR)
 end
 
 # TODO: Consider merging this with `bench/`
@@ -42,8 +41,8 @@ end
 #
 #    size_x, size_y = size(DATA)
 #    for N in (1, 10, 50, 100, 200, 400, 500, 1000, 2000)
-#        xs = size_x * rand(RNG_SEED, N)
-#        ys = size_y * rand(RNG_SEED, N)
+#        xs = size_x * rand(RNG, N)
+#        ys = size_y * rand(RNG, N)
 #        circ_apers = CircularAperture.(xs, ys, 10)
 #        ell_apers = EllipticalAperture.(xs, ys, 10, 10, 20)
 #        SUITE["num_apertures"]["CircularAperture"][N] = @benchmarkable photometry($circ_apers, $DATA)
@@ -62,31 +61,3 @@ end
 #        SUITE["detect"]["PeakMesh"][box_size] = @benchmarkable extract_sources($alg, $DATA)
 #    end
 #end
-
-# Local plotting
-function show_benchmarks(results)
-    # Collect results
-    sorted = sort(collect(results), by = x -> parse(Float64, split(x[1], " ")[1]))
-    names = [k for (k, _) in sorted]
-    trials = [v for (_, v) in sorted]
-
-    # Pack into matrix
-    data = hcat(
-        names,
-        [BenchmarkTools.prettytime(median(t).time) for t in trials],
-        [BenchmarkTools.prettymemory(median(t).memory) for t in trials],
-        [median(t).allocs for t in trials]
-    )
-
-    # Make pretty table
-    return pretty_table(
-        data;
-        column_labels = ["Benchmark", "Median Time", "Memory", "Allocs"],
-        alignment = [:l, :r, :r, :r]
-    )
-end
-
-if get(ENV, "CI", "false") == "false"
-    results = run(SUITE, verbose=true)
-    show_benchmarks(results["circular_aperture"])
-end

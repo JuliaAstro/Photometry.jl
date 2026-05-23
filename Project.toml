@@ -3,6 +3,9 @@ uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 version = "0.9.7"
 authors = ["Miles Lucas <mdlucas@hawaii.edu>"]
 
+[workspace]
+projects = ["test", "docs", "benchmark"]
+
 [deps]
 BackgroundMeshes = "b200be5e-c4c1-4b3d-840b-d423a53b46f3"
 FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
