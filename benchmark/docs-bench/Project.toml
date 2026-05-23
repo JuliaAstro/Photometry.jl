@@ -9,4 +9,4 @@ PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 
 [sources]
-Photometry = {path = ".."}
+Photometry = {path = "../.."}
