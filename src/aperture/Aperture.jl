@@ -8,13 +8,13 @@ using TypedTables
 using Transducers
 
 export photometry,
-       Subpixel,
-       CircularAperture,
-       CircularAnnulus,
-       EllipticalAperture,
-       EllipticalAnnulus,
-       RectangularAperture,
-       RectangularAnnulus
+    Subpixel,
+    CircularAperture,
+    CircularAnnulus,
+    EllipticalAperture,
+    EllipticalAnnulus,
+    RectangularAperture,
+    RectangularAnnulus
 
 """
     AbstractAperture{T} <: AbstractMatrix{T}
@@ -95,7 +95,7 @@ julia> @btime sum(idx -> \$ap[idx] * \$data[idx], \$idxs)
 This is essentially the full implementation of [`photometry`](@ref), save for
 the packing of additional information into a tabular form.
 """
-abstract type AbstractAperture{T}  <: AbstractMatrix{T} end
+abstract type AbstractAperture{T} <: AbstractMatrix{T} end
 
 """
     bounds(::AbstractAperture)
@@ -162,16 +162,12 @@ julia> sub_ap = Subpixel(ap, 5)
     the `Subpixel` method with 1 subpixel. To avoid unneccessary namespace
     cluttering, we simply instruct users to use `Subpixel(ap)` instead.
 """
-struct Subpixel{T,AP<:AbstractAperture{T}} <: AbstractAperture{T}
+struct Subpixel{T, AP <: AbstractAperture{T}} <: AbstractAperture{T}
     ap::AP
     N::Int
 end
 
-function Base.show(io::IO, c::Subpixel)
-    print(io, "Subpixel(")
-    print(io, c.ap)
-    print(io, ", $(c.N))")
-end
+Base.show(io::IO, c::Subpixel) = print(io, "Subpixel($(c.ap), $(c.N))")
 
 center(sp_ap::Subpixel) = center(sp_ap.ap)
 bounds(sp_ap::Subpixel) = bounds(sp_ap.ap)
@@ -181,7 +177,7 @@ Subpixel(ap::AbstractAperture) = Subpixel(ap, 1)
 
 @enum OverlapFlag Inside Outside Partial
 
-function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int,2}) where T
+function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int, 2}) where {T}
     i, j = idx
     flag = overlap(ap, i, j)
     # TODO: revisit a better way to handle subpixel apertures
@@ -203,7 +199,7 @@ A lazy cutout of `data` weighted by `ap` and sliced by `idxs`. Indexing into thi
 the function `f` to the corresponding aperture and data values. By default, `f` is multiplication
 so that the cutout represents data weighted by the aperture.
 """
-struct WeightedApertureCutout{T,AP,D,I,F} <: AbstractMatrix{T}
+struct WeightedApertureCutout{T, AP, D, I, F} <: AbstractMatrix{T}
     ap::AP
     data::D
     idxs::I
@@ -212,7 +208,7 @@ end
 
 function WeightedApertureCutout(ap::AbstractAperture, data::AbstractMatrix, idxs::Tuple, f = *)
     T = Base.promote_op(f, eltype(ap), eltype(data))
-    return WeightedApertureCutout{T,typeof(ap),typeof(data),typeof(idxs),typeof(f)}(ap, data, idxs, f)
+    return WeightedApertureCutout{T, typeof(ap), typeof(data), typeof(idxs), typeof(f)}(ap, data, idxs, f)
 end
 
 Base.size(cutout::WeightedApertureCutout) = map(length, cutout.idxs)

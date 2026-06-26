@@ -35,9 +35,9 @@ struct RectangularAperture{T <: Number} <: AbstractAperture{T}
     w::T
     h::T
     theta::T
-    function RectangularAperture(x::T, y::T, w::T, h::T, θ::T) where T <: Number
+    function RectangularAperture(x::T, y::T, w::T, h::T, θ::T) where {T <: Number}
         (w < 0  || h < 0) && error("Invalid side lengths w=$w, h=$h. Both must be positive.")
-        new{T}(x, y, w, h, mod(θ, 360))
+        return new{T}(x, y, w, h, mod(θ, 360))
     end
 end
 
@@ -45,7 +45,7 @@ RectangularAperture(center, w, h, θ) = RectangularAperture(center..., w, h, θ)
 RectangularAperture(x, y, w, h, θ) = RectangularAperture(promote(x, y, w, h, θ)...)
 
 function Base.show(io::IO, ap::RectangularAperture)
-    print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w), h=$(ap.h), θ=$(ap.theta)°)")
+    return print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w), h=$(ap.h), θ=$(ap.theta)°)")
 end
 
 function bounds(ap::RectangularAperture)
@@ -75,7 +75,7 @@ function overlap(ap::RectangularAperture, i, j)
         inside_rectangle(x - 0.5, y - 0.5, ap.w, ap.h, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w, ap.h, ap.theta),
         inside_rectangle(x + 0.5, y - 0.5, ap.w, ap.h, ap.theta),
-        inside_rectangle(x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
+        inside_rectangle(x + 0.5, y + 0.5, ap.w, ap.h, ap.theta),
     )
     all(flags) && return Inside
     !any(flags) && return Outside
@@ -85,12 +85,14 @@ end
 
 function partial(ap::RectangularAperture, x, y)
     return rectangular_overlap_exact(
-        x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta)
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.w, ap.h, ap.theta
+    )
 end
-function partial(sub_ap::Subpixel{T,<:RectangularAperture}, x, y) where {T}
+function partial(sub_ap::Subpixel{T, <:RectangularAperture}, x, y) where {T}
     return rectangular_overlap_single_subpixel(
         x - 0.5, y - 0.5, x + 0.5, y + 0.5,
-        sub_ap.ap.w, sub_ap.ap.h, sub_ap.ap.theta, sub_ap.N)
+        sub_ap.ap.w, sub_ap.ap.h, sub_ap.ap.theta, sub_ap.N
+    )
 end
 
 #######################################################
@@ -132,19 +134,20 @@ struct RectangularAnnulus{T <: Number} <: AbstractAperture{T}
     theta::T
 end
 
-function RectangularAnnulus(center, w_in, w_out, h_out, θ=0)
+function RectangularAnnulus(center, w_in, w_out, h_out, θ = 0)
     return RectangularAnnulus(center..., w_in, w_out, h_out, θ)
 end
-function RectangularAnnulus(x::Number, y::Number, w_in, w_out, h_out, θ=0)
+function RectangularAnnulus(x::Number, y::Number, w_in, w_out, h_out, θ = 0)
     return RectangularAnnulus(
-        promote(x, y, w_in, w_out, h_out * w_in / w_out, h_out, θ)...)
+        promote(x, y, w_in, w_out, h_out * w_in / w_out, h_out, θ)...
+    )
 end
 # function RectangularAnnulus(x, y, w_in, w_out, h_out)
 #     return RectangularAnnulus(promote(x, y, w_in, w_out, h_out, 0)...)
 # end
 
 function Base.show(io::IO, ap::RectangularAnnulus)
-    print(io, "RectangularAnnulus($(ap.x), $(ap.y), w_in=$(ap.w_in), w_out=$(ap.w_out), h_in=$(ap.h_in), h_out=$(ap.h_out), θ=$(ap.theta)°)")
+    return print(io, "RectangularAnnulus($(ap.x), $(ap.y), w_in=$(ap.w_in), w_out=$(ap.w_out), h_in=$(ap.h_in), h_out=$(ap.h_out), θ=$(ap.theta)°)")
 end
 
 
@@ -155,14 +158,14 @@ function overlap(ap::RectangularAnnulus, i, j)
         inside_rectangle(x - 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta),
         inside_rectangle(x + 0.5, y - 0.5, ap.w_out, ap.h_out, ap.theta),
-        inside_rectangle(x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta)
+        inside_rectangle(x + 0.5, y + 0.5, ap.w_out, ap.h_out, ap.theta),
     )
 
     flags_in = (
         inside_rectangle(x - 0.5, y - 0.5, ap.w_in, ap.h_in, ap.theta),
         inside_rectangle(x - 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta),
         inside_rectangle(x + 0.5, y - 0.5, ap.w_in, ap.h_in, ap.theta),
-        inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta)
+        inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta),
     )
 
     all(flags_out) && !any(flags_in) && return Inside
@@ -192,18 +195,26 @@ function bounds(ap::RectangularAnnulus)
 end
 
 function partial(ap::RectangularAnnulus, x, y)
-    f1 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
-                                   ap.w_out, ap.h_out, ap.theta)
-    f2 = rectangular_overlap_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
-                                   ap.w_in, ap.h_in, ap.theta)
+    f1 = rectangular_overlap_exact(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        ap.w_out, ap.h_out, ap.theta
+    )
+    f2 = rectangular_overlap_exact(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        ap.w_in, ap.h_in, ap.theta
+    )
     return f1 - f2
 end
 
-function partial(sub_ap::Subpixel{T,<:RectangularAnnulus}, x, y) where T
+function partial(sub_ap::Subpixel{T, <:RectangularAnnulus}, x, y) where {T}
     ap = sub_ap.ap
-    f1 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
-                                             ap.w_out, ap.h_out, ap.theta, sub_ap.N)
-    f2 = rectangular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5,
-                                             ap.w_in, ap.h_in, ap.theta, sub_ap.N)
+    f1 = rectangular_overlap_single_subpixel(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        ap.w_out, ap.h_out, ap.theta, sub_ap.N
+    )
+    f2 = rectangular_overlap_single_subpixel(
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5,
+        ap.w_in, ap.h_in, ap.theta, sub_ap.N
+    )
     return f1 - f2
 end

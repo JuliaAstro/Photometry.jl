@@ -32,15 +32,15 @@ struct EllipticalAperture{T <: Number} <: AbstractAperture{T}
 end
 
 
-EllipticalAperture(x::Number, y::Number, a, b, theta=0) = EllipticalAperture(promote(x, y, a, b, theta)...)
-EllipticalAperture(center, a, b, theta=0) = EllipticalAperture(center..., a, b, theta)
+EllipticalAperture(x::Number, y::Number, a, b, theta = 0) = EllipticalAperture(promote(x, y, a, b, theta)...)
+EllipticalAperture(center, a, b, theta = 0) = EllipticalAperture(center..., a, b, theta)
 
 function Base.show(io::IO, e::EllipticalAperture)
-    print(io, "EllipticalAperture($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°)")
+    return print(io, "EllipticalAperture($(e.x), $(e.y), a=$(e.a), b=$(e.b), θ=$(e.theta)°)")
 end
 
 oblique_coefficients(ap::EllipticalAperture) = oblique_coefficients(ap.a, ap.b, ap.theta)
-oblique_coefficients(ap::Subpixel{T,<:EllipticalAperture}) where {T} = oblique_coefficients(ap.ap)
+oblique_coefficients(ap::Subpixel{T, <:EllipticalAperture}) where {T} = oblique_coefficients(ap.ap)
 
 function oblique_coefficients(a, b, theta)
     sintheta, costheta = sincosd(theta)
@@ -58,7 +58,7 @@ function overlap(ap::EllipticalAperture, i, j)
         inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
         inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy),
         inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, cxx, cyy, cxy),
-        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy)
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, cxx, cyy, cxy),
     )
     all(flags) && return Inside
     !any(flags) && return Outside
@@ -82,7 +82,7 @@ function elliptical_bounds(cx, cy, a, b, theta)
         xmax = max(xmax, cx + a * cost * costheta - b * sint * sintheta)
     end
 
-    t2 = atan(b * cotd(theta),  a)
+    t2 = atan(b * cotd(theta), a)
 
     sint, cost = sincos(t2)
     ymin = cy + b * sint * costheta + a * cost * sintheta
@@ -111,7 +111,7 @@ function partial(ap::EllipticalAperture, x, y)
         ap.a, ap.b, ap.theta,
     )
 end
-function partial(sub_ap::Subpixel{T,<:EllipticalAperture}, x, y) where {T}
+function partial(sub_ap::Subpixel{T, <:EllipticalAperture}, x, y) where {T}
     return elliptical_overlap_single_subpixel(
         x - 0.5, y - 0.5, x + 0.5, y + 0.5,
         oblique_coefficients(sub_ap.ap)...,
@@ -163,19 +163,19 @@ struct EllipticalAnnulus{T <: Number} <: AbstractAperture{T}
     theta::T
 end
 
-function EllipticalAnnulus(x::Number, y::Number, a_in, a_out, b_out, theta=0)
+function EllipticalAnnulus(x::Number, y::Number, a_in, a_out, b_out, theta = 0)
     return EllipticalAnnulus(
         promote(x, y, a_in, a_in / a_out * b_out, a_out, b_out, theta)...
     )
 end
-function EllipticalAnnulus(center, a_in, a_out, b_out, theta=0)
+function EllipticalAnnulus(center, a_in, a_out, b_out, theta = 0)
     return EllipticalAnnulus(
         center..., a_in, a_out, b_out, theta
     )
 end
 
 function Base.show(io::IO, e::EllipticalAnnulus)
-    print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")
+    return print(io, "EllipticalAnnulus($(e.x), $(e.y), a_in=$(e.a_in), a_out=$(e.a_out), b_in=$(e.b_in), b_out=$(e.b_out), θ=$(e.theta)°)")
 end
 
 
@@ -185,7 +185,7 @@ function overlap(ap::EllipticalAnnulus, i, j)
         inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
         inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_out...),
         inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_out...),
-        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_out...)
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_out...),
     )
 
     coeffs_in = oblique_coefficients(ap.a_in, ap.b_in, ap.theta)
@@ -193,16 +193,16 @@ function overlap(ap::EllipticalAnnulus, i, j)
         inside_ellipse(i - 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
         inside_ellipse(i - 0.5, j + 0.5, ap.x, ap.y, coeffs_in...),
         inside_ellipse(i + 0.5, j - 0.5, ap.x, ap.y, coeffs_in...),
-        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_in...)
+        inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_in...),
     )
 
-   all(flags_out) && !any(flags_in) && return Inside
-   all(flags_in) || !any(flags_out) && return Outside
+    all(flags_out) && !any(flags_in) && return Inside
+    all(flags_in) || !any(flags_out) && return Outside
 
     return Partial
 end
 
-bounds(e::EllipticalAnnulus) =  elliptical_bounds(e.x, e.y, e.a_out, e.b_out, e.theta)
+bounds(e::EllipticalAnnulus) = elliptical_bounds(e.x, e.y, e.a_out, e.b_out, e.theta)
 
 
 function partial(ap::EllipticalAnnulus, x, y)
@@ -211,7 +211,7 @@ function partial(ap::EllipticalAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(sub_ap::Subpixel{T,<:EllipticalAnnulus}, x, y) where T
+function partial(sub_ap::Subpixel{T, <:EllipticalAnnulus}, x, y) where {T}
     ap = sub_ap.ap
     coeffs_out = oblique_coefficients(ap.a_out, ap.b_out, ap.theta)
     f1 = elliptical_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, coeffs_out..., sub_ap.N)

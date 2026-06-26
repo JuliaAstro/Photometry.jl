@@ -7,8 +7,8 @@ pages = [
     "Aperture Photometry" => [
         "Getting Started" => "apertures/index.md",
         "Apertures" => "apertures/apertures.md",
-        "Examples" => "apertures/examples.md"
-    ]
+        "Examples" => "apertures/examples.md",
+    ],
 ]
 
 requiredmods = Symbol[]

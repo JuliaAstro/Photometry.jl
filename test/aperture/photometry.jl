@@ -190,11 +190,11 @@ end
         true_err = sqrt(true_flux)
 
         @test table_ex.aperture_sum ≈ true_flux
-        @test table_sub.aperture_sum ≈ table_ex.aperture_sum rtol = 1e-3
+        @test table_sub.aperture_sum ≈ table_ex.aperture_sum rtol = 1.0e-3
         @test table_cent.aperture_sum < table_ex.aperture_sum
 
         @test table_ex.aperture_sum_err ≈ true_err
-        @test table_sub.aperture_sum_err ≈ table_ex.aperture_sum_err rtol = 1e-3
+        @test table_sub.aperture_sum_err ≈ table_ex.aperture_sum_err rtol = 1.0e-3
         @test table_cent.aperture_sum_err < table_ex.aperture_sum_err
     end
 
@@ -234,11 +234,11 @@ end # photometry - circular
         true_err = sqrt(true_flux)
 
         @test table_ex.aperture_sum ≈ true_flux
-        @test table_sub.aperture_sum ≈ true_flux rtol = 1e-3
+        @test table_sub.aperture_sum ≈ true_flux rtol = 1.0e-3
         @test table_cent.aperture_sum <= table_sub.aperture_sum
 
         @test table_ex.aperture_sum_err ≈ true_err
-        @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-3
+        @test table_sub.aperture_sum_err ≈ true_err rtol = 1.0e-3
         @test table_cent.aperture_sum_err <= true_err
     end
 
@@ -262,7 +262,7 @@ end # photometry - circular
         apertures = [EllipticalAperture(positions[i, :], 5, 5) for i in axes(positions, 1)]
 
         table = photometry(Subpixel.(apertures, 128), data, error)
-        @test table.aperture_sum[1] ≈ 25π rtol = 1e-3
+        @test table.aperture_sum[1] ≈ 25π rtol = 1.0e-3
         @test all(table.aperture_sum[2:end] .< 25π)
     end
 end # photometry - elliptical
@@ -279,11 +279,11 @@ end # photometry - elliptical
         true_err = sqrt(true_flux)
 
         @test table_ex.aperture_sum ≈ true_flux
-        @test table_sub.aperture_sum ≈ true_flux rtol = 1e-2
+        @test table_sub.aperture_sum ≈ true_flux rtol = 1.0e-2
         @test table_cent.aperture_sum <= table_sub.aperture_sum
 
         @test table_ex.aperture_sum_err ≈ true_err
-        @test table_sub.aperture_sum_err ≈ true_err rtol = 1e-2
+        @test table_sub.aperture_sum_err ≈ true_err rtol = 1.0e-2
         @test table_cent.aperture_sum_err <= true_err
     end
 
@@ -306,7 +306,7 @@ end # photometry - elliptical
         apertures = [RectangularAperture(positions[i, :], 10, 10, 0) for i in axes(positions, 1)]
 
         table = photometry(Subpixel.(apertures, 64), data, error)
-        @test table.aperture_sum[1] ≈ 100 rtol = 1e-2
+        @test table.aperture_sum[1] ≈ 100 rtol = 1.0e-2
         @test all(table.aperture_sum[2:end] .< 100)
     end
 end # photometry - rectangular

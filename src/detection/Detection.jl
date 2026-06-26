@@ -29,7 +29,7 @@ propagated into the detection algorithm. If `sorted` is `true` the sources will
 be sorted by their amplitude.
 
 `error` should be `nothing` or an `AbstractArray` defining the expected error in each pixel.
-If `nothing` is provided, any local maximum is returned, including negative values. 
+If `nothing` is provided, any local maximum is returned, including negative values.
 The default is `zeros(data)`, which means only positive pixels are returned.
 
 # See Also
@@ -91,15 +91,15 @@ PeakMesh
 ```
 """
 @with_kw struct PeakMesh <: SourceFinder
-    box_size::NTuple{2,<:Integer} = (3, 3)
+    box_size::NTuple{2, <:Integer} = (3, 3)
     nsigma::Float64 = 3
-    PeakMesh(box_size::NTuple{2,<:Integer}, nsigma) = new(box_size, nsigma)
+    PeakMesh(box_size::NTuple{2, <:Integer}, nsigma) = new(box_size, nsigma)
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where T
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where {T}
     sm = findlocalmaxima(data; window = alg.box_size)
-    to_nt(ci) = (x=ci[2], y=ci[1], value=data[ci])
+    to_nt(ci) = (x = ci[2], y = ci[1], value = data[ci])
     sm = Table(map(to_nt, sm))
     if !(isnothing(error))
         threshold = (error .* alg.nsigma)

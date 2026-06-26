@@ -21,15 +21,16 @@ const APERTURES = [
 
 @testset "aperture/plotting: Aperture Plots" begin
     @testset "Aperture Plots - $(typeof(ap))" for ap in APERTURES
-        recipes = apply_recipe(Dict{Symbol,Any}(), ap)
+        recipes = apply_recipe(Dict{Symbol, Any}(), ap)
         for rec in recipes
-            @test getfield(rec, 1) == Dict{Symbol,Any}(
+            @test getfield(rec, 1) == Dict{Symbol, Any}(
                 :seriescolor => :red,
                 :fillcolor => nothing,
                 :linecolor => :match,
                 :label => "",
                 :seriestype => :shape,
-                :aspect_ratio => :equal)
+                :aspect_ratio => :equal
+            )
 
             # test to make sure our position is correct (should be +0.5 the given (x,y))
             points = rec.args[1]

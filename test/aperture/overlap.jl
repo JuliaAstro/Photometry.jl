@@ -82,10 +82,10 @@ end # circles
             numbers = parse.(Float64, tokens)
             x1, y1, x2, y2 = numbers[1:4]
             point1, point2 = circle_line(x1, y1, x2, y2)
-            @test point1[1] ≈ numbers[5] atol = 1e-6
-            @test point1[2] ≈ numbers[6] atol = 1e-6
-            @test point2[1] ≈ numbers[7] atol = 1e-6
-            @test point2[2] ≈ numbers[8] atol = 1e-6
+            @test point1[1] ≈ numbers[5] atol = 1.0e-6
+            @test point1[2] ≈ numbers[6] atol = 1.0e-6
+            @test point2[1] ≈ numbers[7] atol = 1.0e-6
+            @test point2[2] ≈ numbers[8] atol = 1.0e-6
         end
     end
 
@@ -95,10 +95,10 @@ end # circles
             numbers = parse.(Float64, tokens)
             x1, y1, x2, y2 = numbers[1:4]
             point1, point2 = circle_segment(x1, y1, x2, y2)
-            @test point1[1] ≈ numbers[5] atol = 1e-6
-            @test point1[2] ≈ numbers[6] atol = 1e-6
-            @test point2[1] ≈ numbers[7] atol = 1e-6
-            @test point2[2] ≈ numbers[8] atol = 1e-6
+            @test point1[1] ≈ numbers[5] atol = 1.0e-6
+            @test point1[2] ≈ numbers[6] atol = 1.0e-6
+            @test point2[1] ≈ numbers[7] atol = 1.0e-6
+            @test point2[2] ≈ numbers[8] atol = 1.0e-6
         end
     end
 
@@ -108,8 +108,8 @@ end # circles
             numbers = parse.(Float64, tokens)
             x1, y1, x2, y2 = numbers[1:4]
             point1 = circle_segment_single2(x1, y1, x2, y2)
-            @test point1[1] ≈ numbers[5] atol = 1e-6
-            @test point1[2] ≈ numbers[6] atol = 1e-6
+            @test point1[1] ≈ numbers[5] atol = 1.0e-6
+            @test point1[2] ≈ numbers[6] atol = 1.0e-6
         end
     end
 
@@ -118,13 +118,13 @@ end # circles
             tokens = split(line, ',')
             numbers = parse.(Float64, tokens)
             x1, y1, x2, y2, x3, y3 = numbers[1:6]
-            @test triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3) ≈ numbers[end] atol = 1e-6
+            @test triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3) ≈ numbers[end] atol = 1.0e-6
         end
     end
 
     @testset "elliptical overlap" begin
-        @test elliptical_overlap_exact(0.5, 2.5, 1.5, 3.5, 3.0, 3.0, 0) ≈ 0.311725 atol = 1e-6
-        @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.943480 atol = 1e-6
+        @test elliptical_overlap_exact(0.5, 2.5, 1.5, 3.5, 3.0, 3.0, 0) ≈ 0.311725 atol = 1.0e-6
+        @test elliptical_overlap_exact(0, 2, 1, 3, 3.0, 3.0, 0) ≈ 0.94348 atol = 1.0e-6
     end
 end # overlap elliptical
 
