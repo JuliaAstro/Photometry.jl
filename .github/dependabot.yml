@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "julia"
-    directory: "/"
+    directories: ["/", "/benchmark", "/benchmark/docs-bench", "/docs", "/test"]
     schedule:
       interval: "weekly"
     groups: # Uncomment to group all julia package updates into a single PR
