@@ -13,5 +13,5 @@ Photometry = {path = ".."}
 [compat]
 ParallelTestRunner = "2.6.2"
 RecipesBase = "1.3.4"
-Statistics = "1.11.1"
+Statistics = "1"
 StatsBase = "0.34.12"
