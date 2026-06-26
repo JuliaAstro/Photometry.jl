@@ -1,11 +1,7 @@
 #=
 Part of this work is derived from astropy/photutils and kbarbary/sep. The relevant derivations
 are considered under a BSD 3-clause license. =#
-using LazySets: area,
-                intersection,
-                Hyperrectangle,
-                LazySet,
-                VPolygon
+using LazySets: area, intersection, Hyperrectangle, LazySet, VPolygon
 
 using Rotations
 using StaticArrays
@@ -37,22 +33,32 @@ function circular_overlap_single_exact(xmin, ymin, xmax, ymax, r)
     if 0 ≤ xmin
         0 ≤ ymin && return circular_overlap_core(xmin, ymin, xmax, ymax, r)
         0 ≥ ymax && return circular_overlap_core(-ymax, xmin, -ymin, xmax, r)
-        return (circular_overlap_single_exact(xmin, ymin, xmax, 0, r) +
-                circular_overlap_single_exact(xmin, 0, xmax, ymax, r))
+        return (
+            circular_overlap_single_exact(xmin, ymin, xmax, 0, r) +
+                circular_overlap_single_exact(xmin, 0, xmax, ymax, r)
+        )
     elseif 0 ≥ xmax
         0 ≤ ymin && return circular_overlap_core(-xmax, ymin, -xmin, ymax, r)
         0 ≥ ymax && return circular_overlap_core(-xmax, -ymax, -xmin, -ymin, r)
-        return (circular_overlap_single_exact(xmin, ymin, xmax, 0, r) +
-                circular_overlap_single_exact(xmin, 0, xmax, ymax, r))
+        return (
+            circular_overlap_single_exact(xmin, ymin, xmax, 0, r) +
+                circular_overlap_single_exact(xmin, 0, xmax, ymax, r)
+        )
     else
-        0 ≤ ymin && return (circular_overlap_single_exact(xmin, ymin, 0, ymax, r) +
-                            circular_overlap_single_exact(0, ymin, xmax, ymax, r))
-        0 ≥ ymax && return (circular_overlap_single_exact(xmin, ymin, 0, ymax, r) +
-                            circular_overlap_single_exact(0, ymin, xmax, ymax, r))
-        return (circular_overlap_single_exact(xmin, ymin, 0, 0, r) +
+        0 ≤ ymin && return (
+            circular_overlap_single_exact(xmin, ymin, 0, ymax, r) +
+                circular_overlap_single_exact(0, ymin, xmax, ymax, r)
+        )
+        0 ≥ ymax && return (
+            circular_overlap_single_exact(xmin, ymin, 0, ymax, r) +
+                circular_overlap_single_exact(0, ymin, xmax, ymax, r)
+        )
+        return (
+            circular_overlap_single_exact(xmin, ymin, 0, 0, r) +
                 circular_overlap_single_exact(0, ymin, xmax, 0, r) +
                 circular_overlap_single_exact(xmin, 0, 0, ymax, r) +
-                circular_overlap_single_exact(0, 0, xmax, ymax, r))
+                circular_overlap_single_exact(0, 0, xmax, ymax, r)
+        )
     end
 end
 
@@ -67,26 +73,34 @@ function circular_overlap_core(xmin, ymin, xmax, ymax, r)
     if d1 < r && d2 < r
         x1, y1 = sqrt(r^2 - ymax^2), ymax
         x2, y2 = xmax, sqrt(r^2 - xmax^2)
-        area = ((xmax - xmin) * (ymax - ymin) -
+        area = (
+            (xmax - xmin) * (ymax - ymin) -
                 area_triangle(x1, y1, x2, y2, xmax, ymax) +
-                area_arc(x1, y1, x2, y2, r))
+                area_arc(x1, y1, x2, y2, r)
+        )
     elseif d1 < r
         x1, y1 = xmin, sqrt(r^2 - xmin^2)
         x2, y2 = xmax, sqrt(r^2 - xmax^2)
-        area = (area_arc(x1, y1, x2, y2, r) +
+        area = (
+            area_arc(x1, y1, x2, y2, r) +
                 area_triangle(x1, y1, x1, ymin, xmax, ymin) +
-                area_triangle(x1, y1, x2, ymin, x2, y2))
+                area_triangle(x1, y1, x2, ymin, x2, y2)
+        )
     elseif d2 < r
         x1, y1 = sqrt(r^2 - ymin^2), ymin
         x2, y2 = sqrt(r^2 - ymax^2), ymax
-        area = (area_arc(x1, y1, x2, y2, r) +
+        area = (
+            area_arc(x1, y1, x2, y2, r) +
                 area_triangle(x1, y1, xmin, y1, xmin, ymax) +
-                area_triangle(x1, y1, xmin, y2, x2, y2))
+                area_triangle(x1, y1, xmin, y2, x2, y2)
+        )
     else
         x1, y1 = sqrt(r^2 - ymin^2), ymin
         x2, y2 = xmin, sqrt(r^2 - xmin^2)
-        area = (area_arc(x1, y1, x2, y2, r) +
-                area_triangle(x1, y1, x2, y2, xmin, ymin))
+        area = (
+            area_arc(x1, y1, x2, y2, r) +
+                area_triangle(x1, y1, x2, y2, xmin, ymin)
+        )
     end
 
     return R(area)
@@ -141,7 +155,7 @@ General equation of ellipse:
     cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 = 1
 """
 @inline inside_ellipse(x, y, h, k, cxx, cyy, cxy) =
-    cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2  - 1 < 0
+    cxx * (x - h)^2 + cxy * (x - h) * (y - k) + cyy * (y - k)^2 - 1 < 0
 
 function elliptical_overlap_single_subpixel(xmin, ymin, xmax, ymax, cxx, cyy, cxy, subpixels)
     frac = 0
@@ -207,7 +221,7 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
     if inside[3] || on[3]
         return area_triangle(x1, y1, x2, y2, x3, y3)
 
-    # if vertex 1 or 2 are on the edge, then dot product with 3 to determine intersection
+        # if vertex 1 or 2 are on the edge, then dot product with 3 to determine intersection
     elseif inside[2] || on[2]
         intersect13 = !on[1] || x1 * (x3 - x1) + y1 * (y3 - y1) < 0
         intersect23 = !on[2] || x2 * (x3 - x2) + y2 * (y3 - y2) < 0
@@ -215,19 +229,19 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
             point1 = circle_segment_single2(x1, y1, x3, y3)
             point2 = circle_segment_single2(x2, y2, x3, y3)
 
-            return (area_triangle(x1, y1, x2, y2, point1...) +
+            return (
+                area_triangle(x1, y1, x2, y2, point1...) +
                     area_triangle(x2, y2, point1..., point2...) +
-                    area_arc(point1..., point2..., 1))
+                    area_arc(point1..., point2..., 1)
+            )
         elseif intersect13
             point1 = circle_segment_single2(x1, y1, x3, y3)
 
-            return (area_triangle(x1, y1, x2, y2, point1...) +
-                    area_arc(x2, y2, point1..., 1))
+            return area_triangle(x1, y1, x2, y2, point1...) + area_arc(x2, y2, point1..., 1)
         elseif intersect23
             point2 = circle_segment_single2(x2, y2, x3, y3)
 
-            return (area_triangle(x1, y1, x2, y2, point2...) +
-                    area_arc(x1, y1, point2..., 1))
+            return area_triangle(x1, y1, x2, y2, point2...) + area_arc(x1, y1, point2..., 1)
         else
             return area_arc(x1, y1, x2, y2, 1)
         end
@@ -240,8 +254,9 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
 
         if point1[1] > 1 # no intersection
             # check if (x1, y2) and origin are on opposite sides of segment
-            if (((0 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (0 - point3[1])) !=
-                ((y1 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (x1 - point3[1])))
+            cond1 = (0 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (0 - point3[1])
+            cond2 = (y1 - point3[2]) * (point4[1] - point3[1]) > (point4[2] - point3[2]) * (x1 - point3[1])
+            if cond1 != cond2
                 return (area_triangle(x1, y1, point3..., point4...) + π - area_arc(point3..., point4..., 1))
             else
                 return area_triangle(x1, y1, point3..., point4...) + area_arc(point3..., point4..., 1)
@@ -252,11 +267,13 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
                 point1, point2 = point2, point1
             end
 
-            return (area_triangle(x1, y1, point3..., point1...) +
+            return (
+                area_triangle(x1, y1, point3..., point1...) +
                     area_triangle(x1, y1, point1..., point2...) +
                     area_triangle(x1, y1, point2..., point4...) +
                     area_arc(point1..., point3..., 1) +
-                    area_arc(point2..., point4..., 1))
+                    area_arc(point2..., point4..., 1)
+            )
         end
     else
         point1, point2 = circle_segment(x1, y1, x2, y2)
@@ -266,18 +283,24 @@ function triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3)
         if point1[1] ≤ 1
             xp = (point1[1] + point2[1]) / 2
             yp = (point1[2] + point2[2]) / 2
-            return (triangle_unitcircle_overlap(x1, y1, x3, y3, xp, yp) +
-                    triangle_unitcircle_overlap(x2, y2, x3, y3, xp, yp))
+            return (
+                triangle_unitcircle_overlap(x1, y1, x3, y3, xp, yp) +
+                    triangle_unitcircle_overlap(x2, y2, x3, y3, xp, yp)
+            )
         elseif point3[1] ≤ 1
             xp = (point3[1] + point4[1]) / 2
             yp = (point3[2] + point4[2]) / 2
-            return (triangle_unitcircle_overlap(x3, y3, x1, y1, xp, yp) +
-                    triangle_unitcircle_overlap(x2, y2, x1, y1, xp, yp))
+            return (
+                triangle_unitcircle_overlap(x3, y3, x1, y1, xp, yp) +
+                    triangle_unitcircle_overlap(x2, y2, x1, y1, xp, yp)
+            )
         elseif point5[1] ≤ 1
             xp = (point5[1] + point6[1]) / 2
             yp = (point5[2] + point6[2]) / 2
-            return (triangle_unitcircle_overlap(x1, y1, x2, y2, xp, yp) +
-                    triangle_unitcircle_overlap(x3, y3, x2, y2, xp, yp))
+            return (
+                triangle_unitcircle_overlap(x1, y1, x2, y2, xp, yp) +
+                    triangle_unitcircle_overlap(x3, y3, x2, y2, xp, yp)
+            )
         else
             return inside_triangle(0, 0, x1, y1, x2, y2, x3, y3) ? π : 0.0
         end
@@ -288,17 +311,21 @@ end
 function circle_segment(x1, y1, x2, y2)
     point1, point2 = circle_line(x1, y1, x2, y2)
 
-    if ((point1[1] > x1 && point1[1] > x2) || (point1[1] < x1 && point1[1] < x2) ||
-        (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2))
+    if (
+            (point1[1] > x1 && point1[1] > x2) || (point1[1] < x1 && point1[1] < x2) ||
+                (point1[2] > y1 && point1[2] > y2) || (point1[2] < y1 && point1[2] < y2)
+        )
         point1 = (2.0, 2.0)
     end
 
-    if ((point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
-        (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2))
+    if (
+            (point2[1] > x1 && point2[1] > x2) || (point2[1] < x1 && point2[1] < x2) ||
+                (point2[2] > y1 && point2[2] > y2) || (point2[2] < y1 && point2[2] < y2)
+        )
         point2 = (2.0, 2.0)
     end
 
-    return point1[1] > 1 && point2[1] < 2 ?  (point1, point2) : (point2, point1)
+    return point1[1] > 1 && point2[1] < 2 ? (point1, point2) : (point2, point1)
 end
 
 # closest intersection of a line with the unit cirlce
@@ -376,8 +403,10 @@ function elliptical_overlap_exact(xmin, ymin, xmax, ymax, a, b, θ)
     x4 = (xmin * cost - ymax * sint) / a
     y4 = (xmin * sint + ymax * cost) / b
 
-    return scale * (triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3) +
-                    triangle_unitcircle_overlap(x1, y1, x4, y4, x3, y3))
+    return scale * (
+        triangle_unitcircle_overlap(x1, y1, x2, y2, x3, y3) +
+            triangle_unitcircle_overlap(x1, y1, x4, y4, x3, y3)
+    )
 end
 
 ####################################

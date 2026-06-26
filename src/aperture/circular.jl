@@ -38,7 +38,7 @@ julia> ap = CircularAperture(0, 0, 10)
  0.0        0.0       0.0         …  0.0         0.0       0.0
 ```
 """
-struct CircularAperture{T<:Number} <: AbstractAperture{T}
+struct CircularAperture{T <: Number} <: AbstractAperture{T}
     x::T
     y::T
     r::T
@@ -58,13 +58,14 @@ end
 function partial(ap::CircularAperture, x, y)
     return circular_overlap_single_exact(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r)
 end
-function partial(sub_ap::Subpixel{T,<:CircularAperture}, x, y) where {T}
+function partial(sub_ap::Subpixel{T, <:CircularAperture}, x, y) where {T}
     return circular_overlap_single_subpixel(
-        x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N)
+        x - 0.5, y - 0.5, x + 0.5, y + 0.5, sub_ap.ap.r, sub_ap.N
+    )
 end
 
 function Base.show(io::IO, c::CircularAperture)
-    print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
+    return print(io, "CircularAperture($(c.x), $(c.y), r=$(c.r))")
 end
 
 
@@ -125,7 +126,7 @@ CircularAnnulus(center, r_in, r_out) = CircularAnnulus(center..., r_in, r_out)
 CircularAnnulus(x, y, r_in, r_out) = CircularAnnulus(promote(x, y, r_in, r_out)...)
 
 function Base.show(io::IO, c::CircularAnnulus)
-    print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
+    return print(io, "CircularAnnulus($(c.x), $(c.y), r_in=$(c.r_in), r_out=$(c.r_out))")
 end
 
 
@@ -143,7 +144,7 @@ function partial(ap::CircularAnnulus, x, y)
     return f1 - f2
 end
 
-function partial(sub_ap::Subpixel{T,<:CircularAnnulus}, x, y) where T
+function partial(sub_ap::Subpixel{T, <:CircularAnnulus}, x, y) where {T}
     ap = sub_ap.ap
     f1 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_out, sub_ap.N)
     f2 = circular_overlap_single_subpixel(x - 0.5, y - 0.5, x + 0.5, y + 0.5, ap.r_in, sub_ap.N)
