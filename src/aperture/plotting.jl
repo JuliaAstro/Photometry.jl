@@ -18,7 +18,14 @@ end
 
 ellipse(ap::EllipticalAperture, θ) = ellipse(ap.x, ap.y, ap.a, ap.b, θ, ap.theta)
 
+Makie.plottype(::AbstractAperture) = Makie.Lines
 function Makie.convert_arguments(::PointBased, c::CircularAperture, npoints = 100)
+    t = range(0, 2pi, length = npoints)
+    points = Point2.(circle.((c,), t))
+    return (points,)
+end
+Makie.convert_arguments(::Type{<:Makie.AbstractPlot}, c::CircularAperture) = Makie.convert_arguments(PointBased(), c)
+function Makie.convert_arguments(::PointBased, c::CircularAnnulus, npoints = 100)
     t = range(0, 2pi, length = npoints)
     points = Point2.(circle.((c,), t))
     return (points,)

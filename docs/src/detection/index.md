@@ -6,7 +6,7 @@ The module provides tools and algorithms for detecting and extracting point-like
 
 Below are some benchmarks comparing the source detection capabilities of `Photometry.jl` with the [photutils](https://github.com/astropy/photutils) astropy package. The benchmark code can be found in the [`bench` folder](https://github.com/JuliaAstro/Photometry.jl/blob/main/bench/).
 
-```julia-repl
+```text
 Julia Version 1.12.6
 Commit 15346901f00 (2026-04-09 19:20 UTC)
 Build Info:
