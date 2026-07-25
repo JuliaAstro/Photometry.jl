@@ -21,6 +21,16 @@ fig
 
 Outlines are sampled at 101 points by default; pass a different count as a second argument (e.g. `lines!(ax, ap, 501)`) if you need finer sampling. A vector of apertures can also be plotted in a single call, as shown below.
 
+For filled overlays, pass apertures to `poly`/`poly!` instead. Annuli are rendered as polygons with a genuine hole, so a translucent fill highlights exactly the region that contributes to the photometry:
+
+```@example plot
+fig = Figure()
+ax = Axis(fig[1, 1]; aspect = DataAspect())
+poly!(ax, CircularAnnulus(5, 5, 2.1, 3); color = Cycled(2), alpha = 0.5)
+poly!(ax, EllipticalAperture(0, 0, 10, 1, 32); color = Cycled(3), alpha = 0.5)
+fig
+```
+
 ## Simple Stars
 
 Here is an example where we will find aperture fluxes for stars from M67. The dataset is provided as part of the [astropy/photutils-datasets](https://github.com/astropy/photutils-datasets) repository.

@@ -73,11 +73,37 @@ end
         nannuli = count(isannulus, MAKIE_APERTURES)
         @test count(nanpoint, points) == length(MAKIE_APERTURES) - 1 + nannuli
         @test Makie.convert_arguments(Makie.PointBased(), CircularAperture{Float64}[]) == (Point2d[],)
+
+        # npoints threads through the vector method too
+        (points,) = Makie.convert_arguments(Makie.PointBased(), MAKIE_APERTURES, 25)
+        nrings = length(MAKIE_APERTURES) + nannuli
+        @test count(!nanpoint, points) == 25 * nrings
+    end
+
+    @testset "poly conversion - $(typeof(ap))" for ap in MAKIE_APERTURES
+        (polygon,) = Makie.convert_arguments(Makie.Poly, ap)
+        @test polygon isa Makie.Polygon
+        # annuli carry the inner ring as an interior, cutting a hole in the fill
+        @test length(polygon.interiors) == (isannulus(ap) ? 1 : 0)
+
+        (polygon,) = Makie.convert_arguments(Makie.Poly, ap, 25)
+        @test length(polygon.exterior) == 25
+    end
+
+    @testset "poly conversion - vector of apertures" begin
+        (polygons,) = Makie.convert_arguments(Makie.Poly, MAKIE_APERTURES)
+        @test polygons isa Vector{<:Makie.Polygon}
+        @test length(polygons) == length(MAKIE_APERTURES)
+
+        (polygons,) = Makie.convert_arguments(Makie.Poly, MAKIE_APERTURES, 25)
+        @test all(p -> length(p.exterior) == 25, polygons)
     end
 
     @testset "Subpixel unwraps" begin
         ap = CircularAperture(3, 3, 3)
         @test Makie.convert_arguments(Makie.PointBased(), Subpixel(ap)) ==
             Makie.convert_arguments(Makie.PointBased(), ap)
+        @test Makie.convert_arguments(Makie.Poly, Subpixel(ap)) ==
+            Makie.convert_arguments(Makie.Poly, ap)
     end
 end

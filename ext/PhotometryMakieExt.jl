@@ -2,12 +2,9 @@
 Makie plotting support for apertures, mirroring the Plots recipes in
 `src/aperture/plotting.jl`: `plot`/`lines` draw an aperture's outline, annuli
 draw both rings, and a vector of apertures draws every outline in a single
-plot call. An optional trailing argument controls the number of outline
-samples, e.g. `lines(ap, 25)`.
+plot call. `poly` draws filled footprints instead, with annuli rendered as polygons with a genuine hole. An optional trailing argument controls the number of outline samples, e.g., `lines(ap, 25)` or `poly(ap, 25)`.
 
-One deliberate difference from the Plots recipes: outlines are centered on the
-aperture's own `(x, y)` rather than shifted by +0.5, matching Makie's `heatmap`
-convention of centering cell `(i, j)` at `(i, j)`.
+One deliberate difference from the Plots recipes: outlines are centered on the aperture's own `(x, y)` rather than shifted by +0.5, matching Makie's `heatmap` convention of centering cell `(i, j)` at `(i, j)`.
 """
 module PhotometryMakieExt
 
@@ -73,9 +70,27 @@ function Makie.convert_arguments(::Makie.PointBased, ap::AbstractAperture, npoin
     return (_outline(ap, npoints),)
 end
 
-function Makie.convert_arguments(::Makie.PointBased, aps::AbstractVector{<:AbstractAperture})
+function Makie.convert_arguments(::Makie.PointBased, aps::AbstractVector{<:AbstractAperture}, npoints::Integer = 101)
     isempty(aps) && return (Point2d[],)
-    return (reduce((a, b) -> vcat(a, _BREAK, b), map(_outline, aps)),)
+    return (reduce((a, b) -> vcat(a, _BREAK, b), map(ap -> _outline(ap, npoints), aps)),)
+end
+
+# Filled rendering via `poly`. Annuli become polygons with an interior ring,
+# so the hole is cut out of the fill — something the NaN-separated outline
+# path cannot express.
+_polygon(ap::AbstractAperture, n = 101) = Makie.Polygon(_outline(ap, n))
+function _polygon(ap::Union{CircularAnnulus, EllipticalAnnulus, RectangularAnnulus}, n = 101)
+    outer, inner = _rings(ap)
+    return Makie.Polygon(_outline(outer, n), [_outline(inner, n)])
+end
+_polygon(ap::Subpixel, n = 101) = _polygon(ap.ap, n)
+
+function Makie.convert_arguments(::Type{<:Makie.Poly}, ap::AbstractAperture, npoints::Integer = 101)
+    return (_polygon(ap, npoints),)
+end
+
+function Makie.convert_arguments(::Type{<:Makie.Poly}, aps::AbstractVector{<:AbstractAperture}, npoints::Integer = 101)
+    return ([_polygon(ap, npoints) for ap in aps],)
 end
 
 end
