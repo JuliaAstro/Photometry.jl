@@ -139,7 +139,7 @@ function fit_psf(img_ap)
     psf_data ./= maximum(psf_data)
 
     # Set params
-    y, x = Tuple(argmax(psf_data))
+    x, y = Tuple(argmax(psf_data))
     fwhm = 5.0
     params = (; x, y, fwhm)
 
