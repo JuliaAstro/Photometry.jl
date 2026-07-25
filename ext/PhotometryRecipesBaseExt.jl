@@ -1,4 +1,21 @@
+"""
+Legacy [Plots.jl](https://docs.juliaplots.org/) support for apertures via
+RecipesBase, kept as an extension while Plots support is phased out in favor
+of [`PhotometryMakieExt`](@ref). `plot` draws an aperture's outline as a
+`:shape` series, annuli draw both rings, and a vector of apertures draws every
+outline in a single plot call. An optional trailing argument controls the
+number of outline samples, e.g., `plot(ap, 25)`.
+
+Unlike the Makie conversions, outlines are shifted by +0.5 to match Plots'
+convention of centering `heatmap` cell `(i, j)` at `(i + 0.5, j + 0.5)`.
+"""
+module PhotometryRecipesBaseExt
+
 using RecipesBase
+using Photometry.Aperture: AbstractAperture,
+    CircularAperture, CircularAnnulus,
+    EllipticalAperture, EllipticalAnnulus,
+    RectangularAperture, RectangularAnnulus
 
 function circle(x, y, r, θ)
     u = x + r * cos(θ) + 0.5
@@ -142,4 +159,6 @@ end
             ap
         end
     end
+end
+
 end

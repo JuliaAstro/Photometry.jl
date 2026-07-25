@@ -308,6 +308,5 @@ include("circular.jl")
 include("elliptical.jl")
 include("rectangle.jl")
 include("overlap.jl")
-include("plotting.jl")
 
 end

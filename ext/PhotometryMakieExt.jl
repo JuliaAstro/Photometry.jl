@@ -1,7 +1,5 @@
 """
-Makie plotting support for apertures, mirroring the Plots recipes in
-`src/aperture/plotting.jl`: `plot`/`lines` draw an aperture's outline, annuli
-draw both rings, and a vector of apertures draws every outline in a single
+Makie plotting support for apertures, mirroring the Plots recipes in `ext/PhotometryRecipesBaseExt.jl`: `plot`/`lines` draw an aperture's outline, annuli draw both rings, and a vector of apertures draws every outline in a single
 plot call. `poly` draws filled footprints instead, with annuli rendered as polygons with a genuine hole. An optional trailing argument controls the number of outline samples, e.g., `lines(ap, 25)` or `poly(ap, 25)`.
 
 One deliberate difference from the Plots recipes: outlines are centered on the aperture's own `(x, y)` rather than shifted by +0.5, matching Makie's `heatmap` convention of centering cell `(i, j)` at `(i, j)`.
