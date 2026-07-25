@@ -1,19 +1,25 @@
 # Examples
 
 ## Plotting
-We have recipes for all our aperture types, so you can easily create overlays on your images.
+
+Loading a [Makie](https://docs.makie.org/) backend package (e.g. CairoMakie or GLMakie) alongside Photometry.jl activates a plotting extension covering all of our aperture types, so you can easily create overlays on your images. Apertures are drawn as outlines and can be passed directly to `lines`, `lines!`, and friends:
 
 ```@example plot
 using Photometry
-using Plots
+using CairoMakie
 
-plot(CircularAperture(2, 3, 4), c=1, xlims=(-1, 12), ylims=(0, 9))
-plot!(CircularAnnulus(5, 5, 2.1, 3), c=2)
-plot!(EllipticalAperture(0, 0, 10, 1, 32), c=3)
-plot!(EllipticalAnnulus(5, 5, 4, 5, 2, -32), c=4)
-plot!(RectangularAperture(0, 0, 4, 4, 4), c=5)
-plot!(RectangularAnnulus(5, 1, 3, 4, 4, 4), c=6)
+fig = Figure()
+ax = Axis(fig[1, 1]; aspect = DataAspect())
+lines!(ax, CircularAperture(2, 3, 4))
+lines!(ax, CircularAnnulus(5, 5, 2.1, 3))
+lines!(ax, EllipticalAperture(0, 0, 10, 1, 32))
+lines!(ax, EllipticalAnnulus(5, 5, 4, 5, 2, -32))
+lines!(ax, RectangularAperture(0, 0, 4, 4, 4))
+lines!(ax, RectangularAnnulus(5, 1, 3, 4, 4, 4))
+fig
 ```
+
+Outlines are sampled at 101 points by default; pass a different count as a second argument (e.g. `lines!(ax, ap, 501)`) if you need finer sampling. A vector of apertures can also be plotted in a single call, as shown below.
 
 ## Simple Stars
 
@@ -23,7 +29,7 @@ Let's start by downloading and showing our image
 
 ```@example stars
 using Photometry
-using Plots
+using CairoMakie
 using FITSIO
 
 # Load data in
@@ -31,26 +37,37 @@ url = "https://rawcdn.githack.com/astropy/photutils-datasets/8c97b4fa3a6c9e6ea07
 hdu = FITS(download(url))
 chunk = read(hdu[1], 81:155, 71:150)
 
-# Plot
-function imshow(image; kwargs...)
-    xs, ys = axes(image)
-    data = transpose(image)
-    heatmap(xs, ys, data; aspect_ratio=1, xlim=extrema(xs), ylim=extrema(ys), kwargs...)
+function imshow!(gl::GridLayout, img; height = 300, kwargs...)
+    width = height * size(img, 1) / size(img, 2)
+    ax, p = heatmap(gl[1, 1], img; axis = (; width, height, kwargs...))
+    Colorbar(gl[1, 2], p)
+    return ax, p
+end
+imshow!(gp, img; kwargs...) = imshow!(GridLayout(gp), img; kwargs...)
+
+function imshow(img; kwargs...)
+    fig = Figure()
+    ax, p = imshow!(fig.layout, img; kwargs...)
+    resize_to_layout!(fig)
+    return fig, ax, p
 end
 
-imshow(chunk)
+fig, ax, p = imshow(chunk)
+fig
 ```
+
+Makie's `heatmap` displays the first array axis along x, which matches the coordinate convention used by our apertures, so the image can be plotted as-is.
 
 Now let's add some apertures!
 
 ```@example stars
 positions = [
-    [47.5 , 67.5],
-    [29.5 , 62.5],
-    [23.5 , 48.5],
-    [17.5 , 29.5],
-    [13.25, 10.5],
-    [65.5 , 14.0]
+    [48.0 , 68.0],
+    [30.0 , 63.0],
+    [24.0 , 49.0],
+    [18.0 , 30.0],
+    [13.75, 11.0],
+    [66.0 , 14.5],
 ]
 
 radii = [3, 3, 2.7, 2, 2.7, 3]
@@ -61,8 +78,9 @@ aps = CircularAperture.(positions, radii)
 now let's plot them up
 
 ```@example stars
-imshow(chunk)
-plot!(aps, c=:white)
+fig, ax, plt = imshow(chunk)
+lines!(ax, aps; color = :white)
+fig
 ```
 
 and finally let's get our output table for the photometry
@@ -81,25 +99,25 @@ clipped = sigma_clip(chunk, 1, fill=NaN)
 # Estimate 2D spatial background using boxes of size (5, 5)
 bkg, bkg_rms = estimate_background(clipped, 5)
 
-plot(
-    imshow(chunk, title="Original"),
-    imshow(clipped, title="Sigma-Clipped"),
-    imshow(bkg, title="Background"),
-    imshow(bkg_rms, title="Background RMS");
-    layout=(2, 2), size=(600, 600), ticks=false
-)
+fig = Figure()
+imshow!(fig[1, 1], chunk; title = "Original")
+imshow!(fig[1, 2], clipped; title = "Sigma-Clipped")
+imshow!(fig[2, 1], bkg; title = "Background")
+imshow!(fig[2, 2], bkg_rms; title = "Background RMS")
+resize_to_layout!(fig)
+fig
 ```
 
 Now, using the same apertures, let's find the output using the background-subtracted image
 
 ```@example stars
-plot(
-    imshow(chunk, title="Original"),
-    imshow(chunk .- bkg, title="Subtracted");
-    layout=2, size=(600, 260), ticks=false, colorbar=false
-)
-plot!(aps, c=:white, subplot=1)
-plot!(aps, c=:white, subplot=2)
+fig = Figure()
+ax1, _ = imshow!(fig[1, 1], chunk; title = "Original")
+ax2, _ = imshow!(fig[1, 2], chunk .- bkg; title = "Subtracted")
+lines!(ax1, aps; color = :white)
+lines!(ax2, aps; color = :white)
+resize_to_layout!(fig)
+fig
 ```
 
 ```@example stars
