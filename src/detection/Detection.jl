@@ -97,7 +97,7 @@ PeakMesh
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where {T}
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data); sort = true) where {T}
     sm = findlocalmaxima(data; window = alg.box_size)
     to_nt(ci) = (x = ci[1], y = ci[2], value = data[ci])
     sm = Table(map(to_nt, sm))

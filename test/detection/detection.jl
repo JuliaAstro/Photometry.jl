@@ -28,12 +28,12 @@ end
     # x indexes the first array axis and y the second, matching the coordinate
     # convention of the aperture types
     data = zeros(20, 30)
-    data[10, 3] = 5.0
-    data[4, 27] = 3.0
+    data[10, 3] = 3.0
+    data[4, 27] = 5.0
 
     table = extract_sources(PeakMesh(), data)
-    @test table.x == [10, 4]
-    @test table.y == [3, 27]
+    @test table.x == [4, 10]
+    @test table.y == [27, 3]
     @test table.value == [5.0, 3.0]
 
     # detected positions feed directly into apertures: the flux is exactly
@@ -41,13 +41,17 @@ end
     fluxes = photometry(CircularAperture.(table.x, table.y, 2.0), data).aperture_sum
     @test fluxes ≈ table.value
 
+    # sort is a keyword; without it rows come in array (column-major) order
+    unsorted = extract_sources(PeakMesh(), data; sort = false)
+    @test unsorted.value == [3.0, 5.0]
+
     # threshold filtering on a non-square image (regression: the filter used
     # to index the error array transposed, which errored or silently compared
     # against the wrong pixel)
     errs = ones(size(data))
     filtered = extract_sources(PeakMesh(nsigma = 4.0), data, errs)
-    @test filtered.x == [10]
-    @test filtered.y == [3]
+    @test filtered.x == [4]
+    @test filtered.y == [27]
     @test filtered.value == [5.0]
 end
 
