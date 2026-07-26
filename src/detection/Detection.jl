@@ -21,7 +21,7 @@ abstract type SourceFinder end
 Uses `method` to find and extract point-like sources.
 
 Returns a `TypedTables.Table` with positions and information related to the
-`method`. For instance, using `PeakMesh` returns a table a column for the peak
+`method`. For instance, using `PeakMesh` returns a table column for the peak
 values. The returned `x`/`y` positions index the first/second axis of `data` respectively, following the same coordinate convention as the aperture types. This allows for detected sources to be passed directly to the aperture constructors, e.g., `CircularAperture.(sources.x, sources.y, r)`.
 
 `data` is assumed to be background-subtracted. If `error` is provided it will be
