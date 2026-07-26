@@ -15,7 +15,6 @@ Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
@@ -24,6 +23,14 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
+[weakdeps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[extensions]
+PhotometryMakieExt = "Makie"
+PhotometryRecipesBaseExt = "RecipesBase"
+
 [compat]
 BackgroundMeshes = "0.1.0"
 FillArrays = "1"
@@ -31,6 +38,7 @@ ImageFiltering = "0.6,0.7"
 ImageTransformations = "0.8,0.9,0.10"
 Interpolations = "0.14.2 - 0.15, 0.15, 0.16"
 LazySets = "2, 3, 4, 5, 6"
+Makie = "0.24.10, 0.25"
 NearestNeighbors = "0.4"
 Parameters = "0.12, 0.13"
 RecipesBase = "1"
