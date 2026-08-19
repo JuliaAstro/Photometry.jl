@@ -16,16 +16,16 @@ abstract type SourceFinder end
 
 
 """
-    extract_sources(::SourceFinder, data, [error]; sorted=true)
+    extract_sources(::SourceFinder, data, [error]; sort=true)
 
 Uses `method` to find and extract point-like sources.
 
 Returns a `TypedTables.Table` with positions and information related to the
-`method`. For instance, using `PeakMesh` returns a table a column for the peak
-values.
+`method`. For instance, using `PeakMesh` returns a table column for the peak
+values. The returned `x`/`y` positions index the first/second axis of `data` respectively, following the same coordinate convention as the aperture types. This allows for detected sources to be passed directly to the aperture constructors, e.g., `CircularAperture.(sources.x, sources.y, r)`.
 
 `data` is assumed to be background-subtracted. If `error` is provided it will be
-propagated into the detection algorithm. If `sorted` is `true` the sources will
+propagated into the detection algorithm. If `sort` is `true` the sources will
 be sorted by their amplitude.
 
 `error` should be `nothing` or an `AbstractArray` defining the expected error in each pixel.
@@ -48,23 +48,23 @@ julia> sources = extract_sources(pm, data)
 Table with 3 columns and 86004 rows:
       x     y     value
     ┌─────────────────────
- 1  │ 1120  1285  1.0
- 2  │ 1751  845   1.0
- 3  │ 1670  506   1.0
- 4  │ 1792  666   1.0
- 5  │ 314   1456  0.999999
- 6  │ 1723  432   0.999999
- 7  │ 209   322   0.999999
- 8  │ 1872  334   0.999999
- 9  │ 940   1269  0.999999
- 10 │ 1624  493   0.999998
- 11 │ 436   1202  0.999998
- 12 │ 363   107   0.999998
- 13 │ 1355  617   0.999998
- 14 │ 1355  179   0.999998
- 15 │ 1916  165   0.999997
- 16 │ 931   1963  0.999997
- 17 │ 1246  215   0.999996
+ 1  │ 1285  1120  1.0
+ 2  │ 845   1751  1.0
+ 3  │ 506   1670  1.0
+ 4  │ 666   1792  1.0
+ 5  │ 1456  314   0.999999
+ 6  │ 432   1723  0.999999
+ 7  │ 322   209   0.999999
+ 8  │ 334   1872  0.999999
+ 9  │ 1269  940   0.999999
+ 10 │ 493   1624  0.999998
+ 11 │ 1202  436   0.999998
+ 12 │ 107   363   0.999998
+ 13 │ 617   1355  0.999998
+ 14 │ 179   1355  0.999998
+ 15 │ 165   1916  0.999997
+ 16 │ 1963  931   0.999997
+ 17 │ 215   1246  0.999996
  ⋮  │  ⋮     ⋮       ⋮
 ```
 """
@@ -97,13 +97,13 @@ PeakMesh
     PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data), sort = true) where {T}
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data); sort = true) where {T}
     sm = findlocalmaxima(data; window = alg.box_size)
-    to_nt(ci) = (x = ci[2], y = ci[1], value = data[ci])
+    to_nt(ci) = (x = ci[1], y = ci[2], value = data[ci])
     sm = Table(map(to_nt, sm))
     if !(isnothing(error))
         threshold = (error .* alg.nsigma)
-        sm = filter(row -> row.value > threshold[row.y, row.x], sm)
+        sm = filter(row -> row.value > threshold[row.x, row.y], sm)
     end
     sort && sort!(sm, by = row -> row.value, rev = true)
     return sm
