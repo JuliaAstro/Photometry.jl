@@ -8,4 +8,5 @@ StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 [compat]
 BenchmarkTools = "1.8.0"
 PrettyTables = "3.3.2"
+Random = "< 0.0.1, 1"
 StableRNGs = "1.0.4"
