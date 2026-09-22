@@ -41,18 +41,22 @@ end
     fluxes = photometry(CircularAperture.(table.x, table.y, 2.0), data).aperture_sum
     @test fluxes ≈ table.value
 
-    # sort is a keyword; without it rows come in array (column-major) order
+    # sort is a keyword; with sort = false rows come in array (column-major) order
     unsorted = extract_sources(PeakMesh(), data; sort = false)
     @test unsorted.value == [3.0, 5.0]
 
-    # threshold filtering on a non-square image (regression: the filter used
-    # to index the error array transposed, which errored or silently compared
-    # against the wrong pixel)
-    errs = ones(size(data))
-    filtered = extract_sources(PeakMesh(nsigma = 4.0), data, errs)
-    @test filtered.x == [4]
-    @test filtered.y == [27]
-    @test filtered.value == [5.0]
+    # the error map is looked up with the same x/y convention as the returned
+    # positions. A non-uniform map on a square image catches a transposed but
+    # in-bounds lookup, which a uniform map or a non-square image cannot.
+    square = zeros(30, 30)
+    square[10, 3] = 3.0
+    square[4, 27] = 5.0
+    errs = zeros(size(square))
+    errs[4, 27] = 2.0 # threshold 8 at the bright peak, 0 at its transpose
+    filtered = extract_sources(PeakMesh(nsigma = 4.0), square, errs)
+    @test filtered.x == [10]
+    @test filtered.y == [3]
+    @test filtered.value == [3.0]
 end
 
 @testset "detection/Detection: interface" begin
