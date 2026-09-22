@@ -109,7 +109,7 @@ center(ap::AbstractAperture) = ap.x, ap.y # greedy
 """
     size(::AbstractAperture)
 
-Return (`ny`, `nx`) of the aperture.
+Return (`nx`, `ny`) of the aperture.
 """
 function Base.size(ap::AbstractAperture)
     xmin, xmax, ymin, ymax = bounds(ap)

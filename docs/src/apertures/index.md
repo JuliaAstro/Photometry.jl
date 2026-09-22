@@ -37,6 +37,11 @@ The majority of the lifting is done with the [`photometry`](@ref) function with 
 
 `Photometry.jl` follows the same convention as FITS, WCS, IRAF, DS9, and SourceExtractor with `(1, 1)` being the _center_ on the bottom-left pixel. This means the exact bottom-left corner is at `(0.5, 0.5)`. Pixels increase up and to the right until `axis_length + 0.5`.
 
+A position `(x, y)` refers to the array element `data[x, y]`: `x` indexes the first array axis and `y` the second. Aperture shapes follow the same rule: widths and semi-major axes (`w`, `a`) lie along `x` and heights and semi-minor axes (`h`, `b`) along `y` when `θ = 0`, and `θ` is measured in degrees from the `+x` axis towards `+y`. [`extract_sources`](@ref) reports positions in this convention too, so detected sources can be passed straight to the aperture constructors.
+
+!!! note "Plotting"
+    Makie's `heatmap` displays the first array axis horizontally, so an image and its apertures line up when plotted as-is.
+
 
 ## API/Reference
 
