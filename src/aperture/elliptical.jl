@@ -13,14 +13,14 @@ counter-clockwise the standard x-axis.
 # Examples
 ```jldoctest
 julia> ap = EllipticalAperture(0, 0, 4, 2, 35)
-7×5 EllipticalAperture{Int64} with indices -3:3×-2:2:
- 0.873382  0.844185  0.324917  0.0       0.0
- 1.0       1.0       0.997821  0.435284  0.0
- 1.0       1.0       1.0       0.990119  0.23968
- 0.796137  1.0       1.0       1.0       0.796137
- 0.23968   0.990119  1.0       1.0       1.0
- 0.0       0.435284  0.997821  1.0       1.0
- 0.0       0.0       0.324917  0.844185  0.873382
+7×7 EllipticalAperture{Int64} with indices -3:3×-3:3:
+ 0.0947821    0.873382  0.844185  0.324917  0.0       0.0       0.0
+ 0.304363     1.0       1.0       0.997821  0.435284  0.0       0.0
+ 0.165428     1.0       1.0       1.0       0.990119  0.23968   0.0
+ 0.000272966  0.796137  1.0       1.0       1.0       0.796137  0.000272966
+ 0.0          0.23968   0.990119  1.0       1.0       1.0       0.165428
+ 0.0          0.0       0.435284  0.997821  1.0       1.0       0.304363
+ 0.0          0.0       0.0       0.324917  0.844185  0.873382  0.0947821
 ```
 """
 struct EllipticalAperture{T <: Number} <: AbstractAperture{T}
@@ -67,38 +67,16 @@ function overlap(ap::EllipticalAperture, i, j)
 end
 
 function elliptical_bounds(cx, cy, a, b, theta)
-    iszero(a) && return cx, cx, cy, cy
     sintheta, costheta = sincosd(theta)
-
-    t = atan(-b * tand(theta), a)
-
-    sint, cost = sincos(t)
-    xmin = cx + a * cost * costheta - b * sint * sintheta
-    xmax = xmin
-
-    for n in -2:2
-        sint, cost = sincos(t + n * pi)
-        xmin = min(xmin, cx + a * cost * costheta - b * sint * sintheta)
-        xmax = max(xmax, cx + a * cost * costheta - b * sint * sintheta)
-    end
-
-    t2 = atan(b * cotd(theta), a)
-
-    sint, cost = sincos(t2)
-    ymin = cy + b * sint * costheta + a * cost * sintheta
-    ymax = ymin
-
-    for n in -2:2
-        sint, cost = sincos(t2 + n * pi)
-        ymin = min(ymin, cy + b * sint * costheta + a * cost * sintheta)
-        ymax = max(ymax, cy + b * sint * costheta + a * cost * sintheta)
-    end
-
-    xmin = ceil(Int, xmin)
-    xmax = floor(Int, xmax)
-    ymin = ceil(Int, ymin)
-    ymax = floor(Int, ymax)
-
+    # half-extents of the rotated ellipse along the x and y axes
+    dx = sqrt((a * costheta)^2 + (b * sintheta)^2)
+    dy = sqrt((a * sintheta)^2 + (b * costheta)^2)
+    # pixel i covers [i - 0.5, i + 0.5], so round the extents to the outermost
+    # pixels whose area the ellipse touches (as for the other apertures)
+    xmin = ceil(Int, cx - dx - 0.5)
+    xmax = ceil(Int, cx + dx - 0.5)
+    ymin = ceil(Int, cy - dy - 0.5)
+    ymax = ceil(Int, cy + dy - 0.5)
     return xmin, xmax, ymin, ymax
 end
 
@@ -135,22 +113,24 @@ this may cause a type instability.
 # Examples
 ```jldoctest
 julia> ap = EllipticalAnnulus(0, 0, 4, 10, 5, 45)
-15×15 EllipticalAnnulus{Float64} with indices -7:7×-7:7:
- 0.594853   1.0       1.0       1.0         …  0.0       0.0       0.0
- 1.0        1.0       1.0       1.0            0.0       0.0       0.0
- 1.0        1.0       1.0       1.0            0.0       0.0       0.0
- 1.0        1.0       1.0       1.0            0.0       0.0       0.0
- 1.0        1.0       1.0       1.0            0.0       0.0       0.0
- 0.814163   1.0       1.0       1.0         …  0.414163  0.0       0.0
- 0.369432   1.0       1.0       1.0            0.975704  0.193728  0.0
- 0.0112571  0.809079  1.0       1.0            1.0       0.809079  0.0112571
- 0.0        0.193728  0.975704  1.0            1.0       1.0       0.369432
- 0.0        0.0       0.414163  1.0            1.0       1.0       0.814163
- 0.0        0.0       0.0       0.546165    …  1.0       1.0       1.0
- 0.0        0.0       0.0       0.00252321     1.0       1.0       1.0
- 0.0        0.0       0.0       0.0            1.0       1.0       1.0
- 0.0        0.0       0.0       0.0            1.0       1.0       1.0
- 0.0        0.0       0.0       0.0            1.0       1.0       0.594853
+17×17 EllipticalAnnulus{Float64} with indices -8:8×-8:8:
+ 0.0       0.0        0.202807  0.389868  …  0.0       0.0        0.0
+ 0.0       0.594853   1.0       1.0          0.0       0.0        0.0
+ 0.202807  1.0        1.0       1.0          0.0       0.0        0.0
+ 0.389868  1.0        1.0       1.0          0.0       0.0        0.0
+ 0.348688  1.0        1.0       1.0          0.0       0.0        0.0
+ 0.146165  1.0        1.0       1.0       …  0.0       0.0        0.0
+ 0.0       0.814163   1.0       1.0          0.0       0.0        0.0
+ 0.0       0.369432   1.0       1.0          0.193728  0.0        0.0
+ 0.0       0.0112571  0.809079  1.0          0.809079  0.0112571  0.0
+ 0.0       0.0        0.193728  0.975704     1.0       0.369432   0.0
+ 0.0       0.0        0.0       0.414163  …  1.0       0.814163   0.0
+ 0.0       0.0        0.0       0.0          1.0       1.0        0.146165
+ 0.0       0.0        0.0       0.0          1.0       1.0        0.348688
+ 0.0       0.0        0.0       0.0          1.0       1.0        0.389868
+ 0.0       0.0        0.0       0.0          1.0       1.0        0.202807
+ 0.0       0.0        0.0       0.0       …  1.0       0.594853   0.0
+ 0.0       0.0        0.0       0.0          0.202807  0.0        0.0
 ```
 """
 struct EllipticalAnnulus{T <: Number} <: AbstractAperture{T}

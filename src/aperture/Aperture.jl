@@ -187,9 +187,19 @@ function Base.getindex(ap::AbstractAperture{T}, idx::Vararg{Int, 2}) where {T}
     return partial(ap, i - cx, j - cy)
 end
 
-# This bypasses checking aperture axes for broadcasting
-Broadcast.combine_axes(ap::AbstractAperture, arrs...) = Broadcast.combine_axes(arrs...)
-Broadcast.combine_axes(arr, ap::AbstractAperture) = axes(arr)
+# Apertures are lazily defined at every index (zero outside their bounds), so
+# broadcasting takes its shape from the other arguments; the apertures' own axes
+# only apply when nothing else has a shape (a lone aperture, or scalars).
+Broadcast.combine_axes(ap::AbstractAperture) = axes(ap)
+Broadcast.combine_axes(ap::AbstractAperture, args...) = _combine_axes(ap, args...)
+Broadcast.combine_axes(arg, ap::AbstractAperture, args...) = _combine_axes(arg, ap, args...)
+Broadcast.combine_axes(ap::AbstractAperture, ap2::AbstractAperture, args...) = _combine_axes(ap, ap2, args...)
+function _combine_axes(args...)
+    others = filter(arg -> !(arg isa AbstractAperture), args)
+    shape = isempty(others) ? () : Broadcast.combine_axes(others...)
+    isempty(shape) || return shape
+    return Broadcast.broadcast_shape(map(axes, filter(arg -> arg isa AbstractAperture, args))...)
+end
 
 ###########
 
@@ -207,7 +217,10 @@ struct WeightedApertureCutout{T, AP, D, I, F} <: AbstractMatrix{T}
 end
 
 function WeightedApertureCutout(ap::AbstractAperture, data::AbstractMatrix, idxs::Tuple, f = *)
-    T = Base.promote_op(f, eltype(ap), eltype(data))
+    # aperture weights are floating point whatever the type of the aperture
+    # parameters (see `getindex`), so an integer aperture must not give an
+    # integer cutout
+    T = Base.promote_op(f, float(eltype(ap)), eltype(data))
     return WeightedApertureCutout{T, typeof(ap), typeof(data), typeof(idxs), typeof(f)}(ap, data, idxs, f)
 end
 
@@ -295,13 +308,26 @@ function photometry(ap::AbstractAperture, data::AbstractMatrix; f = sum)
 end
 
 function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix, error; f = sum)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data, error; f)))
-    return Table(rows)
+    photom(ap) = photometry(ap, data, error; f)
+    return isempty(aps) ? _empty_table(photom, aps) : Table(tcollect(aps |> Map(photom)))
 end
 
 function photometry(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f = sum)
-    rows = tcollect(aps |> Map(ap -> photometry(ap, data; f)))
-    return Table(rows)
+    photom(ap) = photometry(ap, data; f)
+    return isempty(aps) ? _empty_table(photom, aps) : Table(tcollect(aps |> Map(photom)))
+end
+
+# `tcollect` of an empty collection yields an `Empty` placeholder that `Table`
+# cannot build columns from, so the empty table is built from the row type that
+# `map` infers instead. Only the column names are guaranteed to infer, since `f`
+# may return different types inside and outside `data`; the column types are
+# left as `Any` when they do not.
+function _empty_table(photom, aps)
+    R = eltype(map(photom, aps))
+    R <: NamedTuple || throw(ArgumentError("cannot determine the table columns for an empty vector of apertures of type $(eltype(aps))"))
+    names = fieldnames(R)
+    types = R isa DataType ? fieldtypes(R) : ntuple(_ -> Any, length(names))
+    return Table(NamedTuple{names}(map(T -> T[], types)))
 end
 
 include("circular.jl")

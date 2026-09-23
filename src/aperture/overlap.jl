@@ -437,7 +437,7 @@ end
 """intersection with rectangular using implicit Lamé curve"""
 function inside_rectangle(x, y, w, h, θ)
     # transform into frame of rectangle
-    u, v = RotMatrix{2}(θ) \ SA[x, y]
+    u, v = RotMatrix{2}(deg2rad(θ)) \ SA[x, y]
     return abs(u) < w / 2 && abs(v) < h / 2
 end
 

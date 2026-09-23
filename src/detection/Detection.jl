@@ -18,11 +18,12 @@ abstract type SourceFinder end
 """
     extract_sources(::SourceFinder, data, [error]; sort=true)
 
-Uses `method` to find and extract point-like sources.
+Find and extract point-like sources in `data` using the given
+[`Detection.SourceFinder`](@ref) algorithm.
 
-Returns a `TypedTables.Table` with positions and information related to the
-`method`. For instance, using `PeakMesh` returns a table column for the peak
-values.
+Returns a `TypedTables.Table` with the positions of the sources and any
+information specific to the algorithm. For instance, [`PeakMesh`](@ref) adds a
+`value` column with the peak values.
 
 The returned `x`/`y` positions index the first/second axis of `data`
 respectively, following the [Pixel Convention](@ref) shared with the aperture
@@ -33,9 +34,10 @@ constructors, e.g., `CircularAperture.(sources.x, sources.y, r)`.
 propagated into the detection algorithm. If `sort` is `true` the sources will
 be sorted by their amplitude, otherwise they are returned in array (column-major) order.
 
-`error` should be `nothing` or an `AbstractArray` defining the expected error in each pixel.
-If `nothing` is provided, any local maximum is returned, including negative values.
-The default is `zeros(data)`, which means only positive pixels are returned.
+`error` should be `nothing` or an `AbstractArray` with the same axes as `data`
+defining the expected error in each pixel. If `nothing` is provided, any local
+maximum is returned, including negative values. The default is a lazy array of
+zeros (`FillArrays.Zeros`), which means only positive pixels are returned.
 
 # See Also
 * [Source Detection Algorithms](@ref)
@@ -63,13 +65,20 @@ extract_sources
 """
     PeakMesh(box_size=(3, 3), nsigma=3.0)
 
-Detect sources by finding peaks above a threshold in grids across the image.
+Detect sources as local peaks above a threshold.
 
-This creates a pixel-wise threshold for sources by calculating `error * nsigma`
-when used with [`extract_sources`](@ref).
-The peaks are found by searching the image in boxes of size `box_size`. If the
-maximum value in that box is greater than the threshold set above, the point is
-extracted.
+A pixel is extracted when it is a strict local maximum within the box of size
+`box_size` centered on it, and its value is greater than the pixel-wise
+threshold `error * nsigma` computed in [`extract_sources`](@ref).
+
+`box_size` is the box size along `x` and `y` (the first and second array axes);
+a single integer gives a square box. Sizes must be positive, and an even size
+is rounded up to the next odd size so that the box stays centered on the pixel.
+
+!!! note
+    Only strict local maxima are extracted. A plateau of equal-valued pixels,
+    e.g. a saturated or clipped star core, has no strict maximum and is skipped,
+    as is any pixel with a `NaN` neighbour.
 
 # Example
 ```jldoctest
@@ -80,20 +89,24 @@ PeakMesh
 ```
 """
 @with_kw struct PeakMesh <: SourceFinder
-    box_size::NTuple{2, <:Integer} = (3, 3)
+    box_size::NTuple{2, Int} = (3, 3)
     nsigma::Float64 = 3
-    PeakMesh(box_size::NTuple{2, <:Integer}, nsigma) = new(box_size, nsigma)
-    PeakMesh(box_size::Integer, nsigma) = new((box_size, box_size), nsigma)
+    function PeakMesh(box_size::Tuple{Integer, Integer}, nsigma)
+        all(>=(1), box_size) || throw(ArgumentError("box_size must be positive, got $box_size"))
+        return new(Int.(box_size), nsigma)
+    end
+    PeakMesh(box_size::Integer, nsigma) = PeakMesh((box_size, box_size), nsigma)
 end
 
-function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros(data); sort = true) where {T}
+function extract_sources(alg::PeakMesh, data::AbstractMatrix{T}, error = Zeros{T}(axes(data)); sort = true) where {T}
     peaks = findlocalmaxima(data; window = alg.box_size)
     if !isnothing(error)
+        axes(error) == axes(data) || throw(DimensionMismatch("`error` must have the same axes as `data`, got $(axes(error)) and $(axes(data))"))
         filter!(ci -> data[ci] > alg.nsigma * error[ci], peaks)
     end
     # x indexes the first array axis and y the second (see the Pixel Convention).
     # Keep this the only place that maps between array axes and x/y.
-    sm = Table(map(ci -> (x = ci[1], y = ci[2], value = data[ci]), peaks))
+    sm = Table(x = map(ci -> ci[1], peaks), y = map(ci -> ci[2], peaks), value = data[peaks])
     sort && sort!(sm, by = row -> row.value, rev = true)
     return sm
 end

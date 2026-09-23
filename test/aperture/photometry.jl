@@ -310,3 +310,61 @@ end # photometry - elliptical
         @test all(table.aperture_sum[2:end] .< 100)
     end
 end # photometry - rectangular
+
+@testset "aperture/Aperture: empty aperture list" begin
+    # a blank frame in a detection -> photometry pipeline yields no apertures;
+    # the result is an empty table with the usual columns rather than an error
+    data = ones(10, 10)
+    err = ones(10, 10)
+    aps = CircularAperture{Float64}[]
+
+    for (table, names) in (
+            (photometry(aps, data), (:xcenter, :ycenter, :aperture_sum)),
+            (photometry(aps, data; f = maximum), (:xcenter, :ycenter, :aperture_sum, :aperture_f)),
+            (photometry(aps, data, err), (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err)),
+            (photometry(aps, data, err; f = maximum), (:xcenter, :ycenter, :aperture_sum, :aperture_sum_err, :aperture_f)),
+            (photometry(aps, data; f = collect), (:xcenter, :ycenter, :aperture_sum, :aperture_f)),
+        )
+        @test length(table) == 0
+        @test propertynames(table) == names
+    end
+    @test eltype(photometry(aps, data).aperture_sum) == Float64
+end
+
+@testset "aperture/Aperture: integer apertures" begin
+    # aperture weights are floating point even when the aperture parameters and
+    # the data are integers, e.g. positions straight from `extract_sources`
+    data = fill(7, 30, 30)
+    ap = CircularAperture(10, 12, 3)
+    cutout = photometry(ap, data; f = collect).aperture_f
+    @test eltype(cutout) == Float64
+    @test sum(cutout) ≈ photometry(ap, data).aperture_sum ≈ 7 * 9π
+    @test photometry([ap], data; f = collect).aperture_f[1] == cutout
+end
+
+@testset "aperture/Aperture: broadcasting" begin
+    ap = CircularAperture(3, 3, 2.5) # axes 1:5 × 1:5
+    data = ones(5, 7)
+
+    # with an array the array's axes win, whatever the aperture's bounds
+    @test axes(ap .* data) == axes(data)
+    @test ap .* data == [ap[i, j] for i in 1:5, j in 1:7]
+    @test data .* ap == ap .* data
+    @test (+).(data, ap, ap) == 1 .+ 2 .* (ap .* data)
+    @test (@inferred Base.Broadcast.combine_axes(ap, data)) == axes(data)
+
+    # alone or with scalars, the aperture's own axes apply
+    @test axes(sqrt.(ap)) == axes(ap)
+    @test sqrt.(ap) == sqrt.(collect(ap))
+    @test axes(ap .* 2) == axes(ap)
+    @test ap .* 2 == 2 .* ap == 2 .* collect(ap)
+    @test (@inferred Base.Broadcast.combine_axes(ap, 2)) == axes(ap)
+
+    # two apertures broadcast like any two arrays
+    same = CircularAperture(3, 3, 2.4) # also 1:5 × 1:5
+    @test axes(ap .* same) == axes(ap)
+    @test ap .* same == collect(ap) .* collect(same)
+    @test (+).(ap, 1, same) == collect(ap) .+ 1 .+ collect(same)
+    @test_throws DimensionMismatch ap .* CircularAperture(3, 3, 1.5) # 2:4 × 2:4
+    @test data .* ap .* same == (ap .* data) .* same
+end

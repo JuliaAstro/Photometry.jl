@@ -1,8 +1,10 @@
 using Photometry.Aperture:
     RectangularAperture,
     RectangularAnnulus,
+    Subpixel,
     bounds,
-    center
+    center,
+    photometry
 
 @testset "aperture/rectangular: Apertures" begin
     ap_rect = RectangularAperture(50, 40, 10, 10, 0)
@@ -30,4 +32,17 @@ end
     ap1 = RectangularAnnulus(0, 0, 1, 1, 1, 0)
     @test center(ap1) == (0, 0)
     @test sprint(show, ap1) == "RectangularAnnulus(0.0, 0.0, w_in=1.0, w_out=1.0, h_in=1.0, h_out=1.0, θ=0.0°)"
+end
+
+@testset "aperture/rectangular: rotated apertures" begin
+    # the area is independent of the position angle, and the bounding box
+    # covers every pixel the aperture touches
+    data = ones(80, 80)
+    for θ in -30:5:180
+        ap = RectangularAperture(40.0, 40.0, 9, 3, θ)
+        @test photometry(ap, data).aperture_sum ≈ 27
+        @test sum(ap) ≈ photometry(ap, data).aperture_sum
+    end
+    ap = RectangularAperture(40.0, 40.0, 9, 3, 25)
+    @test photometry(Subpixel(ap, 50), data).aperture_sum ≈ 27 rtol = 1.0e-2
 end
