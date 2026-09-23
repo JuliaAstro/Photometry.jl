@@ -42,6 +42,11 @@ end
         ap = RectangularAperture(40.0, 40.0, 9, 3, θ)
         @test photometry(ap, data).aperture_sum ≈ 27
         @test sum(ap) ≈ photometry(ap, data).aperture_sum
+
+        # a corner of the inner rectangle can enter a pixel between two of its corners
+        ann = RectangularAnnulus(40.0, 40.0, 5, 9, 3, θ) # h_in = 5/3
+        @test photometry(ann, data).aperture_sum ≈ 27 - 5 * 5 / 3
+        @test sum(ann) ≈ photometry(ann, data).aperture_sum
     end
     ap = RectangularAperture(40.0, 40.0, 9, 3, 25)
     @test photometry(Subpixel(ap, 50), data).aperture_sum ≈ 27 rtol = 1.0e-2

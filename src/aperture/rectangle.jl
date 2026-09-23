@@ -48,25 +48,26 @@ function Base.show(io::IO, ap::RectangularAperture)
     return print(io, "RectangularAperture($(ap.x), $(ap.y), w=$(ap.w), h=$(ap.h), θ=$(ap.theta)°)")
 end
 
-function bounds(ap::RectangularAperture)
-    w2 = ap.w / 2
-    h2 = ap.h / 2
-    sint, cost = sincos(deg2rad(ap.theta))
+# half-extents of a rotated rectangle along the x and y axes
+function rectangular_extent(w, h, theta)
+    w2 = w / 2
+    h2 = h / 2
+    sint, cost = sincos(deg2rad(theta))
+    dx = max(abs(w2 * cost - h2 * sint), abs(w2 * cost + h2 * sint))
+    dy = max(abs(w2 * sint + h2 * cost), abs(w2 * sint - h2 * cost))
+    return dx, dy
+end
 
-    dx1 = abs(w2 * cost - h2 * sint)
-    dy1 = abs(w2 * sint + h2 * cost)
-    dx2 = abs(w2 * cost + h2 * sint)
-    dy2 = abs(w2 * sint - h2 * cost)
-
-    dx = max(dx1, dx2)
-    dy = max(dy1, dy2)
-
-    xmin = ceil(Int, ap.x - dx - 0.5)
-    ymin = ceil(Int, ap.y - dy - 0.5)
-    xmax = ceil(Int, ap.x + dx - 0.5)
-    ymax = ceil(Int, ap.y + dy - 0.5)
+function rectangular_bounds(cx, cy, w, h, theta)
+    dx, dy = rectangular_extent(w, h, theta)
+    xmin = ceil(Int, cx - dx - 0.5)
+    ymin = ceil(Int, cy - dy - 0.5)
+    xmax = ceil(Int, cx + dx - 0.5)
+    ymax = ceil(Int, cy + dy - 0.5)
     return xmin, xmax, ymin, ymax
 end
+
+bounds(ap::RectangularAperture) = rectangular_bounds(ap.x, ap.y, ap.w, ap.h, ap.theta)
 
 function overlap(ap::RectangularAperture, i, j)
     x = i - ap.x
@@ -168,31 +169,16 @@ function overlap(ap::RectangularAnnulus, i, j)
         inside_rectangle(x + 0.5, y + 0.5, ap.w_in, ap.h_in, ap.theta),
     )
 
-    all(flags_out) && !any(flags_in) && return Inside
-    all(flags_in) || !any(flags_out) && return Outside
-
+    (all(flags_in) || !any(flags_out)) && return Outside
+    # the corner test cannot rule out a corner of the inner rectangle entering
+    # the pixel between two of its corners, so the pixel must also clear the
+    # inner rectangle's extent before it counts as fully inside the annulus
+    dx, dy = rectangular_extent(ap.w_in, ap.h_in, ap.theta)
+    all(flags_out) && (abs(x) > dx + 0.5 || abs(y) > dy + 0.5) && return Inside
     return Partial
 end
 
-function bounds(ap::RectangularAnnulus)
-    w2 = ap.w_out / 2
-    h2 = ap.h_out / 2
-    sint, cost = sincos(deg2rad(ap.theta))
-
-    dx1 = abs(w2 * cost - h2 * sint)
-    dy1 = abs(w2 * sint + h2 * cost)
-    dx2 = abs(w2 * cost + h2 * sint)
-    dy2 = abs(w2 * sint - h2 * cost)
-
-    dx = max(dx1, dx2)
-    dy = max(dy1, dy2)
-
-    xmin = ceil(Int, ap.x - dx - 0.5)
-    ymin = ceil(Int, ap.y - dy - 0.5)
-    xmax = ceil(Int, ap.x + dx - 0.5)
-    ymax = ceil(Int, ap.y + dy - 0.5)
-    return (xmin, xmax, ymin, ymax)
-end
+bounds(ap::RectangularAnnulus) = rectangular_bounds(ap.x, ap.y, ap.w_out, ap.h_out, ap.theta)
 
 function partial(ap::RectangularAnnulus, x, y)
     f1 = rectangular_overlap_exact(

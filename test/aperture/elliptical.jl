@@ -62,6 +62,11 @@ end
         ap = EllipticalAperture(40.0, 40.0, 10, 5, θ)
         @test photometry(ap, data).aperture_sum ≈ 50π
         @test sum(ap) ≈ photometry(ap, data).aperture_sum
+
+        # the inner ellipse can enter a pixel between two of its corners
+        ann = EllipticalAnnulus(40.0, 40.0, 5, 10, 5, θ) # b_in = 2.5
+        @test photometry(ann, data).aperture_sum ≈ 50π - 12.5π
+        @test sum(ann) ≈ photometry(ann, data).aperture_sum
     end
     ap = EllipticalAperture(40.0, 40.0, 10, 5, 45)
     @test photometry(Subpixel(ap, 50), data).aperture_sum ≈ 50π rtol = 1.0e-2
