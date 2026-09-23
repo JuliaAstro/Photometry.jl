@@ -66,11 +66,16 @@ function overlap(ap::EllipticalAperture, i, j)
     return Partial
 end
 
-function elliptical_bounds(cx, cy, a, b, theta)
+# half-extents of a rotated ellipse along the x and y axes
+function elliptical_extent(a, b, theta)
     sintheta, costheta = sincosd(theta)
-    # half-extents of the rotated ellipse along the x and y axes
     dx = sqrt((a * costheta)^2 + (b * sintheta)^2)
     dy = sqrt((a * sintheta)^2 + (b * costheta)^2)
+    return dx, dy
+end
+
+function elliptical_bounds(cx, cy, a, b, theta)
+    dx, dy = elliptical_extent(a, b, theta)
     # pixel i covers [i - 0.5, i + 0.5], so round the extents to the outermost
     # pixels whose area the ellipse touches (as for the other apertures)
     xmin = ceil(Int, cx - dx - 0.5)
@@ -176,9 +181,12 @@ function overlap(ap::EllipticalAnnulus, i, j)
         inside_ellipse(i + 0.5, j + 0.5, ap.x, ap.y, coeffs_in...),
     )
 
-    all(flags_out) && !any(flags_in) && return Inside
-    all(flags_in) || !any(flags_out) && return Outside
-
+    (all(flags_in) || !any(flags_out)) && return Outside
+    # the corner test cannot rule out the inner ellipse entering the pixel
+    # between two corners, so the pixel must also clear the inner ellipse's
+    # extent before it counts as fully inside the annulus
+    dx, dy = elliptical_extent(ap.a_in, ap.b_in, ap.theta)
+    all(flags_out) && (abs(i - ap.x) > dx + 0.5 || abs(j - ap.y) > dy + 0.5) && return Inside
     return Partial
 end
 
