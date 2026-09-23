@@ -4,9 +4,13 @@ using Photometry.Detection:
 using Photometry.Aperture:
     CircularAperture,
     photometry
+import Photometry
 
 import Random
 Random.seed!(8462852)
+
+# arrays with non-1-based axes, without adding a test dependency
+const OffsetArrays = Photometry.Detection.ImageFiltering.OffsetArrays
 
 @testset "detection/Detection: peak finding" begin
     @testset "peak finding - $P" for P in [PeakMesh()]
@@ -22,6 +26,11 @@ end
 
 @testset "detection/Detection: Peak Mesh" begin
     @test PeakMesh(box_size = 3) == PeakMesh(box_size = (3, 3))
+    # box sizes are converted to Int, so any integer type can be passed on
+    @test PeakMesh(box_size = Int32(3)) == PeakMesh(box_size = (3, 3))
+    @test PeakMesh(box_size = (Int32(3), 5)).box_size === (3, 5)
+    @test_throws ArgumentError PeakMesh(box_size = 0)
+    @test_throws ArgumentError PeakMesh(box_size = (3, -1))
 end
 
 @testset "detection/Detection: position convention" begin
@@ -57,6 +66,36 @@ end
     @test filtered.x == [10]
     @test filtered.y == [3]
     @test filtered.value == [3.0]
+
+    # an error map with other axes is rejected rather than read at the wrong pixel
+    @test_throws DimensionMismatch extract_sources(PeakMesh(), data, ones(30, 20))
+    @test_throws DimensionMismatch extract_sources(PeakMesh(), data, 1.0)
+end
+
+@testset "detection/Detection: offset axes" begin
+    # the default error map must follow the axes of `data`, e.g. the output of
+    # `imfilter(img, kernel, Inner())`
+    data = zeros(20, 30)
+    data[10, 3] = 3.0
+    data[4, 27] = 5.0
+    odata = OffsetArrays.OffsetArray(data, 100:119, -5:24)
+
+    table = extract_sources(PeakMesh(), odata)
+    @test table.x == [103, 109]
+    @test table.y == [21, -3]
+    @test table.value == [5.0, 3.0]
+    @test extract_sources(PeakMesh(), odata, nothing) == table
+    @test extract_sources(PeakMesh(), odata, zero(odata)) == table
+    @test_throws DimensionMismatch extract_sources(PeakMesh(), odata, zeros(20, 30))
+end
+
+@testset "detection/Detection: empty result" begin
+    for T in (Float64, Int, Real)
+        table = extract_sources(PeakMesh(), Matrix{T}(zeros(5, 5)))
+        @test length(table) == 0
+        @test propertynames(table) == (:x, :y, :value)
+        @test eltype(table.value) == T
+    end
 end
 
 @testset "detection/Detection: interface" begin

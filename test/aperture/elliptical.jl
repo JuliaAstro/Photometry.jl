@@ -4,7 +4,8 @@ using Photometry.Aperture:
     bounds,
     center,
     oblique_coefficients,
-    photometry
+    photometry,
+    Subpixel
 
 @testset "aperture/elliptical: Apertures" begin
     ap_ellipse = EllipticalAperture(0, 0, 20, 10, 0)
@@ -16,8 +17,9 @@ using Photometry.Aperture:
     @test eachindex(ap_ellipse) == CartesianIndex(-20, -10):CartesianIndex(20, 10)
     @test EllipticalAperture([0, 0], 20, 10, 0) == ap_ellipse
 
+    # the rotated ellipse reaches ±1.58, into the rim pixels at ±2
     ap_ellipse = EllipticalAperture(0, 0, 2, 1, 45)
-    @test bounds(ap_ellipse) == (-1, 1, -1, 1)
+    @test bounds(ap_ellipse) == (-2, 2, -2, 2)
 end
 
 @testset "aperture/elliptical: Elliptical Aperture" begin
@@ -50,4 +52,17 @@ end
     # some weird bug where centered on-grid past a certain size (and rotated) would fail
     e = EllipticalAperture(5.5, 5.5, 4, 4, 20)
     @test sum(e) ≈ photometry(e, ones(9, 9)).aperture_sum # just a test that no errors occur
+end
+
+@testset "aperture/elliptical: rotated apertures" begin
+    # the area is independent of the position angle, and the bounding box
+    # covers every pixel the aperture touches
+    data = ones(80, 80)
+    for θ in -60:5:175
+        ap = EllipticalAperture(40.0, 40.0, 10, 5, θ)
+        @test photometry(ap, data).aperture_sum ≈ 50π
+        @test sum(ap) ≈ photometry(ap, data).aperture_sum
+    end
+    ap = EllipticalAperture(40.0, 40.0, 10, 5, 45)
+    @test photometry(Subpixel(ap, 50), data).aperture_sum ≈ 50π rtol = 1.0e-2
 end
