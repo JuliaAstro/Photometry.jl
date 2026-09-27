@@ -6,9 +6,6 @@ FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
 PSFModels = "9ba017d1-7760-46cd-84a3-1e79e9ae9ddc"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 
-[sources]
-Photometry = {path = ".."}
-
 [compat]
 BenchmarkTools = "1"
 CairoMakie = "0.15"
